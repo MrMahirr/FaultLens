@@ -1,4 +1,6 @@
 spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
   application:
     name: loglens-api
   datasource:
@@ -40,6 +42,7 @@ spring:
 
 server:
   port: ${PORT:3500}
+  shutdown: graceful
 
 management:
   endpoints:

@@ -16,7 +16,7 @@ Bu dosya mevcut `faultlens-backend` reposuna gore hazirlanmis ilerleme planidir.
 - [X] Adim 9: Security, JWT, auth ve hata sozlesmesi
 - [X] Adim 10: WebSocket ve Redis realtime yayin akisi
 - [X] Adim 11: Test altyapisi ve modul testleri
-- [ ] Adim 12: Uctan uca lokal dogrulama
+- [X] Adim 12: Uctan uca lokal dogrulama
 - [ ] Adim 13: Operasyonel kalite, dokumantasyon ve production hardening
 
 ## UYGULAMA PLANI
