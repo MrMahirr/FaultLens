@@ -1,0 +1,52 @@
+# ====================================================================
+# Global Git Ignore for FaultLens (Root)
+# ====================================================================
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDEs and Editors
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+*.code-workspace
+.project
+.classpath
+.settings/
+.factorypath
+*.sublime-project
+*.sublime-workspace
+
+# Temporary & Log files
+*.log
+*.tmp
+*.temp
+
+# Local environment configuration files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ====================================================================
+# Backend (faultlens-backend)
+# ====================================================================
+faultlens-backend/target/
+faultlens-backend/*/target/
+faultlens-backend/.env
+faultlens-backend/*.log
+
+# ====================================================================
+# Frontend (faultlens-frontend)
+# ====================================================================
+faultlens-frontend/node_modules/
+faultlens-frontend/.next/
+faultlens-frontend/out/
+faultlens-frontend/build/
+faultlens-frontend/coverage/
+faultlens-frontend/*.tsbuildinfo
