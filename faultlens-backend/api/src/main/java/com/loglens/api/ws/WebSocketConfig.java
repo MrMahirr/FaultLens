@@ -40,7 +40,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
     /**
      * Handshake interceptor to reject connections when limit is reached.
      */
-    private class HandshakeLimitInterceptor implements HandshakeInterceptor {
+    class HandshakeLimitInterceptor implements HandshakeInterceptor {
         @Override
         public boolean beforeHandshake(
                 ServerHttpRequest request,

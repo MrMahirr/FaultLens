@@ -4,17 +4,17 @@ Bu dosya mevcut `faultlens-backend` reposuna gore hazirlanmis ilerleme planidir.
 
 ## Durum Takibi
 
-- [x] Mevcut modul yapisi ve derleme durumu incelendi
-- [x] Adim 1: Proje envanteri, sozlesme farklari ve kabul kriterleri
-- [x] Adim 2: Parent POM, modul bagimliliklari ve build standardizasyonu
-- [x] Adim 3: Common modul sozlesmelerinin tamamlanmasi
-- [x] Adim 4: Flyway, application.yml ve docker-compose uyumu
-- [x] Adim 5: Collector modulunun kaynak yonetimi ve adapter stabilizasyonu
-- [x] Adim 6: Processor parser, grouping, batch ve realtime pipeline
-- [x] Adim 7: Analyzer kurallari, korelasyon ve AI fallback tasarimi
-- [x] Adim 8: API DTO, mapper ve query servis ayrimi
-- [x] Adim 9: Security, JWT, auth ve hata sozlesmesi
-- [ ] Adim 10: WebSocket ve Redis realtime yayin akisi
+- [X] Mevcut modul yapisi ve derleme durumu incelendi
+- [X] Adim 1: Proje envanteri, sozlesme farklari ve kabul kriterleri
+- [X] Adim 2: Parent POM, modul bagimliliklari ve build standardizasyonu
+- [X] Adim 3: Common modul sozlesmelerinin tamamlanmasi
+- [X] Adim 4: Flyway, application.yml ve docker-compose uyumu
+- [X] Adim 5: Collector modulunun kaynak yonetimi ve adapter stabilizasyonu
+- [X] Adim 6: Processor parser, grouping, batch ve realtime pipeline
+- [X] Adim 7: Analyzer kurallari, korelasyon ve AI fallback tasarimi
+- [X] Adim 8: API DTO, mapper ve query servis ayrimi
+- [X] Adim 9: Security, JWT, auth ve hata sozlesmesi
+- [X] Adim 10: WebSocket ve Redis realtime yayin akisi
 - [ ] Adim 11: Test altyapisi ve modul testleri
 - [ ] Adim 12: Uctan uca lokal dogrulama
 - [ ] Adim 13: Operasyonel kalite, dokumantasyon ve production hardening
@@ -459,15 +459,15 @@ Bu dosya mevcut `faultlens-backend` reposuna gore hazirlanmis ilerleme planidir.
 
 ### Mevcut Modul Envanteri
 
-| Modul | Durum | Ana bulgu |
-|---|---|---|
-| `common` | Kismen tamam | Temel DTO, enum ve exception'lar var; ortak API sozlesmesi ve bazi exception'lar eksik. |
-| `collector` | Kismen tamam | Entity, adapter, producer ve orchestrator var; request DTO/mapper ayrimi, lifecycle ve adapter kaynak kapatma testleri eksik. |
-| `processor` | Kismen tamam | Generic, Java stack trace ve Nginx parser var; Spring Boot parser, gercek batch flush, DLQ publish ve Redis realtime publish eksik. |
-| `analyzer` | Kismen tamam | Rule based engine ve bazi kurallar var; AI JSON sozlesmesi, fallback karari ve eksik kurallar tamamlanmali. |
-| `api` | Kismen tamam | REST, JWT, Redis ve WebSocket iskeleti var; entity expose eden controller'lar, ortak response sozlesmesi ve endpoint parametre farklari duzeltilmeli. |
-| `infra` | Kismen tamam | Flyway ve docker-compose var; portlar, healthcheck'ler ve migration dosya adlari spesifikasyonla eslesmiyor. |
-| `tests` | Eksik | `src/test` klasoru bulunmuyor; test altyapisi sifirdan kurulacak. |
+| Modul         | Durum        | Ana bulgu                                                                                                                                             |
+| ------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `common`    | Kismen tamam | Temel DTO, enum ve exception'lar var; ortak API sozlesmesi ve bazi exception'lar eksik.                                                               |
+| `collector` | Kismen tamam | Entity, adapter, producer ve orchestrator var; request DTO/mapper ayrimi, lifecycle ve adapter kaynak kapatma testleri eksik.                         |
+| `processor` | Kismen tamam | Generic, Java stack trace ve Nginx parser var; Spring Boot parser, gercek batch flush, DLQ publish ve Redis realtime publish eksik.                   |
+| `analyzer`  | Kismen tamam | Rule based engine ve bazi kurallar var; AI JSON sozlesmesi, fallback karari ve eksik kurallar tamamlanmali.                                           |
+| `api`       | Kismen tamam | REST, JWT, Redis ve WebSocket iskeleti var; entity expose eden controller'lar, ortak response sozlesmesi ve endpoint parametre farklari duzeltilmeli. |
+| `infra`     | Kismen tamam | Flyway ve docker-compose var; portlar, healthcheck'ler ve migration dosya adlari spesifikasyonla eslesmiyor.                                          |
+| `tests`     | Eksik        | `src/test` klasoru bulunmuyor; test altyapisi sifirdan kurulacak.                                                                                   |
 
 ### Kritik Sozlesme Farklari
 
@@ -507,10 +507,10 @@ Bu dosya mevcut `faultlens-backend` reposuna gore hazirlanmis ilerleme planidir.
 
 ### Adim 1 Kabul Kriterleri
 
-- [x] Mevcut modul ve dosya envanteri cikarildi.
-- [x] Spesifikasyona gore kritik farklar plan dosyasina islendi.
-- [x] Sonraki adimlar icin uygulanabilir oncelik sirasi belirlendi.
-- [x] Baseline derleme dogrulandi: `.\mvnw.cmd -q -DskipTests package`.
+- [X] Mevcut modul ve dosya envanteri cikarildi.
+- [X] Spesifikasyona gore kritik farklar plan dosyasina islendi.
+- [X] Sonraki adimlar icin uygulanabilir oncelik sirasi belirlendi.
+- [X] Baseline derleme dogrulandi: `.\mvnw.cmd -q -DskipTests package`.
 
 ## Adim 2 Ciktisi: Build Standardizasyonu
 
@@ -541,9 +541,9 @@ Bu dosya mevcut `faultlens-backend` reposuna gore hazirlanmis ilerleme planidir.
 
 ### Dogrulama Sonuclari
 
-- [x] `.\mvnw.cmd -q clean package -DskipTests` basarili.
-- [x] `.\mvnw.cmd -q -pl common,collector,processor,analyzer,api -am test` basarili.
-- [x] `spring-boot-maven-plugin` sadece `api/pom.xml` icinde bulundu.
+- [X] `.\mvnw.cmd -q clean package -DskipTests` basarili.
+- [X] `.\mvnw.cmd -q -pl common,collector,processor,analyzer,api -am test` basarili.
+- [X] `spring-boot-maven-plugin` sadece `api/pom.xml` icinde bulundu.
 
 ### Kalan Notlar
 
@@ -604,9 +604,9 @@ Bu dosya mevcut `faultlens-backend` reposuna gore hazirlanmis ilerleme planidir.
 
 ### Dogrulama Sonuclari
 
-- [x] `.\mvnw.cmd -q -pl common test` basarili.
-- [x] `.\mvnw.cmd -q -DskipTests package` basarili.
-- [x] `.\mvnw.cmd -q test` basarili.
+- [X] `.\mvnw.cmd -q -pl common test` basarili.
+- [X] `.\mvnw.cmd -q -DskipTests package` basarili.
+- [X] `.\mvnw.cmd -q test` basarili.
 
 ### Kalan Notlar
 
@@ -659,11 +659,11 @@ Bu dosya mevcut `faultlens-backend` reposuna gore hazirlanmis ilerleme planidir.
 
 ### Dogrulama Sonuclari
 
-- [x] `.\mvnw.cmd -q clean package -DskipTests` basarili.
-- [x] `docker compose config` basarili.
-- [x] `docker compose up -d` servisleri baslatti; PostgreSQL, Redis ve Kafka healthcheck'leri basarili hale geldi.
-- [x] Temiz PostgreSQL uzerinde API baslatildi ve `GET /actuator/health` sonucu `{"status":"UP"}` olarak dogrulandi.
-- [x] `.\mvnw.cmd -q test` basarili.
+- [X] `.\mvnw.cmd -q clean package -DskipTests` basarili.
+- [X] `docker compose config` basarili.
+- [X] `docker compose up -d` servisleri baslatti; PostgreSQL, Redis ve Kafka healthcheck'leri basarili hale geldi.
+- [X] Temiz PostgreSQL uzerinde API baslatildi ve `GET /actuator/health` sonucu `{"status":"UP"}` olarak dogrulandi.
+- [X] `.\mvnw.cmd -q test` basarili.
 
 ### Ortam Notlari
 
@@ -728,9 +728,9 @@ Bu dosya mevcut `faultlens-backend` reposuna gore hazirlanmis ilerleme planidir.
 
 ### Dogrulama Sonuclari
 
-- [x] `.\mvnw.cmd -q -pl collector -am test` basarili.
-- [x] `.\mvnw.cmd -q clean package -DskipTests` basarili.
-- [x] `.\mvnw.cmd -q test` basarili.
+- [X] `.\mvnw.cmd -q -pl collector -am test` basarili.
+- [X] `.\mvnw.cmd -q clean package -DskipTests` basarili.
+- [X] `.\mvnw.cmd -q test` basarili.
 
 ### Kalan Notlar
 
@@ -804,9 +804,9 @@ Bu dosya mevcut `faultlens-backend` reposuna gore hazirlanmis ilerleme planidir.
 
 ### Dogrulama Sonuclari
 
-- [x] `.\mvnw.cmd -q -pl processor -am test` basarili.
-- [x] `.\mvnw.cmd -q clean package -DskipTests` basarili.
-- [x] `.\mvnw.cmd -q test` basarili.
+- [X] `.\mvnw.cmd -q -pl processor -am test` basarili.
+- [X] `.\mvnw.cmd -q clean package -DskipTests` basarili.
+- [X] `.\mvnw.cmd -q test` basarili.
 
 ### Kalan Notlar
 
@@ -881,9 +881,9 @@ Bu dosya mevcut `faultlens-backend` reposuna gore hazirlanmis ilerleme planidir.
 
 ### Dogrulama Sonuclari
 
-- [x] `.\mvnw.cmd -q -pl analyzer -am test` basarili.
-- [x] `.\mvnw.cmd -q clean package -DskipTests` basarili.
-- [x] `.\mvnw.cmd -q test` basarili.
+- [X] `.\mvnw.cmd -q -pl analyzer -am test` basarili.
+- [X] `.\mvnw.cmd -q clean package -DskipTests` basarili.
+- [X] `.\mvnw.cmd -q test` basarili.
 
 ### Kalan Notlar
 
@@ -942,9 +942,9 @@ Bu dosya mevcut `faultlens-backend` reposuna gore hazirlanmis ilerleme planidir.
 
 ### Dogrulama Sonuclari
 
-- [x] `.\mvnw.cmd -q -pl api -am test` basarili.
-- [x] `.\mvnw.cmd -q clean package -DskipTests` basarili.
-- [x] `.\mvnw.cmd -q test` basarili.
+- [X] `.\mvnw.cmd -q -pl api -am test` basarili.
+- [X] `.\mvnw.cmd -q clean package -DskipTests` basarili.
+- [X] `.\mvnw.cmd -q test` basarili.
 
 ### Kalan Notlar
 
@@ -1012,9 +1012,9 @@ Bu dosya mevcut `faultlens-backend` reposuna gore hazirlanmis ilerleme planidir.
 
 ### Dogrulama Sonuclari
 
-- [x] `.\mvnw.cmd -q -pl api -am test` basarili.
-- [x] `.\mvnw.cmd -q clean package -DskipTests` basarili.
-- [x] `.\mvnw.cmd -q test` basarili.
+- [X] `.\mvnw.cmd -q -pl api -am test` basarili.
+- [X] `.\mvnw.cmd -q clean package -DskipTests` basarili.
+- [X] `.\mvnw.cmd -q test` basarili.
 
 ### Kalan Notlar
 
