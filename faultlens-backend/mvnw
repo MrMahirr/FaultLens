@@ -1,0 +1,31 @@
+#!/usr/bin/env sh
+set -e
+
+BASE_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+MAVEN_VERSION="3.9.8"
+MAVEN_HOME="$BASE_DIR/.mvn/apache-maven-$MAVEN_VERSION"
+MAVEN_URL="https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/$MAVEN_VERSION/apache-maven-$MAVEN_VERSION-bin.zip"
+
+if command -v mvn >/dev/null 2>&1; then
+  exec mvn "$@"
+fi
+
+if [ ! -x "$MAVEN_HOME/bin/mvn" ]; then
+  ZIP_FILE="$BASE_DIR/.mvn/apache-maven-$MAVEN_VERSION-bin.zip"
+  if command -v curl >/dev/null 2>&1; then
+    curl -fsSL "$MAVEN_URL" -o "$ZIP_FILE"
+  elif command -v wget >/dev/null 2>&1; then
+    wget -q "$MAVEN_URL" -O "$ZIP_FILE"
+  else
+    echo "curl or wget is required to download Maven." >&2
+    exit 1
+  fi
+  if command -v unzip >/dev/null 2>&1; then
+    unzip -q "$ZIP_FILE" -d "$BASE_DIR/.mvn"
+  else
+    echo "unzip is required to extract Maven." >&2
+    exit 1
+  fi
+fi
+
+exec "$MAVEN_HOME/bin/mvn" "$@"

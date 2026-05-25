@@ -1,0 +1,409 @@
+@import "tailwindcss";
+
+/* ============================================================
+   LogLens — Terminal Noir Design System
+   Tailwind v4 CSS-first configuration
+   ============================================================ */
+
+/* Fonts loaded via next/font/google in layout.tsx (SSR-optimized) */
+
+/* ============================================================
+   Theme Variables: Dark & Light
+   ============================================================ */
+
+:root[data-theme="dark"] {
+  /* Backgrounds */
+  --bg-primary: #0A0A0F;
+  --bg-secondary: #111118;
+  --bg-tertiary: #1A1A24;
+  --bg-glass: rgba(255, 255, 255, 0.03);
+  --bg-glass-hover: rgba(255, 255, 255, 0.06);
+
+  /* Borders */
+  --border: rgba(255, 255, 255, 0.06);
+  --border-hover: rgba(255, 255, 255, 0.1);
+  --border-active: rgba(99, 102, 241, 0.4);
+
+  /* Text */
+  --text-primary: #F0F0F8;
+  --text-secondary: #8B8BA8;
+  --text-muted: #4A4A6A;
+
+  /* Accent */
+  --accent: #6366F1;
+  --accent-hover: #818CF8;
+  --accent-glow: rgba(99, 102, 241, 0.15);
+  --accent-glow-strong: rgba(99, 102, 241, 0.3);
+
+  /* Semantic */
+  --success: #10B981;
+  --success-glow: rgba(16, 185, 129, 0.15);
+  --warning: #F59E0B;
+  --warning-glow: rgba(245, 158, 11, 0.15);
+  --error: #EF4444;
+  --error-glow: rgba(239, 68, 68, 0.15);
+  --critical: #DC2626;
+  --critical-glow: rgba(220, 38, 38, 0.2);
+
+  /* Grid */
+  --grid-line: rgba(99, 102, 241, 0.04);
+  --grid-dot: rgba(99, 102, 241, 0.08);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 20px var(--accent-glow);
+
+  /* Scrollbar */
+  --scrollbar-track: #111118;
+  --scrollbar-thumb: #2A2A3A;
+  --scrollbar-thumb-hover: #3A3A4A;
+}
+
+:root[data-theme="light"] {
+  /* Backgrounds */
+  --bg-primary: #F8F8FC;
+  --bg-secondary: #FFFFFF;
+  --bg-tertiary: #F0F0F8;
+  --bg-glass: rgba(0, 0, 0, 0.02);
+  --bg-glass-hover: rgba(0, 0, 0, 0.04);
+
+  /* Borders */
+  --border: rgba(0, 0, 0, 0.06);
+  --border-hover: rgba(0, 0, 0, 0.1);
+  --border-active: rgba(79, 70, 229, 0.4);
+
+  /* Text */
+  --text-primary: #0A0A1A;
+  --text-secondary: #5A5A7A;
+  --text-muted: #9A9AB0;
+
+  /* Accent */
+  --accent: #4F46E5;
+  --accent-hover: #6366F1;
+  --accent-glow: rgba(79, 70, 229, 0.1);
+  --accent-glow-strong: rgba(79, 70, 229, 0.2);
+
+  /* Semantic */
+  --success: #059669;
+  --success-glow: rgba(5, 150, 105, 0.1);
+  --warning: #D97706;
+  --warning-glow: rgba(217, 119, 6, 0.1);
+  --error: #DC2626;
+  --error-glow: rgba(220, 38, 38, 0.1);
+  --critical: #B91C1C;
+  --critical-glow: rgba(185, 28, 28, 0.15);
+
+  /* Grid */
+  --grid-line: rgba(79, 70, 229, 0.03);
+  --grid-dot: rgba(79, 70, 229, 0.06);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+  --shadow-glow: 0 0 20px var(--accent-glow);
+
+  /* Scrollbar */
+  --scrollbar-track: #F0F0F8;
+  --scrollbar-thumb: #D0D0E0;
+  --scrollbar-thumb-hover: #B0B0C8;
+}
+
+/* Default to dark theme */
+:root:not([data-theme]) {
+  --bg-primary: #0A0A0F;
+  --bg-secondary: #111118;
+  --bg-tertiary: #1A1A24;
+  --bg-glass: rgba(255, 255, 255, 0.03);
+  --bg-glass-hover: rgba(255, 255, 255, 0.06);
+  --border: rgba(255, 255, 255, 0.06);
+  --border-hover: rgba(255, 255, 255, 0.1);
+  --border-active: rgba(99, 102, 241, 0.4);
+  --text-primary: #F0F0F8;
+  --text-secondary: #8B8BA8;
+  --text-muted: #4A4A6A;
+  --accent: #6366F1;
+  --accent-hover: #818CF8;
+  --accent-glow: rgba(99, 102, 241, 0.15);
+  --accent-glow-strong: rgba(99, 102, 241, 0.3);
+  --success: #10B981;
+  --success-glow: rgba(16, 185, 129, 0.15);
+  --warning: #F59E0B;
+  --warning-glow: rgba(245, 158, 11, 0.15);
+  --error: #EF4444;
+  --error-glow: rgba(239, 68, 68, 0.15);
+  --critical: #DC2626;
+  --critical-glow: rgba(220, 38, 38, 0.2);
+  --grid-line: rgba(99, 102, 241, 0.04);
+  --grid-dot: rgba(99, 102, 241, 0.08);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 20px var(--accent-glow);
+  --scrollbar-track: #111118;
+  --scrollbar-thumb: #2A2A3A;
+  --scrollbar-thumb-hover: #3A3A4A;
+}
+
+/* Severity Colors (consistent across both themes) */
+:root {
+  --severity-trace: #64748B;
+  --severity-debug: #6366F1;
+  --severity-info: #3B82F6;
+  --severity-warn: #F59E0B;
+  --severity-error: #EF4444;
+  --severity-critical: #DC2626;
+}
+
+/* ============================================================
+   Tailwind v4 Theme Configuration
+   ============================================================ */
+
+@theme inline {
+  /* Colors mapped from CSS variables */
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-bg-tertiary: var(--bg-tertiary);
+  --color-bg-glass: var(--bg-glass);
+  --color-bg-glass-hover: var(--bg-glass-hover);
+
+  --color-border-default: var(--border);
+  --color-border-hover: var(--border-hover);
+  --color-border-active: var(--border-active);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-glow: var(--accent-glow);
+  --color-accent-glow-strong: var(--accent-glow-strong);
+
+  --color-success: var(--success);
+  --color-success-glow: var(--success-glow);
+  --color-warning: var(--warning);
+  --color-warning-glow: var(--warning-glow);
+  --color-error: var(--error);
+  --color-error-glow: var(--error-glow);
+  --color-critical: var(--critical);
+  --color-critical-glow: var(--critical-glow);
+
+  --color-severity-trace: var(--severity-trace);
+  --color-severity-debug: var(--severity-debug);
+  --color-severity-info: var(--severity-info);
+  --color-severity-warn: var(--severity-warn);
+  --color-severity-error: var(--severity-error);
+  --color-severity-critical: var(--severity-critical);
+
+  /* Fonts */
+  --font-display: "Space Grotesk", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* Shadows */
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-glow: var(--shadow-glow);
+
+  /* Animations */
+  --animate-pulse-slow: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-slide-in-right: slide-in-right 0.3s ease-out;
+  --animate-slide-in-up: slide-in-up 0.3s ease-out;
+  --animate-fade-in: fade-in 0.2s ease-out;
+  --animate-count-up: count-up 1s ease-out;
+  --animate-glow-pulse: glow-pulse 2s ease-in-out infinite;
+}
+
+/* ============================================================
+   Keyframes
+   ============================================================ */
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes slide-in-right {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slide-in-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 5px var(--accent-glow); }
+  50% { box-shadow: 0 0 20px var(--accent-glow-strong); }
+}
+
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   Base Styles
+   ============================================================ */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================================
+   Grid Pattern Background (Dark Mode Dot Matrix)
+   ============================================================ */
+
+.bg-grid-pattern {
+  background-image:
+    radial-gradient(circle, var(--grid-dot) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* ============================================================
+   Glassmorphism Utility
+   ============================================================ */
+
+.glass {
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+}
+
+.glass-hover:hover {
+  background: var(--bg-glass-hover);
+  border-color: var(--border-hover);
+}
+
+/* ============================================================
+   Accent Glow Background Effect
+   ============================================================ */
+
+.bg-accent-glow {
+  position: relative;
+}
+
+.bg-accent-glow::before {
+  content: "";
+  position: absolute;
+  top: -200px;
+  right: -200px;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(
+    circle,
+    var(--accent-glow) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ============================================================
+   Custom Scrollbar
+   ============================================================ */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+/* ============================================================
+   Severity Badge Styles
+   ============================================================ */
+
+.severity-trace {
+  color: var(--severity-trace);
+  background: rgba(100, 116, 139, 0.1);
+}
+
+.severity-debug {
+  color: var(--severity-debug);
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.severity-info {
+  color: var(--severity-info);
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.severity-warn {
+  color: var(--severity-warn);
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.severity-error {
+  color: var(--severity-error);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.severity-critical {
+  color: var(--severity-critical);
+  background: rgba(220, 38, 38, 0.15);
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+/* ============================================================
+   Focus Styles (Accessibility)
+   ============================================================ */
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   Selection
+   ============================================================ */
+
+::selection {
+  background: var(--accent-glow-strong);
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   Transitions
+   ============================================================ */
+
+.transition-theme {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
