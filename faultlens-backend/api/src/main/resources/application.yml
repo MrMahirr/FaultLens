@@ -2,7 +2,7 @@ spring:
   application:
     name: loglens-api
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:loglens}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5433}/${DB_NAME:loglens}
     username: ${DB_USER:loglens}
     password: ${DB_PASS:loglens}
     hikari:
@@ -39,7 +39,7 @@ spring:
       port: ${REDIS_PORT:6379}
 
 server:
-  port: 8080
+  port: ${PORT:3500}
 
 management:
   endpoints:
