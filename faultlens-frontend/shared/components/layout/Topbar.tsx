@@ -8,6 +8,8 @@ import { useUIStore } from "@/shared/store/ui.store";
 import { useTheme } from "@/shared/hooks/useTheme";
 import { Dropdown, type DropdownItem } from "@/shared/components/ui/Dropdown";
 
+import { useAuthStore } from "@/features/auth/store/auth.store";
+
 /* ── Breadcrumb Map ────────────────────────────────────────── */
 
 const ROUTE_LABELS: Record<string, string> = {
@@ -44,7 +46,7 @@ function Topbar() {
   const handleUserMenuSelect = (value: string) => {
     switch (value) {
       case "logout":
-        // Will be connected to auth store in Step 5
+        useAuthStore.getState().logout();
         if (typeof window !== "undefined") {
           window.location.href = "/login";
         }
@@ -75,7 +77,7 @@ function Topbar() {
         </button>
 
         <div className="hidden sm:flex items-center gap-2 text-sm">
-          <span className="text-text-muted">LogLens</span>
+          <span className="text-text-muted">FaultLens</span>
           <span className="text-text-muted">/</span>
           <span className="text-text-primary font-medium">{breadcrumb}</span>
         </div>

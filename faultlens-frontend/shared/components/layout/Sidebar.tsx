@@ -77,7 +77,7 @@ function Sidebar() {
             animate={{ opacity: sidebarOpen ? 1 : 0, width: sidebarOpen ? "auto" : 0 }}
             transition={{ duration: 0.2 }}
           >
-            Log<span className="text-accent">Lens</span>
+            Fault<span className="text-accent">Lens</span>
           </motion.span>
         </Link>
       </div>

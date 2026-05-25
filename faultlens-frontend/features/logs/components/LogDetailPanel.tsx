@@ -1,13 +1,14 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { X, Clock, Server, Layers, Code, Lightbulb } from "lucide-react";
+import { X, Clock, Server, Layers, Code, Lightbulb, Brain } from "lucide-react";
 import { SeverityBadge } from "@/features/logs/components/SeverityBadge";
 import { Card } from "@/shared/components/ui/Card";
 import { Button } from "@/shared/components/ui/Button";
 import type { LogEntryDto } from "@/features/logs/types/log.types";
 import { formatDate } from "@/shared/lib/utils";
 import { cn } from "@/shared/lib/utils";
+import { useLogDetail } from "@/features/logs/api/logs.queries";
 
 /* ── Props ─────────────────────────────────────────────────── */
 
@@ -19,6 +20,9 @@ interface LogDetailPanelProps {
 /* ── Component ─────────────────────────────────────────────── */
 
 function LogDetailPanel({ log, onClose }: LogDetailPanelProps) {
+  const { data: detailData, isLoading: isDetailLoading } = useLogDetail(log?.id ?? 0);
+  const analyses = detailData?.analyses || [];
+
   if (!log) return null;
 
   return (
@@ -141,12 +145,43 @@ function LogDetailPanel({ log, onClose }: LogDetailPanelProps) {
           </div>
         )}
 
-        {/* Analysis Suggestion Placeholder */}
+        {/* Analysis Suggestion */}
         <div>
           <h3 className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">
-            Analiz
+            Kök Neden & Analiz
           </h3>
-          {log.groupId ? (
+          {isDetailLoading ? (
+            <div className="flex items-center gap-2 text-xs text-text-muted">
+              <div className="w-3.5 h-3.5 border border-accent border-t-transparent rounded-full animate-spin" />
+              <span>Analizler yükleniyor...</span>
+            </div>
+          ) : analyses && analyses.length > 0 ? (
+            <div className="space-y-3">
+              {analyses.map((analysis: any, i: number) => (
+                <Card key={analysis.id || i} variant="glass" padding="sm" className="border-l-2 border-l-accent">
+                  <div className="flex items-start gap-2">
+                    <Brain size={14} className="text-accent shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="text-xs font-semibold text-text-primary uppercase tracking-wider">
+                        {analysis.type === "AI_ANALYSIS" ? "AI Analizi" : "Kural Tabanlı Analiz"}
+                      </p>
+                      <p className="text-xs text-text-secondary mt-1">
+                        <strong>Kök Neden:</strong> {analysis.rootCause}
+                      </p>
+                      <p className="text-xs text-text-secondary mt-1">
+                        <strong>Öneri:</strong> {analysis.suggestion}
+                      </p>
+                      {analysis.confidence && (
+                        <p className="text-[10px] text-accent mt-2 font-mono">
+                          Güven: {Math.round(analysis.confidence * 100)}%
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          ) : log.groupId ? (
             <Card variant="glass" padding="sm">
               <div className="flex items-start gap-2">
                 <Lightbulb
@@ -165,7 +200,7 @@ function LogDetailPanel({ log, onClose }: LogDetailPanelProps) {
               </div>
             </Card>
           ) : (
-            <p className="text-sm text-text-muted">
+            <p className="text-xs text-text-muted">
               Bu log için henüz analiz bulunmuyor.
             </p>
           )}

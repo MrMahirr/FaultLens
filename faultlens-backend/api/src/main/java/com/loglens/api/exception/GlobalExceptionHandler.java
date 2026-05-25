@@ -51,6 +51,17 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles constraint violations.
+     */
+    @ExceptionHandler(jakarta.validation.ConstraintViolationException.class)
+    public ResponseEntity<ErrorEnvelope> handleConstraintViolation(jakarta.validation.ConstraintViolationException ex) {
+        String message = ex.getConstraintViolations().stream()
+                .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
+                .collect(Collectors.joining(", "));
+        return ResponseEntity.badRequest().body(ErrorEnvelope.of("VALIDATION_FAILED", message));
+    }
+
+    /**
      * Handles invalid credentials.
      */
     @ExceptionHandler(BadCredentialsException.class)

@@ -6,7 +6,7 @@ import com.loglens.common.enums.Severity;
 import org.junit.jupiter.api.Test;
 
 class LogGroupingServiceTest {
-    private final LogGroupingService service = new LogGroupingService(null);
+    private final LogGroupingService service = new LogGroupingService(null, null);
 
     @Test
     void stackTraceFingerprintIgnoresOuterWhitespace() {

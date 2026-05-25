@@ -31,13 +31,13 @@ export const useAuthStore = create<AuthStore>()(
       isAuthenticated: () => get().token !== null,
     }),
     {
-      name: "loglens-auth",
+      name: "faultlens-auth",
       partialize: (state) => ({
         token: state.token,
         user: state.user,
       }),
-    }
-  )
+    },
+  ),
 );
 
 export type { AuthUser };

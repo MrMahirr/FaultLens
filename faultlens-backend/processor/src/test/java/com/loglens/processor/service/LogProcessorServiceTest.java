@@ -29,6 +29,7 @@ class LogProcessorServiceTest {
     private LogEntryRepository entryRepository;
     private LogErrorProducer errorProducer;
     private RealtimeLogPublisher realtimeLogPublisher;
+    private org.springframework.kafka.core.KafkaTemplate<String, LogEventDto> dlqTemplate;
     private LogProcessorService service;
 
     @BeforeEach
@@ -39,6 +40,7 @@ class LogProcessorServiceTest {
         entryRepository = mock(LogEntryRepository.class);
         errorProducer = mock(LogErrorProducer.class);
         realtimeLogPublisher = mock(RealtimeLogPublisher.class);
+        dlqTemplate = mock(org.springframework.kafka.core.KafkaTemplate.class);
 
         service = new LogProcessorService(
                 patternRegistry,
@@ -46,7 +48,8 @@ class LogProcessorServiceTest {
                 groupingService,
                 entryRepository,
                 errorProducer,
-                realtimeLogPublisher
+                realtimeLogPublisher,
+                dlqTemplate
         );
     }
 

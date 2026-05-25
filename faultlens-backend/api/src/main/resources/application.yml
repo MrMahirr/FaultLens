@@ -3,6 +3,9 @@ spring:
     timeout-per-shutdown-phase: 30s
   application:
     name: loglens-api
+  threads:
+    virtual:
+      enabled: true
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5433}/${DB_NAME:loglens}
     username: ${DB_USER:loglens}

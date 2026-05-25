@@ -52,3 +52,10 @@ export interface LogStatsDto {
   warnCount: number;
   criticalCount: number;
 }
+
+/* ── Log Detail DTO ────────────────────────────────────────── */
+
+export interface LogDetailDto {
+  log: LogEntryDto;
+  analyses: any[];
+}

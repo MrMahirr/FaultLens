@@ -283,7 +283,7 @@ export default function LandingPage() {
             className="text-center mb-12"
           >
             <h2 className="text-3xl font-bold font-display text-text-primary mb-3">
-              Neden LogLens?
+              Neden FaultLens?
             </h2>
             <p className="text-text-secondary max-w-xl mx-auto">
               Loglarınızı sadece izlemeyin — anlayın.
@@ -339,7 +339,7 @@ export default function LandingPage() {
             <StepCard
               number={2}
               title="Logları Toplayın"
-              description="LogLens gerçek zamanlı olarak loglarınızı toplar, gruplar ve severity'e göre sınıflandırır."
+              description="FaultLens gerçek zamanlı olarak loglarınızı toplar, gruplar ve severity'e göre sınıflandırır."
               icon={<Terminal size={16} className="text-text-muted" />}
               index={1}
             />

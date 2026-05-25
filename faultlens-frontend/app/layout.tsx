@@ -26,7 +26,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LogLens — Real-time Log Analysis Platform",
+  title: "FaultLens — Real-time Log Analysis Platform",
   description:
     "Kubernetes, SSH ve Docker ortamlarındaki uzak sunucu loglarını gerçek zamanlı izleyen, hata analizi yapan ve deployment korelasyonu sunan log analiz platformu.",
   keywords: [

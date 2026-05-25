@@ -40,7 +40,7 @@ const backdropVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1 },
   exit: { opacity: 0 },
-};
+} as const;
 
 const modalVariants = {
   hidden: { opacity: 0, scale: 0.95, y: 20 },
@@ -48,7 +48,7 @@ const modalVariants = {
     opacity: 1,
     scale: 1,
     y: 0,
-    transition: { type: "spring", damping: 25, stiffness: 300 },
+    transition: { type: "spring" as const, damping: 25, stiffness: 300 },
   },
   exit: {
     opacity: 0,
@@ -56,7 +56,7 @@ const modalVariants = {
     y: 20,
     transition: { duration: 0.15 },
   },
-};
+} as const;
 
 /* ── Component ─────────────────────────────────────────────── */
 

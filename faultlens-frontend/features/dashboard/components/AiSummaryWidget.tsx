@@ -23,7 +23,7 @@ function AiSummaryWidget() {
           </div>
           <div>
             <h2 className="text-lg font-bold font-display text-text-primary mb-1">
-              LogLens AI Analizi
+              FaultLens AI Analizi
             </h2>
             <p className="text-sm text-text-secondary leading-relaxed max-w-2xl">
               Son 24 saat içinde <strong className="text-text-primary">3 yeni hata grubu</strong> tespit edildi.

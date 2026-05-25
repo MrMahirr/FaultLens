@@ -18,7 +18,8 @@ export default function LogDetailPage({
 }) {
   const { id } = use(params);
   const logId = parseInt(id, 10);
-  const { data: log, isLoading, error } = useLogDetail(logId);
+  const { data: detailData, isLoading, error } = useLogDetail(logId);
+  const log = detailData?.log;
 
   if (isLoading) {
     return (
@@ -110,6 +111,35 @@ export default function LogDetailPage({
                 </div>
               ))}
             </pre>
+          </div>
+        </div>
+      )}
+
+      {/* Analyses */}
+      {detailData?.analyses && detailData.analyses.length > 0 && (
+        <div className="space-y-3">
+          <h2 className="text-xs font-medium text-text-muted uppercase tracking-wider">
+            AI & Kural Tabanlı Kök Neden Analizi
+          </h2>
+          <div className="grid grid-cols-1 gap-4">
+            {detailData.analyses.map((analysis: any, i: number) => (
+              <Card key={analysis.id || i} variant="default" className="border-l-4 border-l-accent">
+                <p className="text-sm font-semibold text-text-primary uppercase tracking-wider">
+                  {analysis.type === "AI_ANALYSIS" ? "AI Analizi" : "Kural Tabanlı Analiz"}
+                </p>
+                <p className="text-sm text-text-secondary mt-2">
+                  <strong>Kök Neden:</strong> {analysis.rootCause}
+                </p>
+                <p className="text-sm text-text-secondary mt-1">
+                  <strong>Öneri:</strong> {analysis.suggestion}
+                </p>
+                {analysis.confidence && (
+                  <p className="text-[10px] text-accent mt-2 font-mono">
+                    Güven Oranı: {Math.round(analysis.confidence * 100)}%
+                  </p>
+                )}
+              </Card>
+            ))}
           </div>
         </div>
       )}

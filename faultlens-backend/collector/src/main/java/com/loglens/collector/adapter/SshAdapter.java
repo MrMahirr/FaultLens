@@ -135,6 +135,8 @@ public class SshAdapter implements LogSourceAdapter {
             session.setPassword(config.get("password"));
         }
         session.setConfig("StrictHostKeyChecking", "no");
+        session.setServerAliveInterval(15000); // Send keepalive every 15 seconds
+        session.setServerAliveCountMax(3);     // Drop after 3 missed keepalives
         session.connect(properties.getSsh().getConnectTimeoutMs());
         return session;
     }

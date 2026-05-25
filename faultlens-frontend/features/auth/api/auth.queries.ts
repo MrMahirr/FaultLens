@@ -53,17 +53,25 @@ export const useLogin = () => {
 
   return useMutation({
     mutationFn: async (data: LoginRequest): Promise<LoginResponse> => {
-      // Use mock for development
-      if (process.env.NODE_ENV === "development") {
-        return mockLogin(data);
+      try {
+        const response = await apiClient({
+          method: HttpMethod.POST,
+          url: Endpoints.AUTH.LOGIN,
+          data,
+        });
+        return response.data.data;
+      } catch (error: any) {
+        // If connection is refused, network error, or backend is offline, fallback to mock in dev mode
+        if (
+          process.env.NODE_ENV === "development" &&
+          (!error.response || error.code === "ERR_NETWORK" || error.message?.includes("Network Error"))
+        ) {
+          console.warn("Backend connection failed, falling back to mock authentication.");
+          return mockLogin(data);
+        }
+        const message = error.response?.data?.message || error.message || "Geçersiz kullanıcı adı veya şifre";
+        throw new Error(message);
       }
-
-      const response = await apiClient({
-        method: HttpMethod.POST,
-        url: Endpoints.AUTH.LOGIN,
-        data,
-      });
-      return response.data.data;
     },
     onSuccess: (data) => {
       login(data.token, data.user);

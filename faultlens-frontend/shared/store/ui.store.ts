@@ -35,11 +35,11 @@ export const useUIStore = create<UIStore>()(
         })),
     }),
     {
-      name: "loglens-ui",
+      name: "faultlens-ui",
       partialize: (state) => ({
         sidebarOpen: state.sidebarOpen,
         theme: state.theme,
       }),
-    }
-  )
+    },
+  ),
 );

@@ -11,11 +11,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 
 @RestController
 @RequestMapping("/api/v1/logs")
 @RequiredArgsConstructor
+@Validated
 public class LogController {
     private final LogQueryService service;
 
@@ -29,8 +33,8 @@ public class LogController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
             @RequestParam(required = false) String search,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "50") int size) {
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "50") @Min(1) @Max(1000) int size) {
         return ResponseEntity.ok(ApiResponse.ok(service.list(severity, sourceId, from, to, search, page, size)));
     }
 
@@ -48,8 +52,8 @@ public class LogController {
     @GetMapping("/groups")
     public ResponseEntity<ApiResponse<?>> groups(
             @RequestParam(required = false) Severity severity,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "50") int size) {
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "50") @Min(1) @Max(1000) int size) {
         return ResponseEntity.ok(ApiResponse.ok(service.groups(severity, page, size)));
     }
 
@@ -57,7 +61,10 @@ public class LogController {
      * Lists log entries for a group.
      */
     @GetMapping("/groups/{id}/entries")
-    public ResponseEntity<ApiResponse<?>> groupEntries(@PathVariable Long id, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "50") int size) {
+    public ResponseEntity<ApiResponse<?>> groupEntries(
+            @PathVariable Long id, 
+            @RequestParam(defaultValue = "0") @Min(0) int page, 
+            @RequestParam(defaultValue = "50") @Min(1) @Max(1000) int size) {
         return ResponseEntity.ok(ApiResponse.ok(service.groupEntries(id, page, size)));
     }
 

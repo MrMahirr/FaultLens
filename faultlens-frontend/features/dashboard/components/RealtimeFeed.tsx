@@ -1,10 +1,13 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Radio } from "lucide-react";
 import { Card } from "@/shared/components/ui/Card";
 import { Badge } from "@/shared/components/ui/Badge";
-import { mockLogEntries } from "@/shared/mocks/data";
+import { useLogs } from "@/features/logs/api/logs.queries";
+import { useLogStream } from "@/features/logs/hooks/useLogStream";
+import type { LogEntryDto } from "@/features/logs/types/log.types";
 import { Severity } from "@/shared/types/common.types";
 import { formatRelativeTime, truncate } from "@/shared/lib/utils";
 import { cn } from "@/shared/lib/utils";
@@ -31,13 +34,35 @@ function getSeverityVariant(severity: Severity) {
 /* ── Component ─────────────────────────────────────────────── */
 
 function RealtimeFeed() {
-  // Filter only ERROR and CRITICAL logs for the realtime feed
-  const realtimeLogs = mockLogEntries
-    .filter(
-      (log) =>
-        log.severity === Severity.ERROR || log.severity === Severity.CRITICAL
-    )
-    .slice(0, 20);
+  const [logs, setLogs] = useState<LogEntryDto[]>([]);
+
+  // Fetch initial error/critical logs
+  const { data: initialData } = useLogs({
+    page: 0,
+    size: 20,
+    severity: [Severity.ERROR, Severity.CRITICAL],
+  });
+
+  // Sync initial logs when query completes
+  useEffect(() => {
+    if (initialData?.content) {
+      setLogs(initialData.content);
+    }
+  }, [initialData]);
+
+  // Connect to live WebSocket log stream
+  const { isConnected } = useLogStream({
+    enabled: true,
+    onNewLog: (newLog) => {
+      if (newLog.severity === Severity.ERROR || newLog.severity === Severity.CRITICAL) {
+        setLogs((prev) => {
+          // Avoid duplicate logs in list if query also fetched them
+          if (prev.some((l) => l.id === newLog.id)) return prev;
+          return [newLog, ...prev].slice(0, 30); // Cap at 30 to prevent memory leaks (OOM)
+        });
+      }
+    },
+  });
 
   return (
     <Card variant="default" padding="none">
@@ -52,20 +77,32 @@ function RealtimeFeed() {
           </p>
         </div>
         <div className="flex items-center gap-1.5">
-          <Radio size={12} className="text-success animate-pulse" />
-          <span className="text-xs text-success font-medium">Canlı</span>
+          <Radio
+            size={12}
+            className={cn(
+              isConnected ? "text-success animate-pulse" : "text-text-muted"
+            )}
+          />
+          <span
+            className={cn(
+              "text-xs font-medium",
+              isConnected ? "text-success" : "text-text-muted"
+            )}
+          >
+            {isConnected ? "Canlı" : "Bağlantı Yok"}
+          </span>
         </div>
       </div>
 
       {/* Feed List */}
       <div className="max-h-[360px] overflow-y-auto">
         <AnimatePresence initial={false}>
-          {realtimeLogs.map((log, index) => (
+          {logs.map((log, index) => (
             <motion.div
-              key={log.id}
+              key={log.id || `live-${index}-${log.timestamp}`}
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.05, duration: 0.3 }}
+              transition={{ duration: 0.2 }}
               className={cn(
                 "flex items-start gap-3 px-5 py-3",
                 "border-b border-border-default",
@@ -97,6 +134,11 @@ function RealtimeFeed() {
               </div>
             </motion.div>
           ))}
+          {logs.length === 0 && (
+            <div className="py-8 text-center text-sm text-text-muted">
+              Henüz log kaydı yok
+            </div>
+          )}
         </AnimatePresence>
       </div>
     </Card>

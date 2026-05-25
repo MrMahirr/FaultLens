@@ -1,7 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import { mockLogEntries, mockLogGroups } from "@/shared/mocks/data";
-import type { LogEntryDto, LogFilters, LogGroupDto } from "@/features/logs/types/log.types";
+import { mockLogEntries, mockLogGroups, mockAnalyses } from "@/shared/mocks/data";
+import type { LogEntryDto, LogFilters, LogGroupDto, LogDetailDto } from "@/features/logs/types/log.types";
 import type { PagedResponse } from "@/shared/types/api.types";
+import { apiClient } from "@/shared/api/client";
+import { Endpoints } from "@/shared/api/endpoints";
+import { HttpMethod } from "@/shared/api/methods";
 
 /* ── Query Keys ────────────────────────────────────────────── */
 
@@ -14,28 +17,25 @@ export const logKeys = {
   stats: () => [...logKeys.all, "stats"] as const,
 };
 
-/* ── Mock Fetchers ─────────────────────────────────────────── */
+/* ── Mock Fallback Fetchers ────────────────────────────────── */
 
-const fetchLogs = async (
+const mockFetchLogs = async (
   filters: LogFilters
 ): Promise<PagedResponse<LogEntryDto>> => {
   await new Promise((resolve) => setTimeout(resolve, 400));
 
   let filtered = [...mockLogEntries] as LogEntryDto[];
 
-  // Apply severity filter
   if (filters.severity && filters.severity.length > 0) {
     filtered = filtered.filter((log) =>
       filters.severity!.includes(log.severity)
     );
   }
 
-  // Apply source filter
   if (filters.source) {
     filtered = filtered.filter((log) => log.source === filters.source);
   }
 
-  // Apply search filter
   if (filters.search) {
     const searchLower = filters.search.toLowerCase();
     filtered = filtered.filter(
@@ -45,12 +45,10 @@ const fetchLogs = async (
     );
   }
 
-  // Apply group filter
   if (filters.groupId) {
     filtered = filtered.filter((log) => log.groupId === filters.groupId);
   }
 
-  // Sort by timestamp descending
   filtered.sort(
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
@@ -71,16 +69,96 @@ const fetchLogs = async (
   };
 };
 
-const fetchLogDetail = async (id: number): Promise<LogEntryDto> => {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  const log = mockLogEntries.find((l) => l.id === id) as LogEntryDto | undefined;
-  if (!log) throw new Error("Log bulunamadı");
-  return log;
+/* ── Active API Fetchers with Fallbacks ──────────────────────── */
+
+const fetchLogs = async (
+  filters: LogFilters
+): Promise<PagedResponse<LogEntryDto>> => {
+  try {
+    const params: Record<string, any> = {
+      page: filters.page ?? 0,
+      size: filters.size ?? 20,
+    };
+
+    if (filters.severity && filters.severity.length > 0) {
+      params.severity = filters.severity[0];
+    }
+    if (filters.search) {
+      params.search = filters.search;
+    }
+    if (filters.source) {
+      const sourceIdNum = Number(filters.source);
+      if (!isNaN(sourceIdNum)) {
+        params.sourceId = sourceIdNum;
+      }
+    }
+    if (filters.startDate) {
+      params.from = filters.startDate;
+    }
+    if (filters.endDate) {
+      params.to = filters.endDate;
+    }
+
+    const url = filters.groupId
+      ? Endpoints.LOGS.GROUP_ENTRIES(filters.groupId)
+      : Endpoints.LOGS.LIST;
+
+    const response = await apiClient({
+      method: HttpMethod.GET,
+      url,
+      params,
+    });
+
+    return response.data.data;
+  } catch (error: any) {
+    if (
+      process.env.NODE_ENV === "development" &&
+      (!error.response || error.code === "ERR_NETWORK" || error.message?.includes("Network Error"))
+    ) {
+      console.warn("Backend connection failed, falling back to mock logs.");
+      return mockFetchLogs(filters);
+    }
+    throw error;
+  }
+};
+
+const fetchLogDetail = async (id: number): Promise<LogDetailDto> => {
+  try {
+    const response = await apiClient({
+      method: HttpMethod.GET,
+      url: Endpoints.LOGS.DETAIL(id),
+    });
+    return response.data.data;
+  } catch (error: any) {
+    if (
+      process.env.NODE_ENV === "development" &&
+      (!error.response || error.code === "ERR_NETWORK" || error.message?.includes("Network Error"))
+    ) {
+      const log = mockLogEntries.find((l) => l.id === id) as LogEntryDto | undefined;
+      if (!log) throw new Error("Log bulunamadı");
+      const analyses = mockAnalyses.filter((a) => a.groupId === log.groupId);
+      return { log, analyses };
+    }
+    throw error;
+  }
 };
 
 const fetchLogGroups = async (): Promise<LogGroupDto[]> => {
-  await new Promise((resolve) => setTimeout(resolve, 400));
-  return mockLogGroups as LogGroupDto[];
+  try {
+    const response = await apiClient({
+      method: HttpMethod.GET,
+      url: Endpoints.LOGS.GROUPS,
+    });
+    return response.data.data;
+  } catch (error: any) {
+    if (
+      process.env.NODE_ENV === "development" &&
+      (!error.response || error.code === "ERR_NETWORK" || error.message?.includes("Network Error"))
+    ) {
+      return mockLogGroups as LogGroupDto[];
+    }
+    throw error;
+  }
 };
 
 /* ── Hooks ─────────────────────────────────────────────────── */
