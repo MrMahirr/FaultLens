@@ -31,7 +31,7 @@ public class SecurityConfig {
                         .accessDeniedHandler((request, response, accessDeniedException) ->
                                 writeError(response, objectMapper, HttpServletResponse.SC_FORBIDDEN, "ACCESS_DENIED", "Access denied")))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/**", "/ws/**", "/actuator/health").permitAll()
+                        .requestMatchers("/api/v1/auth/**", "/ws/**", "/actuator/health", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
