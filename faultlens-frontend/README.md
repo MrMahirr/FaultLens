@@ -1,36 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FaultLens Frontend 🎨
 
-## Getting Started
+FaultLens platformunun kullanıcı arayüzü (UI) projesidir. Kullanıcıların log kaynaklarını yönettiği, canlı log akışlarını izlediği ve yapay zeka analizlerini görüntülediği web uygulamasıdır.
 
-First, run the development server:
+## 🛠️ Teknolojiler
+- **Framework:** Next.js (App Router)
+- **Kütüphane:** React
+- **Dil:** TypeScript
+- **Stil & Tasarım:** TailwindCSS, Framer Motion (Animasyonlar), Lucide Icons
+- **Veri Yönetimi:** React Query (@tanstack/react-query), Zustand (Global State)
+- **HTTP İstemcisi:** Axios
+- **WebSocket:** Socket.io-client (veya yerleşik WebSocket API)
 
+## 📂 Proje Yapısı
+Proje, **Feature-Sliced Design (FSD)** mimarisinden esinlenerek modüler bir yapıda kurgulanmıştır:
+- `app/`: Next.js yönlendirmeleri (Routing) ve ana sayfa düzenleri.
+- `features/`: Uygulamanın temel iş özellikleri (`logs`, `sources`, `analyses`). Her özelliğin kendi bileşenleri ve API servisleri vardır.
+- `shared/`: Tüm uygulama genelinde paylaşılan bileşenler (UI elemanları, Button, Modal, Sidebar), hook'lar, tipler ve yardımcı fonksiyonlar.
+
+## ⚙️ Kurulum ve Çalıştırma
+
+### Bağımlılıkları Yükleme
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Ortam Değişkenleri (Environment Variables)
+Proje kök dizininde bir `.env.local` dosyası oluşturun ve backend API adresinizi belirtin:
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3500/api/v1
+NEXT_PUBLIC_WS_URL=ws://localhost:3500/ws/logs
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Geliştirme Sunucusunu Başlatma
+```bash
+npm run dev
+```
+Uygulama **http://localhost:3000** adresinde çalışmaya başlayacaktır.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🎨 Tasarım Prensipleri
+- **Canlı ve Akıcı:** Kullanıcı etkileşimleri Framer Motion kullanılarak akıcı hale getirilmiştir.
+- **Karanlık Tema (Dark Mode):** Log analizi yapan geliştiriciler için göz yormayan, kontrastı yüksek dark theme varsayılan olarak uygulanmıştır.
+- **Modüler Bileşenler:** UI elemanları (`shared/components/ui/`) tamamen yeniden kullanılabilir (reusable) şekilde kodlanmıştır.
