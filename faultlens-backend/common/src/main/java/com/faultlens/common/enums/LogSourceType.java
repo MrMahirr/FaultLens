@@ -4,5 +4,6 @@ public enum LogSourceType {
     KUBERNETES,
     SSH,
     DOCKER,
-    CICD
+    CICD,
+    LOCAL_FILE
 }

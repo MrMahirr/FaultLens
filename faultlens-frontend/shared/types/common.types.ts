@@ -17,6 +17,7 @@ export enum LogSourceType {
   SSH = "SSH",
   DOCKER = "DOCKER",
   CICD = "CICD",
+  LOCAL_FILE = "LOCAL_FILE",
 }
 
 export enum AnalysisType {

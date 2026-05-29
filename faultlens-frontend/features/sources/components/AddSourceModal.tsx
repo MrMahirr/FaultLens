@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Server, Terminal, Container, CheckCircle2, XCircle, ArrowRight, ArrowLeft } from "lucide-react";
+import { Server, Terminal, Container, FileText, CheckCircle2, XCircle, ArrowRight, ArrowLeft } from "lucide-react";
 import { Modal } from "@/shared/components/ui/Modal";
 import { Button } from "@/shared/components/ui/Button";
 import { Input } from "@/shared/components/ui/Input";
@@ -39,6 +39,12 @@ const SOURCE_TYPES = [
     icon: <Container size={28} />,
     description: "Docker container loglarını izleyin",
   },
+  {
+    type: LogSourceType.LOCAL_FILE,
+    label: "Local File",
+    icon: <FileText size={28} />,
+    description: "Lokal makinedeki log dosyasını izleyin",
+  },
 ];
 
 /* ── Component ─────────────────────────────────────────────── */
@@ -49,6 +55,9 @@ function AddSourceModal({ isOpen, onClose }: AddSourceModalProps) {
   const [name, setName] = useState("");
   const [host, setHost] = useState("");
   const [namespace, setNamespace] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [logFilePath, setLogFilePath] = useState("");
   const [testResult, setTestResult] = useState<"success" | "error" | null>(null);
 
   const testConnection = useTestConnectionMutation();
@@ -70,11 +79,22 @@ function AddSourceModal({ isOpen, onClose }: AddSourceModalProps) {
   };
 
   const handleSave = async () => {
+    // Backend'in beklediği config formatını oluştur
+    let configObj: Record<string, any> = {};
+    if (selectedType === LogSourceType.SSH) {
+      configObj = { host, username, password, logFilePath };
+    } else if (selectedType === LogSourceType.DOCKER) {
+      configObj = { host };
+    } else if (selectedType === LogSourceType.KUBERNETES) {
+      configObj = { namespace };
+    } else if (selectedType === LogSourceType.LOCAL_FILE) {
+      configObj = { logFilePath };
+    }
+
     await createSource.mutateAsync({
       name,
       type: selectedType!,
-      host: host || undefined,
-      namespace: namespace || undefined,
+      config: JSON.stringify(configObj),
     });
     handleClose();
   };
@@ -159,13 +179,30 @@ function AddSourceModal({ isOpen, onClose }: AddSourceModalProps) {
             {selectedType === LogSourceType.SSH && (
               <>
                 <Input
-                  label="Host"
-                  placeholder="192.168.1.100:22"
+                  label="Host (IP:Port)"
+                  placeholder="127.0.0.1:22"
                   value={host}
                   onChange={(e) => setHost(e.target.value)}
                 />
-                <Input label="Username" placeholder="root" />
-                <Input label="Log File Path" placeholder="/var/log/syslog" />
+                <Input 
+                  label="Username" 
+                  placeholder="root" 
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+                <Input 
+                  label="Password" 
+                  type="password" 
+                  placeholder="***" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <Input 
+                  label="Log File Path" 
+                  placeholder="/var/log/syslog" 
+                  value={logFilePath}
+                  onChange={(e) => setLogFilePath(e.target.value)}
+                />
               </>
             )}
 
@@ -175,6 +212,15 @@ function AddSourceModal({ isOpen, onClose }: AddSourceModalProps) {
                 placeholder="unix:///var/run/docker.sock"
                 value={host}
                 onChange={(e) => setHost(e.target.value)}
+              />
+            )}
+
+            {selectedType === LogSourceType.LOCAL_FILE && (
+              <Input
+                label="Log Dosyası Yolu (Absolute Path)"
+                placeholder="C:\logs\app.log veya /var/log/syslog"
+                value={logFilePath}
+                onChange={(e) => setLogFilePath(e.target.value)}
               />
             )}
 
