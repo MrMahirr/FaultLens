@@ -44,7 +44,7 @@ export function useWebSocket({
   const retryTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const enabledRef = useRef(enabled);
   const mountedRef = useRef(true);
-  
+
   // Refs for callbacks to prevent unnecessary reconnects
   const onMessageRef = useRef(onMessage);
   const onOpenRef = useRef(onOpen);
@@ -110,7 +110,7 @@ export function useWebSocket({
         ) {
           const delay = Math.min(
             baseDelay * Math.pow(2, retryCountRef.current),
-            maxDelay
+            maxDelay,
           );
           retryCountRef.current += 1;
           retryTimerRef.current = setTimeout(connect, delay);

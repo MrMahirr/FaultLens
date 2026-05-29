@@ -18,7 +18,7 @@ export default function LogDetailPage({
 }) {
   const { id } = use(params);
   const logId = parseInt(id, 10);
-  const { data: detailData, isLoading, error } = useLogDetailQuery(id);
+  const { data: detailData, isLoading, error } = useLogDetailQuery(logId);
   const log = detailData?.log;
 
   if (isLoading) {
