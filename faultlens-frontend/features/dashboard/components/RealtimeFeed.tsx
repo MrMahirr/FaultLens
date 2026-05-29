@@ -125,7 +125,7 @@ function RealtimeFeed() {
                 </p>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-xs text-text-muted font-mono">
-                    {log.podName ?? log.source}
+                    {log.podName ?? log.serviceName ?? `Source #${log.sourceId}`}
                   </span>
                   <span className="text-xs text-text-muted">
                     {formatRelativeTime(log.timestamp)}

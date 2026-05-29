@@ -71,8 +71,8 @@ export default function LogDetailPage({
       {/* Details Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Kaynak", value: log.source },
-          { label: "Tür", value: log.sourceType },
+          { label: "Servis", value: log.serviceName ?? "—" },
+          { label: "Kaynak ID", value: log.sourceId },
           { label: "Namespace", value: log.namespace },
           { label: "Pod", value: log.podName ?? "—" },
         ].map((item) => (
@@ -125,7 +125,7 @@ export default function LogDetailPage({
             {detailData.analyses.map((analysis: any, i: number) => (
               <Card key={analysis.id || i} variant="default" className="border-l-4 border-l-accent">
                 <p className="text-sm font-semibold text-text-primary uppercase tracking-wider">
-                  {analysis.type === "AI_ANALYSIS" ? "AI Analizi" : "Kural Tabanlı Analiz"}
+                  {analysis.engineType === "AI_ANALYSIS" ? "AI Analizi" : "Kural Tabanlı Analiz"}
                 </p>
                 <p className="text-sm text-text-secondary mt-2">
                   <strong>Kök Neden:</strong> {analysis.rootCause}
@@ -133,9 +133,9 @@ export default function LogDetailPage({
                 <p className="text-sm text-text-secondary mt-1">
                   <strong>Öneri:</strong> {analysis.suggestion}
                 </p>
-                {analysis.confidence && (
+                {analysis.confidenceScore && (
                   <p className="text-[10px] text-accent mt-2 font-mono">
-                    Güven Oranı: {Math.round(analysis.confidence * 100)}%
+                    Güven Oranı: {Math.round(analysis.confidenceScore * 100)}%
                   </p>
                 )}
               </Card>

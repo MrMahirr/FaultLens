@@ -3,6 +3,7 @@ import { apiClient } from "@/shared/api/client";
 import { Endpoints } from "@/shared/api/endpoints";
 import { HttpMethod } from "@/shared/api/methods";
 import { useAuthStore } from "@/features/auth/store/auth.store";
+import { decodeJwt } from "@/shared/lib/jwt";
 
 /* ── Types ─────────────────────────────────────────────────── */
 
@@ -13,10 +14,7 @@ interface LoginRequest {
 
 interface LoginResponse {
   token: string;
-  user: {
-    username: string;
-    role: string;
-  };
+  expiresAt: string;
 }
 
 /* ── Mock Login ────────────────────────────────────────────── */
@@ -36,10 +34,7 @@ const mockLogin = async (data: LoginRequest): Promise<LoginResponse> => {
   ) {
     return {
       token: "mock-jwt-token-" + Date.now(),
-      user: {
-        username: data.username,
-        role: "ADMIN",
-      },
+      expiresAt: new Date(Date.now() + 3600000).toISOString(),
     };
   }
 
@@ -69,12 +64,23 @@ export const useLogin = () => {
           console.warn("Backend connection failed, falling back to mock authentication.");
           return mockLogin(data);
         }
-        const message = error.response?.data?.message || error.message || "Geçersiz kullanıcı adı veya şifre";
+        const message = error.response?.data?.error?.message || error.message || "Geçersiz kullanıcı adı veya şifre";
         throw new Error(message);
       }
     },
     onSuccess: (data) => {
-      login(data.token, data.user);
+      // Decode JWT to extract username and role (stateless auth)
+      const payload = decodeJwt(data.token);
+      
+      let username = "admin";
+      let role = "ADMIN";
+      
+      if (payload) {
+        username = payload.sub;
+        role = payload.roles?.[0]?.replace('ROLE_', '') || "ADMIN";
+      }
+
+      login(data.token, { username, role });
     },
   });
 };

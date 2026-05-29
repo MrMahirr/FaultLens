@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { mockSources, type MockSource } from "@/shared/mocks/data";
+import { mockSources, type LogSourceDto } from "@/shared/mocks/data";
 import { apiClient } from "@/shared/api/client";
 import { Endpoints } from "@/shared/api/endpoints";
 import { HttpMethod } from "@/shared/api/methods";
@@ -9,7 +9,7 @@ export const sourceKeys = {
   list: () => [...sourceKeys.all, "list"] as const,
 };
 
-const fetchSources = async (): Promise<MockSource[]> => {
+const fetchSources = async (): Promise<LogSourceDto[]> => {
   try {
     const response = await apiClient({
       method: HttpMethod.GET,
@@ -59,7 +59,7 @@ export const useTestConnection = () => {
 export const useCreateSource = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: Partial<MockSource>) => {
+    mutationFn: async (data: Partial<LogSourceDto>) => {
       try {
         const response = await apiClient({
           method: HttpMethod.POST,
@@ -73,7 +73,7 @@ export const useCreateSource = () => {
           (!error.response || error.code === "ERR_NETWORK" || error.message?.includes("Network Error"))
         ) {
           await new Promise((resolve) => setTimeout(resolve, 800));
-          return { ...data, id: Date.now() } as MockSource;
+          return { ...data, id: Date.now() } as LogSourceDto;
         }
         throw error;
       }

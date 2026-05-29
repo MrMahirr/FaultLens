@@ -69,4 +69,4 @@ loglens:
       openai-api-key: ${OPENAI_API_KEY:}
       model: gpt-4o-mini
   cors:
-    allowed-origins: ${CORS_ORIGINS:http://localhost:3500}
+    allowed-origins: ${CORS_ORIGINS:http://localhost:3000}

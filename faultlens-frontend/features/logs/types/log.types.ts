@@ -4,16 +4,18 @@ import { Severity, LogSourceType } from "@/shared/types/common.types";
 
 export interface LogEntryDto {
   id: number;
+  sourceId: number;
+  groupId?: number;
   severity: Severity;
   message: string;
-  source: string;
-  sourceType: LogSourceType;
-  namespace: string;
-  timestamp: string;
+  parsedMessage?: string;
   stackTrace?: string;
-  groupId?: number;
+  namespace?: string;
   podName?: string;
   containerName?: string;
+  serviceName?: string;
+  cluster?: string;
+  timestamp: string;
 }
 
 /* ── Log Filters ───────────────────────────────────────────── */
@@ -38,10 +40,8 @@ export interface LogGroupDto {
   firstMessage: string;
   count: number;
   severity: Severity;
-  firstSeen: string;
-  lastSeen: string;
-  source: string;
-  hasAnalysis: boolean;
+  firstSeenAt: string;
+  lastSeenAt: string;
 }
 
 /* ── Log Stats ─────────────────────────────────────────────── */

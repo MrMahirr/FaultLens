@@ -74,7 +74,9 @@ function LogDetailPanel({ log, onClose }: LogDetailPanelProps) {
               <p className="text-[10px] text-text-muted uppercase tracking-wider">
                 Kaynak
               </p>
-              <p className="text-xs font-mono text-text-primary">{log.source}</p>
+              <p className="text-xs font-mono text-text-primary">
+                {log.serviceName ?? `Source #${log.sourceId}`}
+              </p>
             </div>
           </div>
 
@@ -163,7 +165,7 @@ function LogDetailPanel({ log, onClose }: LogDetailPanelProps) {
                     <Brain size={14} className="text-accent shrink-0 mt-0.5" />
                     <div className="flex-1">
                       <p className="text-xs font-semibold text-text-primary uppercase tracking-wider">
-                        {analysis.type === "AI_ANALYSIS" ? "AI Analizi" : "Kural Tabanlı Analiz"}
+                        {analysis.engineType === "AI_ANALYSIS" ? "AI Analizi" : "Kural Tabanlı Analiz"}
                       </p>
                       <p className="text-xs text-text-secondary mt-1">
                         <strong>Kök Neden:</strong> {analysis.rootCause}
@@ -171,9 +173,9 @@ function LogDetailPanel({ log, onClose }: LogDetailPanelProps) {
                       <p className="text-xs text-text-secondary mt-1">
                         <strong>Öneri:</strong> {analysis.suggestion}
                       </p>
-                      {analysis.confidence && (
+                      {analysis.confidenceScore && (
                         <p className="text-[10px] text-accent mt-2 font-mono">
-                          Güven: {Math.round(analysis.confidence * 100)}%
+                          Güven: {Math.round(analysis.confidenceScore * 100)}%
                         </p>
                       )}
                     </div>

@@ -11,24 +11,34 @@ export interface ApiResponse<T> {
   timestamp: string;
 }
 
-/** Paginated API response wrapper */
+/** Paginated API response wrapper — backend PagedResponse.java ile birebir uyumlu */
 export interface PagedResponse<T> {
   content: T[];
   totalElements: number;
   totalPages: number;
   page: number;
   size: number;
-  hasNext: boolean;
-  hasPrevious: boolean;
 }
 
-/** API error response structure */
+/* ── Pagination Helpers ──────────────────────────────────────── */
+
+/** Backend PagedResponse'dan hesaplanabilir sayfa kontrolleri */
+export function hasNextPage(paged: PagedResponse<unknown>): boolean {
+  return paged.page + 1 < paged.totalPages;
+}
+
+export function hasPreviousPage(paged: PagedResponse<unknown>): boolean {
+  return paged.page > 0;
+}
+
+/** API error response structure — backend ErrorEnvelope ile uyumlu */
 export interface ApiError {
   success: false;
-  message: string;
-  errorCode?: string;
-  details?: Record<string, string[]>;
-  timestamp: string;
+  error: {
+    code: string;
+    message: string;
+    timestamp: string;
+  };
 }
 
 /** Pagination request parameters */

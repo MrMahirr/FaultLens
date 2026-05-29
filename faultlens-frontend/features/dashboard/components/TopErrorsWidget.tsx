@@ -56,11 +56,11 @@ function TopErrorsWidget() {
                   {group.firstMessage}
                 </p>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs text-text-muted font-mono">
-                    {group.source}
+                  <span className="text-xs text-text-muted font-mono truncate max-w-[120px]">
+                    {group.fingerprint}
                   </span>
                   <span className="text-xs text-text-muted">
-                    Son: {formatRelativeTime(group.lastSeen)}
+                    Son: {formatRelativeTime(group.lastSeenAt)}
                   </span>
                 </div>
               </div>

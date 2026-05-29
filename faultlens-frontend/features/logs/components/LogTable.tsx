@@ -45,11 +45,11 @@ function LogTable({ data, loading = false, onRowClick }: LogTableProps) {
         size: 90,
       },
       {
-        accessorKey: "source",
+        accessorKey: "sourceId",
         header: "Kaynak",
         cell: ({ row }) => (
           <span className="text-xs font-mono text-text-secondary">
-            {row.original.podName ?? row.original.source}
+            {row.original.podName ?? row.original.serviceName ?? `Source #${row.original.sourceId}`}
           </span>
         ),
         size: 160,

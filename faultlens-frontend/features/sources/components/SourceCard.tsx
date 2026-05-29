@@ -6,7 +6,7 @@ import { Card } from "@/shared/components/ui/Card";
 import { Badge } from "@/shared/components/ui/Badge";
 import { Button } from "@/shared/components/ui/Button";
 import { Dropdown, type DropdownItem } from "@/shared/components/ui/Dropdown";
-import type { MockSource } from "@/shared/mocks/data";
+import type { LogSourceDto } from "@/shared/mocks/data";
 import {
   ConnectionStatus,
   SOURCE_TYPE_LABELS,
@@ -56,7 +56,7 @@ function StatusDot({ status }: { status: ConnectionStatus }) {
 /* ── Props ─────────────────────────────────────────────────── */
 
 interface SourceCardProps {
-  source: MockSource;
+  source: LogSourceDto;
   index: number;
 }
 
@@ -64,6 +64,7 @@ interface SourceCardProps {
 
 function SourceCard({ source, index }: SourceCardProps) {
   const testConnection = useTestConnection();
+  const config = source.config ? JSON.parse(source.config) : {};
 
   const menuItems: DropdownItem[] = [
     {
@@ -84,7 +85,7 @@ function SourceCard({ source, index }: SourceCardProps) {
         {/* Header */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2">
-            <StatusDot status={source.status} />
+            <StatusDot status={source.status ?? ConnectionStatus.CONNECTED} />
           </div>
           <Dropdown
             trigger={
@@ -107,24 +108,24 @@ function SourceCard({ source, index }: SourceCardProps) {
 
         {/* Details */}
         <div className="mt-3 space-y-1.5">
-          {source.namespace && (
+          {config.namespace && (
             <p className="text-xs text-text-muted">
               Namespace:{" "}
               <span className="text-text-secondary font-mono">
-                {source.namespace}
+                {config.namespace}
               </span>
             </p>
           )}
-          {source.host && (
+          {config.host && (
             <p className="text-xs text-text-muted">
               Host:{" "}
               <span className="text-text-secondary font-mono">
-                {source.host}
+                {config.host}
               </span>
             </p>
           )}
           <p className="text-xs text-text-muted">
-            Son log: {formatRelativeTime(source.lastLogAt)}
+            Son log: {formatRelativeTime(source.lastSeenAt)}
           </p>
         </div>
 

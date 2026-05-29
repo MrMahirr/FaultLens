@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { mockAnalyses, type MockAnalysis } from "@/shared/mocks/data";
+import { mockAnalyses, type AnalysisResultDto } from "@/shared/mocks/data";
 import { apiClient } from "@/shared/api/client";
 import { Endpoints } from "@/shared/api/endpoints";
 import { HttpMethod } from "@/shared/api/methods";
@@ -10,7 +10,7 @@ export const analysisKeys = {
   detail: (id: number) => [...analysisKeys.all, "detail", id] as const,
 };
 
-const fetchAnalyses = async (): Promise<MockAnalysis[]> => {
+const fetchAnalyses = async (): Promise<AnalysisResultDto[]> => {
   try {
     const response = await apiClient({
       method: HttpMethod.GET,

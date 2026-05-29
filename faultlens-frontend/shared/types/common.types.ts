@@ -16,6 +16,7 @@ export enum LogSourceType {
   KUBERNETES = "KUBERNETES",
   SSH = "SSH",
   DOCKER = "DOCKER",
+  CICD = "CICD",
 }
 
 export enum AnalysisType {
@@ -74,4 +75,5 @@ export const SOURCE_TYPE_LABELS: Record<LogSourceType, string> = {
   [LogSourceType.KUBERNETES]: "Kubernetes",
   [LogSourceType.SSH]: "SSH",
   [LogSourceType.DOCKER]: "Docker",
+  [LogSourceType.CICD]: "CI/CD",
 };

@@ -33,7 +33,7 @@ const mockFetchLogs = async (
   }
 
   if (filters.source) {
-    filtered = filtered.filter((log) => log.source === filters.source);
+    filtered = filtered.filter((log) => log.sourceId === Number(filters.source));
   }
 
   if (filters.search) {
@@ -64,8 +64,6 @@ const mockFetchLogs = async (
     totalPages: Math.ceil(filtered.length / size),
     page,
     size,
-    hasNext: start + size < filtered.length,
-    hasPrevious: page > 0,
   };
 };
 
