@@ -4,6 +4,7 @@ import com.faultlens.api.service.LogQueryService;
 import com.faultlens.common.dto.ApiResponse;
 import com.faultlens.common.enums.Severity;
 import java.time.Instant;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -74,5 +75,14 @@ public class LogController {
     @GetMapping("/stats")
     public ResponseEntity<ApiResponse<?>> stats(@RequestParam(defaultValue = "60") int windowMinutes) {
         return ResponseEntity.ok(ApiResponse.ok(service.stats(windowMinutes)));
+    }
+
+    /**
+     * Clears logs for a specific source.
+     */
+    @org.springframework.web.bind.annotation.DeleteMapping("/clear")
+    public ResponseEntity<ApiResponse<?>> clearLogs(@RequestParam Long sourceId) {
+        service.clearLogsBySource(sourceId);
+        return ResponseEntity.ok(ApiResponse.ok(Map.of("cleared", true)));
     }
 }

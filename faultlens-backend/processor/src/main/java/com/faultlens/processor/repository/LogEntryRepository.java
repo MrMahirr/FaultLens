@@ -33,6 +33,13 @@ public interface LogEntryRepository extends JpaRepository<LogEntry, Long>, JpaSp
     Page<LogEntry> findBySourceId(Long sourceId, Pageable pageable);
 
     /**
+     * Deletes all entries for a specific source id.
+     */
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("DELETE FROM LogEntry e WHERE e.sourceId = :sourceId")
+    void deleteBySourceId(@Param("sourceId") Long sourceId);
+
+    /**
      * Counts entries by severity after a point in time.
      */
     long countBySeverityAndTimestampAfter(Severity severity, Instant timestamp);

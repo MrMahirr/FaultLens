@@ -1,12 +1,14 @@
 "use client";
 
-import { Search, Filter, Radio, X } from "lucide-react";
+import { Search, Filter, Radio, X, Trash2 } from "lucide-react";
 import { Input } from "@/shared/components/ui/Input";
 import { Button } from "@/shared/components/ui/Button";
 import { Badge } from "@/shared/components/ui/Badge";
 import { Severity } from "@/shared/types/common.types";
 import type { LogFilters } from "@/features/logs/types/log.types";
 import { cn } from "@/shared/lib/utils";
+import { useSourcesQuery } from "@/features/sources/api/useSourceQuery";
+import { useClearLogsMutation } from "@/features/logs/api/useLogMutation";
 
 /* ── Props ─────────────────────────────────────────────────── */
 
@@ -41,6 +43,17 @@ function LogFiltersBar({
   liveMode,
   onToggleLive,
 }: LogFiltersBarProps) {
+  const { data: sources } = useSourcesQuery();
+  const clearLogs = useClearLogsMutation();
+
+  const handleClearLogs = async () => {
+    if (!filters.source) return;
+    const confirmDelete = window.confirm("Bu projeye ait tüm logları ve analizleri kalıcı olarak silmek istediğinize emin misiniz?");
+    if (confirmDelete) {
+      await clearLogs.mutateAsync(Number(filters.source));
+      onFilterChange("source", undefined);
+    }
+  };
   const toggleSeverity = (severity: Severity) => {
     const current = filters.severity ?? [];
     const updated = current.includes(severity)
@@ -110,6 +123,33 @@ function LogFiltersBar({
             Temizle
           </Button>
         )}
+        {/* Source Dropdown & Clear Logs Button */}
+        <div className="flex items-center gap-2 ml-auto">
+          <select
+            className="px-3 py-1.5 bg-bg-primary border border-border-default rounded-lg text-sm text-text-primary focus:outline-none focus:border-accent"
+            value={filters.source ?? ""}
+            onChange={(e) => onFilterChange("source", e.target.value || undefined)}
+          >
+            <option value="">Tüm Projeler</option>
+            {sources?.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name} ({s.type})
+              </option>
+            ))}
+          </select>
+
+          {filters.source && (
+            <Button
+              variant="error"
+              size="sm"
+              icon={<Trash2 size={14} />}
+              loading={clearLogs.isPending}
+              onClick={handleClearLogs}
+            >
+              Logları Temizle
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

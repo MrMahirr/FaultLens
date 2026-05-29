@@ -58,4 +58,12 @@ export const LogApi = {
     });
     return response.data.data;
   },
+
+  clearLogs: async (sourceId: number): Promise<void> => {
+    await apiClient({
+      method: HttpMethod.DELETE,
+      url: `${Endpoints.LOGS.LIST}/clear`,
+      params: { sourceId },
+    });
+  },
 };

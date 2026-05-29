@@ -102,6 +102,16 @@ public class LogQueryService {
         });
     }
 
+    /**
+     * Clears all log entries for a given source id.
+     */
+    @Transactional
+    public void clearLogsBySource(Long sourceId) {
+        if (sourceId != null) {
+            entryRepository.deleteBySourceId(sourceId);
+        }
+    }
+
     private Specification<LogEntry> spec(Severity severity, Long sourceId, Instant from, Instant to, String search) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();

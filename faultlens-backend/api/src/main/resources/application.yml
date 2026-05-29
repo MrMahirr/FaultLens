@@ -70,3 +70,7 @@ faultlens:
       model: gpt-4o-mini
   cors:
     allowed-origins: ${CORS_ORIGINS:http://localhost:3000}
+
+logging:
+  level:
+    org.apache.tomcat.util.http.parser.Cookie: WARN

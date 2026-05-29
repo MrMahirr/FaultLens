@@ -75,7 +75,7 @@ function AddSourceModal({ isOpen, onClose }: AddSourceModalProps) {
     if (selectedType === LogSourceType.SSH) {
       configObj = { host, username, password, logFilePath };
     } else if (selectedType === LogSourceType.DOCKER) {
-      configObj = { host };
+      configObj = { dockerHost: host, containerId: logFilePath };
     } else if (selectedType === LogSourceType.KUBERNETES) {
       configObj = { namespace };
     } else if (selectedType === LogSourceType.LOCAL_FILE) {
@@ -100,7 +100,7 @@ function AddSourceModal({ isOpen, onClose }: AddSourceModalProps) {
     if (selectedType === LogSourceType.SSH) {
       configObj = { host, username, password, logFilePath };
     } else if (selectedType === LogSourceType.DOCKER) {
-      configObj = { host };
+      configObj = { dockerHost: host, containerId: logFilePath };
     } else if (selectedType === LogSourceType.KUBERNETES) {
       configObj = { namespace };
     } else if (selectedType === LogSourceType.LOCAL_FILE) {
@@ -223,12 +223,20 @@ function AddSourceModal({ isOpen, onClose }: AddSourceModalProps) {
             )}
 
             {selectedType === LogSourceType.DOCKER && (
-              <Input
-                label="Docker Host"
-                placeholder="unix:///var/run/docker.sock"
-                value={host}
-                onChange={(e) => setHost(e.target.value)}
-              />
+              <>
+                <Input
+                  label="Container ID veya İsmi"
+                  placeholder="faultlens-frontend"
+                  value={logFilePath} // Reusing this state for container name
+                  onChange={(e) => setLogFilePath(e.target.value)}
+                />
+                <Input
+                  label="Docker Host (Opsiyonel)"
+                  placeholder="Boş bırakırsan lokal bilgisayarı kullanır"
+                  value={host}
+                  onChange={(e) => setHost(e.target.value)}
+                />
+              </>
             )}
 
             {selectedType === LogSourceType.LOCAL_FILE && (
