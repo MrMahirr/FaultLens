@@ -12,7 +12,7 @@ import {
 } from "recharts";
 import { Card } from "@/shared/components/ui/Card";
 import { Skeleton } from "@/shared/components/ui/Skeleton";
-import { useSeverityChart } from "@/features/dashboard/hooks/useDashboardStats";
+import { useSeverityChartQuery } from "@/features/dashboard/api/useDashboardQuery";
 
 /* ── Custom Tooltip ────────────────────────────────────────── */
 
@@ -53,7 +53,7 @@ function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
 /* ── Component ─────────────────────────────────────────────── */
 
 function SeverityChart() {
-  const { data: chartData, isLoading } = useSeverityChart();
+  const { data: chartData, isLoading } = useSeverityChartQuery();
 
   return (
     <Card variant="default">

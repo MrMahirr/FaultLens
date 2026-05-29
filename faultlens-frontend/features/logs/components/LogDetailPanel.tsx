@@ -8,7 +8,7 @@ import { Button } from "@/shared/components/ui/Button";
 import type { LogEntryDto } from "@/features/logs/types/log.types";
 import { formatDate } from "@/shared/lib/utils";
 import { cn } from "@/shared/lib/utils";
-import { useLogDetail } from "@/features/logs/api/logs.queries";
+import { useLogDetailQuery } from "@/features/logs/api/useLogQuery";
 
 /* ── Props ─────────────────────────────────────────────────── */
 
@@ -20,7 +20,7 @@ interface LogDetailPanelProps {
 /* ── Component ─────────────────────────────────────────────── */
 
 function LogDetailPanel({ log, onClose }: LogDetailPanelProps) {
-  const { data: detailData, isLoading: isDetailLoading } = useLogDetail(log?.id ?? 0);
+  const { data: detailData, isLoading: isDetailLoading } = useLogDetailQuery(log?.id ?? 0);
   const analyses = detailData?.analyses || [];
 
   if (!log) return null;

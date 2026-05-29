@@ -16,9 +16,10 @@ export function cn(...inputs: ClassValue[]): string {
  * Format a date string or Date to locale-aware display string.
  */
 export function formatDate(
-  date: string | Date,
+  date?: string | Date | null,
   options?: Intl.DateTimeFormatOptions
 ): string {
+  if (!date) return "-";
   const d = typeof date === "string" ? new Date(date) : date;
   return d.toLocaleDateString("tr-TR", {
     year: "numeric",
@@ -33,10 +34,11 @@ export function formatDate(
 /**
  * Format a date to relative time string (e.g., "2 dakika önce").
  */
-export function formatRelativeTime(date: string | Date): string {
+export function formatRelativeTime(date?: string | Date | null): string {
+  if (!date) return "-";
   const d = typeof date === "string" ? new Date(date) : date;
   const now = new Date();
-  const diffMs = now.getTime() - d.getTime();
+  const diffMs = now.getTime() - (d?.getTime?.() ?? now.getTime());
   const diffSec = Math.floor(diffMs / 1000);
   const diffMin = Math.floor(diffSec / 60);
   const diffHour = Math.floor(diffMin / 60);

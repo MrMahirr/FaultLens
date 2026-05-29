@@ -12,7 +12,8 @@ import { Input } from "@/shared/components/ui/Input";
 import { DropdownSelect, type DropdownItem } from "@/shared/components/ui/Dropdown";
 import { EmptyState } from "@/shared/components/feedback/EmptyState";
 import { SkeletonCard } from "@/shared/components/ui/Skeleton";
-import { useDeployments, useCreateDeployment } from "@/features/deployments/api/deployments.queries";
+import { useDeploymentsQuery } from "@/features/deployments/api/useDeploymentQuery";
+import { useCreateDeploymentMutation } from "@/features/deployments/api/useDeploymentMutation";
 import {
   DeploymentStatus,
   DeploymentEnvironment,
@@ -62,8 +63,8 @@ function getEnvLabel(env: DeploymentEnvironment) {
 /* ── Component ─────────────────────────────────────────────── */
 
 export default function DeploymentsPage() {
-  const { data: deployments, isLoading } = useDeployments();
-  const createDeployment = useCreateDeployment();
+  const { data: deployments, isLoading, error } = useDeploymentsQuery();
+  const createDeployment = useCreateDeploymentMutation();
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
     serviceName: "",

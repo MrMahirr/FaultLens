@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Card } from "@/shared/components/ui/Card";
-import { mockSources } from "@/shared/mocks/data";
+import { useSourcesQuery } from "@/features/sources/api/useSourceQuery";
 import { ConnectionStatus as ConnectionStatusEnum } from "@/shared/types/common.types";
 import { SOURCE_TYPE_LABELS } from "@/shared/types/common.types";
 import { formatRelativeTime } from "@/shared/lib/utils";
@@ -40,17 +40,22 @@ function StatusDot({ status }: { status: ConnectionStatusEnum }) {
 /* ── Component ─────────────────────────────────────────────── */
 
 function SystemHealthMap() {
+  const { data: sources, isLoading } = useSourcesQuery();
+
   return (
     <Card variant="default" padding="none">
       <div className="px-5 pt-5 pb-3">
         <h3 className="text-sm font-semibold font-display text-text-primary">
           Sistem Sağlığı
         </h3>
-        <p className="text-xs text-text-muted mt-0.5">Kaynak durumları</p>
+        <p className="text-xs text-text-muted mt-0.5">
+          {isLoading ? "Yükleniyor..." : "Kaynak durumları"}
+        </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 px-5 pb-5">
-        {mockSources.map((source, index) => (
+      {!isLoading && sources && sources.length > 0 && (
+        <div className="grid grid-cols-2 gap-3 px-5 pb-5">
+        {(sources || []).slice(0, 4).map((source, index) => (
           <motion.div
             key={source.id}
             initial={{ opacity: 0, scale: 0.95 }}
@@ -59,7 +64,7 @@ function SystemHealthMap() {
             className="bg-bg-tertiary/50 border border-border-default rounded-lg p-3 hover:border-border-hover transition-colors"
           >
             <div className="flex items-center gap-2 mb-2">
-              <StatusDot status={source.status} />
+              <StatusDot status={source.status ?? ConnectionStatusEnum.CONNECTED} />
               <span className="text-xs font-medium text-text-primary truncate">
                 {source.name}
               </span>
@@ -69,12 +74,19 @@ function SystemHealthMap() {
                 {SOURCE_TYPE_LABELS[source.type]}
               </p>
               <p className="text-[10px] text-text-muted">
-                Son log: {formatRelativeTime(source.lastLogAt)}
+                Son log: {formatRelativeTime(source.lastSeenAt)}
               </p>
             </div>
           </motion.div>
         ))}
       </div>
+      )}
+
+      {!isLoading && (!sources || sources.length === 0) && (
+        <div className="py-8 text-center text-sm text-text-muted">
+          Bağlı kaynak bulunmuyor
+        </div>
+      )}
     </Card>
   );
 }

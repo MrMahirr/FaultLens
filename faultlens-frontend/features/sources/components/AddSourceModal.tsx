@@ -9,7 +9,7 @@ import { Input } from "@/shared/components/ui/Input";
 import { Card } from "@/shared/components/ui/Card";
 import { LogSourceType } from "@/shared/types/common.types";
 import { cn } from "@/shared/lib/utils";
-import { useTestConnection, useCreateSource } from "@/features/sources/api/sources.queries";
+import { useTestConnectionMutation, useCreateSourceMutation } from "@/features/sources/api/useSourceMutation";
 
 /* ── Props ─────────────────────────────────────────────────── */
 
@@ -51,8 +51,8 @@ function AddSourceModal({ isOpen, onClose }: AddSourceModalProps) {
   const [namespace, setNamespace] = useState("");
   const [testResult, setTestResult] = useState<"success" | "error" | null>(null);
 
-  const testConnection = useTestConnection();
-  const createSource = useCreateSource();
+  const testConnection = useTestConnectionMutation();
+  const createSource = useCreateSourceMutation();
 
   const handleTypeSelect = (type: LogSourceType) => {
     setSelectedType(type);

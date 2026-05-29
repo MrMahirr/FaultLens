@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { AlertTriangle, Server, Layers, Brain } from "lucide-react";
 import { Card } from "@/shared/components/ui/Card";
 import { SkeletonCard } from "@/shared/components/ui/Skeleton";
-import { useDashboardStats } from "@/features/dashboard/hooks/useDashboardStats";
+import { useDashboardStatsQuery } from "@/features/dashboard/api/useDashboardQuery";
 import { formatNumber } from "@/shared/lib/utils";
 
 /* ── Types ─────────────────────────────────────────────────── */
@@ -72,7 +72,7 @@ function StatCard({
 /* ── StatsGrid ─────────────────────────────────────────────── */
 
 function StatsGrid() {
-  const { data: stats, isLoading } = useDashboardStats();
+  const { data: stats, isLoading } = useDashboardStatsQuery();
 
   if (isLoading) {
     return (

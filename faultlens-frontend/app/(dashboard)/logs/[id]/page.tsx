@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Button } from "@/shared/components/ui/Button";
 import { SeverityBadge } from "@/features/logs/components/SeverityBadge";
 import { Card } from "@/shared/components/ui/Card";
-import { useLogDetail } from "@/features/logs/api/logs.queries";
+import { useLogDetailQuery } from "@/features/logs/api/useLogQuery";
 import { formatDate } from "@/shared/lib/utils";
 import { LoadingSpinner } from "@/shared/components/feedback/LoadingSpinner";
 import { cn } from "@/shared/lib/utils";
@@ -18,7 +18,7 @@ export default function LogDetailPage({
 }) {
   const { id } = use(params);
   const logId = parseInt(id, 10);
-  const { data: detailData, isLoading, error } = useLogDetail(logId);
+  const { data: detailData, isLoading, error } = useLogDetailQuery(id);
   const log = detailData?.log;
 
   if (isLoading) {

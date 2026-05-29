@@ -4,11 +4,11 @@ import { PageHeader } from "@/shared/components/layout/PageHeader";
 import { EmptyState } from "@/shared/components/feedback/EmptyState";
 import { SkeletonCard } from "@/shared/components/ui/Skeleton";
 import { AnalysisCard } from "@/features/analyses/components/AnalysisCard";
-import { useAnalyses } from "@/features/analyses/api/analyses.queries";
+import { useAnalysesQuery } from "@/features/analyses/api/useAnalysisQuery";
 import { Brain } from "lucide-react";
 
 export default function AnalysesPage() {
-  const { data: analyses, isLoading } = useAnalyses();
+  const { data: analyses, isLoading, error } = useAnalysesQuery();
 
   return (
     <div className="space-y-6">

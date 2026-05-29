@@ -7,11 +7,11 @@ import { Button } from "@/shared/components/ui/Button";
 import { EmptyState } from "@/shared/components/feedback/EmptyState";
 import { SkeletonCard } from "@/shared/components/ui/Skeleton";
 import { SourceCard } from "@/features/sources/components/SourceCard";
-import { useSources } from "@/features/sources/api/sources.queries";
+import { useSourcesQuery } from "@/features/sources/api/useSourceQuery";
 import { AddSourceModal } from "@/features/sources/components/AddSourceModal";
 
 export default function SourcesPage() {
-  const { data: sources, isLoading } = useSources();
+  const { data: sources, isLoading, error } = useSourcesQuery();
   const [showModal, setShowModal] = useState(false);
 
   return (

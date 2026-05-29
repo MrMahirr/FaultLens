@@ -5,10 +5,10 @@ import { Brain, RefreshCw, AlertTriangle, Lightbulb } from "lucide-react";
 import { Card } from "@/shared/components/ui/Card";
 import { Badge } from "@/shared/components/ui/Badge";
 import { Button } from "@/shared/components/ui/Button";
-import type { AnalysisResultDto } from "@/shared/mocks/data";
+import type { AnalysisResultDto } from "@/features/analyses/types/analysis.types";
 import { AnalysisType } from "@/shared/types/common.types";
 import { formatRelativeTime } from "@/shared/lib/utils";
-import { useTriggerAnalysis } from "@/features/analyses/api/analyses.queries";
+import { useTriggerAnalysisMutation } from "@/features/analyses/api/useAnalysisMutation";
 
 /* ── Props ─────────────────────────────────────────────────── */
 
@@ -20,7 +20,7 @@ interface AnalysisCardProps {
 /* ── Component ─────────────────────────────────────────────── */
 
 function AnalysisCard({ analysis, index }: AnalysisCardProps) {
-  const triggerMutation = useTriggerAnalysis();
+  const triggerAnalysis = useTriggerAnalysisMutation();
 
   return (
     <motion.div

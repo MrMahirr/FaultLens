@@ -6,13 +6,13 @@ import { Card } from "@/shared/components/ui/Card";
 import { Badge } from "@/shared/components/ui/Badge";
 import { Button } from "@/shared/components/ui/Button";
 import { Dropdown, type DropdownItem } from "@/shared/components/ui/Dropdown";
-import type { LogSourceDto } from "@/shared/mocks/data";
+import type { LogSourceDto } from "@/features/sources/types/source.types";
 import {
   ConnectionStatus,
   SOURCE_TYPE_LABELS,
 } from "@/shared/types/common.types";
 import { formatRelativeTime } from "@/shared/lib/utils";
-import { useTestConnection } from "@/features/sources/api/sources.queries";
+import { useTestConnectionMutation } from "@/features/sources/api/useSourceMutation";
 import { cn } from "@/shared/lib/utils";
 
 /* ── Status Dot ────────────────────────────────────────────── */
@@ -63,7 +63,7 @@ interface SourceCardProps {
 /* ── Component ─────────────────────────────────────────────── */
 
 function SourceCard({ source, index }: SourceCardProps) {
-  const testConnection = useTestConnection();
+  const testConnection = useTestConnectionMutation();
   const config = source.config ? JSON.parse(source.config) : {};
 
   const menuItems: DropdownItem[] = [

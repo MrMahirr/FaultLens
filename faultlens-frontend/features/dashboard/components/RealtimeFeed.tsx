@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Radio } from "lucide-react";
 import { Card } from "@/shared/components/ui/Card";
 import { Badge } from "@/shared/components/ui/Badge";
-import { useLogs } from "@/features/logs/api/logs.queries";
+import { useLogsQuery } from "@/features/logs/api/useLogQuery";
 import { useLogStream } from "@/features/logs/hooks/useLogStream";
 import type { LogEntryDto } from "@/features/logs/types/log.types";
 import { Severity } from "@/shared/types/common.types";
@@ -37,7 +37,7 @@ function RealtimeFeed() {
   const [logs, setLogs] = useState<LogEntryDto[]>([]);
 
   // Fetch initial error/critical logs
-  const { data: initialData } = useLogs({
+  const { data: initialData } = useLogsQuery({
     page: 0,
     size: 20,
     severity: [Severity.ERROR, Severity.CRITICAL],

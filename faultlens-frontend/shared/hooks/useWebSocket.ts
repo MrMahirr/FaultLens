@@ -44,9 +44,21 @@ export function useWebSocket({
   const retryTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const enabledRef = useRef(enabled);
   const mountedRef = useRef(true);
+  
+  // Refs for callbacks to prevent unnecessary reconnects
+  const onMessageRef = useRef(onMessage);
+  const onOpenRef = useRef(onOpen);
+  const onCloseRef = useRef(onClose);
+  const onErrorRef = useRef(onError);
 
   // Keep refs updated
-  enabledRef.current = enabled;
+  useEffect(() => {
+    onMessageRef.current = onMessage;
+    onOpenRef.current = onOpen;
+    onCloseRef.current = onClose;
+    onErrorRef.current = onError;
+    enabledRef.current = enabled;
+  }, [onMessage, onOpen, onClose, onError, enabled]);
 
   const connect = useCallback(() => {
     if (!enabledRef.current || !mountedRef.current) return;
@@ -67,28 +79,28 @@ export function useWebSocket({
         if (!mountedRef.current) return;
         setStatus("connected");
         retryCountRef.current = 0;
-        onOpen?.();
+        onOpenRef.current?.();
       };
 
       ws.onmessage = (event) => {
         if (!mountedRef.current) return;
         try {
           const parsed = JSON.parse(event.data);
-          onMessage?.(parsed);
+          onMessageRef.current?.(parsed);
         } catch {
-          onMessage?.(event.data);
+          onMessageRef.current?.(event.data);
         }
       };
 
       ws.onerror = (event) => {
         if (!mountedRef.current) return;
-        onError?.(event);
+        onErrorRef.current?.(event);
       };
 
       ws.onclose = () => {
         if (!mountedRef.current) return;
         setStatus("disconnected");
-        onClose?.();
+        onCloseRef.current?.();
 
         // Auto-reconnect with exponential backoff
         if (
@@ -109,7 +121,7 @@ export function useWebSocket({
         setStatus("disconnected");
       }
     }
-  }, [url, onMessage, onOpen, onClose, onError, maxRetries, baseDelay, maxDelay]);
+  }, [url, maxRetries, baseDelay, maxDelay]);
 
   const disconnect = useCallback(() => {
     if (retryTimerRef.current) {

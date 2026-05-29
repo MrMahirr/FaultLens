@@ -5,14 +5,15 @@ import { motion } from "framer-motion";
 import { TrendingUp } from "lucide-react";
 import { Card } from "@/shared/components/ui/Card";
 import { Badge } from "@/shared/components/ui/Badge";
-import { mockLogGroups } from "@/shared/mocks/data";
+import { useLogGroupsQuery } from "@/features/logs/api/useLogQuery";
 import { Severity } from "@/shared/types/common.types";
 import { formatRelativeTime, formatNumber } from "@/shared/lib/utils";
 
 /* ── Component ─────────────────────────────────────────────── */
 
 function TopErrorsWidget() {
-  const topGroups = mockLogGroups.slice(0, 5);
+  const { data: logGroupsPage, isLoading } = useLogGroupsQuery();
+  const topGroups = (logGroupsPage?.content || []).slice(0, 5);
 
   return (
     <Card variant="default" padding="none">
@@ -21,12 +22,15 @@ function TopErrorsWidget() {
           <h3 className="text-sm font-semibold font-display text-text-primary">
             En Çok Tekrarlayan Hatalar
           </h3>
-          <p className="text-xs text-text-muted mt-0.5">Gruplanmış hatalar</p>
+          <p className="text-xs text-text-muted mt-0.5">
+            {isLoading ? "Yükleniyor..." : "Gruplanmış hatalar"}
+          </p>
         </div>
         <TrendingUp size={16} className="text-text-muted" />
       </div>
 
-      <div>
+      {!isLoading && topGroups.length > 0 && (
+        <div>
         {topGroups.map((group, index) => (
           <motion.div
             key={group.id}
@@ -68,6 +72,13 @@ function TopErrorsWidget() {
           </motion.div>
         ))}
       </div>
+      )}
+
+      {!isLoading && topGroups.length === 0 && (
+        <div className="py-8 text-center text-sm text-text-muted">
+          Kayıtlı hata grubu bulunamadı
+        </div>
+      )}
     </Card>
   );
 }

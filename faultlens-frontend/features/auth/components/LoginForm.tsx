@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { LogIn } from "lucide-react";
 import { Input } from "@/shared/components/ui/Input";
 import { Button } from "@/shared/components/ui/Button";
-import { useLogin } from "@/features/auth/api/auth.queries";
+import { useLoginMutation } from "@/features/auth/api/useAuthMutation";
 import { motion, AnimatePresence } from "framer-motion";
 
 /* ── Validation Schema ─────────────────────────────────────── */
@@ -23,7 +23,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 function LoginForm() {
   const router = useRouter();
-  const loginMutation = useLogin();
+  const loginMutation = useLoginMutation();
 
   const {
     register,
