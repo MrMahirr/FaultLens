@@ -102,7 +102,7 @@ function LogFiltersBar({
               onClick={() => toggleSeverity(severity)}
               className={cn(
                 "px-2.5 py-1 rounded-full text-xs font-mono font-medium",
-                "transition-all duration-200 border",
+                "transition-all duration-200 border cursor-pointer",
                 isActive
                   ? `severity-${severity.toLowerCase()} border-current`
                   : "text-text-muted border-border-default hover:border-border-hover"
@@ -126,7 +126,7 @@ function LogFiltersBar({
         {/* Source Dropdown & Clear Logs Button */}
         <div className="flex items-center gap-2 ml-auto">
           <select
-            className="px-3 py-1.5 bg-bg-primary border border-border-default rounded-lg text-sm text-text-primary focus:outline-none focus:border-accent"
+            className="px-3 py-1.5 bg-bg-primary border border-border-default rounded-lg text-sm text-text-primary focus:outline-none focus:border-accent cursor-pointer"
             value={filters.source ?? ""}
             onChange={(e) => onFilterChange("source", e.target.value || undefined)}
           >

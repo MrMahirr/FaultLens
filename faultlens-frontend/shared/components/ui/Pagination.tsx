@@ -89,7 +89,7 @@ function Pagination({
       <button
         onClick={handlePrev}
         disabled={currentPage === 1}
-        className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-tertiary disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+        className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-tertiary cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
         aria-label="Önceki sayfa"
       >
         <ChevronLeft size={16} />
@@ -112,7 +112,7 @@ function Pagination({
             key={page}
             onClick={() => onPageChange(page)}
             className={cn(
-              "min-w-[32px] h-8 rounded-lg text-sm font-medium transition-all duration-200",
+              "min-w-[32px] h-8 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer",
               page === currentPage
                 ? "bg-accent text-white shadow-glow"
                 : "text-text-secondary hover:text-text-primary hover:bg-bg-tertiary"
@@ -127,7 +127,7 @@ function Pagination({
       <button
         onClick={handleNext}
         disabled={currentPage === totalPages}
-        className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-tertiary disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+        className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-tertiary cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
         aria-label="Sonraki sayfa"
       >
         <ChevronRight size={16} />

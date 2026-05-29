@@ -148,7 +148,7 @@ function AddSourceModal({ isOpen, onClose }: AddSourceModalProps) {
                 key={item.type}
                 onClick={() => handleTypeSelect(item.type)}
                 className={cn(
-                  "flex flex-col items-center gap-3 p-6 rounded-xl border-2 transition-all duration-200",
+                  "flex flex-col items-center gap-3 p-6 rounded-xl border-2 transition-all duration-200 cursor-pointer",
                   "hover:border-accent/40 hover:bg-accent/5",
                   selectedType === item.type
                     ? "border-accent bg-accent/10"
