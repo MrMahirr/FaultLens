@@ -43,7 +43,8 @@ Eğer uygulamanız bir Docker Container içerisinde çalışıyorsa hiçbir dosy
 **Nasıl Yapılır?**
 1. Uygulamanızın loglarını sadece standart konsola (Console/Terminal) basmasını sağlayın. (Docker bunu otomatik yakalar).
 2. FaultLens arayüzünden **Docker** kaynak türünü seçin.
-3. Host kısmına yerel Docker API adresinizi yazın (Örn: `tcp://localhost:2375` veya Linux'ta `unix:///var/run/docker.sock`).
+3. **Container ID veya İsmi** alanına izlemek istediğiniz container'ın adını veya ID'sini yazın.
+4. **Docker Host (Opsiyonel)** alanını eğer uygulamanız aynı bilgisayardaysa **boş bırakın** (Sistem yerel Docker servisine otomatik bağlanır). Eğer uzak bir sunucudaki Docker ise API adresini yazın (Örn: `tcp://192.168.1.100:2375`).
 
 ### Yöntem C: SSH (Uzak Sunucu Üzerinden)
 Uygulamanız uzak bir sunucuda (VDS/VPS) çalışıyorsa kullanılır.
@@ -61,6 +62,22 @@ Uygulamanız bir Kubernetes cluster'ı (örneğin Minikube, EKS, GKE, AKS) üzer
 2. FaultLens arayüzünden **Kubernetes** kaynak türünü seçin.
 3. Uygulamanızın çalıştığı **Namespace** bilgisini girin (Örn: `default`, `production`, `monitoring`).
 4. (Opsiyonel) Eğer FaultLens cluster dışında çalışıyorsa, Kubeconfig veya yetkilendirilmiş Service Account token ayarlarının FaultLens sunucusunda doğru yapıldığından emin olun. FaultLens Kubernetes API'sine bağlanarak ilgili namespace altındaki podların loglarını canlı olarak aktaracaktır.
+
+---
+
+## 3. Akıllı Doğrulama ve Kaynak Yönetimi
+
+FaultLens, log kaynaklarını eklerken ve yönetirken işinizi kolaylaştıracak iki benzersiz özelliğe sahiptir:
+
+### A) Test Edip Kaydetme (Pre-Save Validation)
+Arayüzden (Add Source Modal) yeni bir kaynak eklerken doğrudan kaydedemezsiniz. Önce **"Bağlantıyı Test Et"** butonuna basmanız gerekir.
+- FaultLens, veritabanına hiçbir şey kaydetmeden önce doğrudan belirttiğiniz dosyaya, Docker container'ına veya SSH sunucusuna erişmeye çalışır.
+- Bağlantı başarılı olursa yeşil onay işareti çıkar ve **"Kaydet"** butonu aktifleşir.
+- Başarısız olursa kırmızı hata uyarısı verilir ve hatalı yapılandırmanın sisteme eklenmesi engellenir.
+
+### B) Proje Bazlı Log Görüntüleme ve Temizleme
+- **Filtreleme:** `Logs` sayfasının sağ üst köşesindeki açılır menüden (Dropdown) istediğiniz projeyi seçerek sadece o projeye ait logları listeleyebilirsiniz.
+- **Tek Tuşla Temizleme:** Eğer bir projeyi seçtiyseniz, hemen yanında kırmızı bir **"Logları Temizle"** butonu (Çöp Kutusu ikonu) belirir. Test yaparken biriken eski logları ve bunlara bağlı yapay zeka analizlerini veritabanından kalıcı olarak silmek için bu butonu kullanabilirsiniz.
 
 ---
 
