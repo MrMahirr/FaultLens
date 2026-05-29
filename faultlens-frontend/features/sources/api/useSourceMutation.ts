@@ -24,3 +24,15 @@ export const useCreateSourceMutation = () => {
     },
   });
 };
+
+export const useTestConfigMutation = () => {
+  return useMutation({
+    mutationFn: async (data: Partial<LogSourceDto>) => {
+      try {
+        return await SourceApi.testConfig(data);
+      } catch (error: any) {
+        throw new Error(error.response?.data?.error?.message || error.message || "Bağlantı kurulamadı");
+      }
+    }
+  });
+};

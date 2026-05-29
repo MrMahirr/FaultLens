@@ -22,6 +22,17 @@ export const SourceApi = {
     return { success: true, message: "Bağlantı başarılı" };
   },
 
+  testConfig: async (data: Partial<LogSourceDto>): Promise<{ success: boolean; message: string }> => {
+    const response = await apiClient({
+      method: HttpMethod.POST,
+      url: Endpoints.SOURCES.TEST_CONFIG,
+      data,
+    });
+    const isConnected = response.data.data?.connected;
+    if (isConnected === false) throw new Error("Bağlantı testi başarısız");
+    return { success: true, message: "Bağlantı başarılı" };
+  },
+
   createSource: async (data: Partial<LogSourceDto>): Promise<LogSourceDto> => {
     const response = await apiClient({
       method: HttpMethod.POST,

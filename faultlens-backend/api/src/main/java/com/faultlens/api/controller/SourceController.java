@@ -62,11 +62,19 @@ public class SourceController {
     }
 
     /**
-     * Tests source connectivity.
+     * Tests source connectivity for an existing source.
      */
     @PostMapping("/{id}/test")
     public ResponseEntity<ApiResponse<?>> test(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(Map.of("connected", service.testConnection(id))));
+    }
+
+    /**
+     * Tests source connectivity before saving.
+     */
+    @PostMapping("/test-config")
+    public ResponseEntity<ApiResponse<?>> testConfig(@Valid @RequestBody LogSourceCreateRequest request) {
+        return ResponseEntity.ok(ApiResponse.ok(Map.of("connected", service.testConnection(request))));
     }
 
     /**

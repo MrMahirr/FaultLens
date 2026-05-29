@@ -129,11 +129,21 @@ public class LogSourceService {
     }
 
     /**
-     * Tests source connectivity.
+     * Tests source connectivity for an existing source.
      */
     @Transactional(readOnly = true)
     public boolean testConnection(Long id) {
         return orchestrator.testSource(get(id));
+    }
+
+    /**
+     * Tests source connectivity before saving.
+     */
+    public boolean testConnection(LogSourceCreateRequest request) {
+        LogSource tempSource = new LogSource();
+        tempSource.setType(request.getType());
+        tempSource.setConfig(request.getConfig());
+        return orchestrator.testSource(tempSource);
     }
 
     private LogSource saveAndRestart(Long id, LogSource source) {

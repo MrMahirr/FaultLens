@@ -9,7 +9,7 @@ import { Input } from "@/shared/components/ui/Input";
 import { Card } from "@/shared/components/ui/Card";
 import { LogSourceType } from "@/shared/types/common.types";
 import { cn } from "@/shared/lib/utils";
-import { useTestConnectionMutation, useCreateSourceMutation } from "@/features/sources/api/useSourceMutation";
+import { useTestConnectionMutation, useTestConfigMutation, useCreateSourceMutation } from "@/features/sources/api/useSourceMutation";
 
 /* ── Props ─────────────────────────────────────────────────── */
 
@@ -61,6 +61,7 @@ function AddSourceModal({ isOpen, onClose }: AddSourceModalProps) {
   const [testResult, setTestResult] = useState<"success" | "error" | null>(null);
 
   const testConnection = useTestConnectionMutation();
+  const testConfig = useTestConfigMutation();
   const createSource = useCreateSourceMutation();
 
   const handleTypeSelect = (type: LogSourceType) => {
@@ -70,8 +71,23 @@ function AddSourceModal({ isOpen, onClose }: AddSourceModalProps) {
 
   const handleTest = async () => {
     setTestResult(null);
+    let configObj: Record<string, any> = {};
+    if (selectedType === LogSourceType.SSH) {
+      configObj = { host, username, password, logFilePath };
+    } else if (selectedType === LogSourceType.DOCKER) {
+      configObj = { host };
+    } else if (selectedType === LogSourceType.KUBERNETES) {
+      configObj = { namespace };
+    } else if (selectedType === LogSourceType.LOCAL_FILE) {
+      configObj = { logFilePath };
+    }
+
     try {
-      await testConnection.mutateAsync(0);
+      await testConfig.mutateAsync({
+        name,
+        type: selectedType!,
+        config: JSON.stringify(configObj),
+      });
       setTestResult("success");
     } catch {
       setTestResult("error");
@@ -264,16 +280,16 @@ function AddSourceModal({ isOpen, onClose }: AddSourceModalProps) {
             </Card>
 
             <div className="flex flex-col items-center gap-4 py-4">
-              {testResult === null && !testConnection.isPending && (
+              {testResult === null && !testConfig.isPending && (
                 <Button variant="primary" onClick={handleTest}>
                   Bağlantıyı Test Et
                 </Button>
               )}
 
-              {testConnection.isPending && (
+              {testConfig.isPending && (
                 <div className="flex items-center gap-2 text-text-secondary">
                   <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
-                  <span className="text-sm">Bağlantı test ediliyor...</span>
+                  <span className="text-sm">Bağlantı analiz ediliyor...</span>
                 </div>
               )}
 
@@ -327,6 +343,8 @@ function AddSourceModal({ isOpen, onClose }: AddSourceModalProps) {
             </div>
           </motion.div>
         )}
+
+
       </AnimatePresence>
     </Modal>
   );

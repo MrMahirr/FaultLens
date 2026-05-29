@@ -78,15 +78,34 @@ public class LogProcessorService {
                 .map(PendingLogEntry::entry)
                 .toList());
         List<LogEntryDto> dtos = new ArrayList<>(savedEntries.size());
+        List<LogEntryDto> toPublish = new ArrayList<>();
+        List<LogEntryDto> toErrorQueue = new ArrayList<>();
+
         for (int i = 0; i < savedEntries.size(); i++) {
             PendingLogEntry pending = pendingEntries.get(i);
             LogEntryDto dto = toDto(savedEntries.get(i), pending.event(), pending.parsed());
             dtos.add(dto);
             if (dto.getSeverity() == Severity.ERROR || dto.getSeverity() == Severity.CRITICAL) {
-                errorProducer.send(dto);
+                toErrorQueue.add(dto);
             }
-            realtimeLogPublisher.publish(dto);
+            toPublish.add(dto);
         }
+
+        if (org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive()) {
+            org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
+                new org.springframework.transaction.support.TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        toErrorQueue.forEach(errorProducer::send);
+                        toPublish.forEach(realtimeLogPublisher::publish);
+                    }
+                }
+            );
+        } else {
+            toErrorQueue.forEach(errorProducer::send);
+            toPublish.forEach(realtimeLogPublisher::publish);
+        }
+
         return dtos;
     }
 
