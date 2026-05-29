@@ -44,7 +44,7 @@ spring:
       port: ${REDIS_PORT:6379}
 
 server:
-  port: ${PORT:3600}
+  port: ${PORT:3500}
   shutdown: graceful
 
 management:
