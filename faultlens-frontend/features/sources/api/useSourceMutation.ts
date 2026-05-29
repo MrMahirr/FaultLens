@@ -5,9 +5,12 @@ import type { LogSourceDto } from "@/features/sources/types/source.types";
 
 export const useTestConnectionMutation = () => {
   return useMutation({
-    mutationFn: (id: number) => SourceApi.testConnection(id),
-    onError: (error: any) => {
-      throw new Error(error.response?.data?.error?.message || error.message || "Bağlantı kurulamadı");
+    mutationFn: async (id: number) => {
+      try {
+        return await SourceApi.testConnection(id);
+      } catch (error: any) {
+        throw new Error(error.response?.data?.error?.message || error.message || "Bağlantı kurulamadı");
+      }
     }
   });
 };
