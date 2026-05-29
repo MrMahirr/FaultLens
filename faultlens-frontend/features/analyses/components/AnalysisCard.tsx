@@ -110,8 +110,8 @@ function AnalysisCard({ analysis, index }: AnalysisCardProps) {
             variant="ghost"
             size="sm"
             icon={<RefreshCw size={14} />}
-            loading={triggerMutation.isPending}
-            onClick={() => triggerMutation.mutate(analysis.logGroupId ?? 0)}
+            loading={triggerAnalysis.isPending}
+            onClick={() => triggerAnalysis.mutate(analysis.logGroupId ?? 0)}
           >
             Yeniden Analiz Et
           </Button>
