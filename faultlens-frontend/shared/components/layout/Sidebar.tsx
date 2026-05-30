@@ -37,7 +37,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Kaynaklar", href: "/sources", icon: <Server size={20} /> },
   { label: "Analizler", href: "/analyses", icon: <Brain size={20} /> },
   { label: "Deployments", href: "/deployments", icon: <Rocket size={20} /> },
-  { label: "Alarmlar", href: "/alerts", icon: <Bell size={20} /> },
+  { label: "Alarmlar", href: "/alarms", icon: <Bell size={20} /> },
   { label: "Ayarlar", href: "/settings", icon: <Settings size={20} /> },
 ];
 
