@@ -40,6 +40,7 @@ export const Endpoints = {
     LIST: `${BASE}/analyses`,
     DETAIL: (id: number) => `${BASE}/analyses/${id}`,
     TRIGGER: (groupId: number) => `${BASE}/analyses/trigger/${groupId}`,
+    DELETE_HISTORY: `${BASE}/analyses`,
   },
 
   // ── Deployments ───────────────────────────────────────────
@@ -52,6 +53,11 @@ export const Endpoints = {
   SETTINGS: {
     NOTIFICATIONS: `${BASE}/settings/notifications`,
     SYSTEM: `${BASE}/settings/system`,
+    TEST: {
+      SLACK: `${BASE}/settings/notifications/test/slack`,
+      EMAIL: `${BASE}/settings/notifications/test/email`,
+      PUSH: `${BASE}/settings/notifications/test/push`,
+    },
   },
 
   // ── WebSocket ─────────────────────────────────────────────

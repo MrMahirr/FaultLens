@@ -37,6 +37,15 @@ public class NotificationSettings {
     @Column(name = "slack_webhook")
     private String slackWebhook;
 
+    @Column(name = "emailjs_service_id")
+    private String emailjsServiceId;
+
+    @Column(name = "emailjs_template_id")
+    private String emailjsTemplateId;
+
+    @Column(name = "emailjs_public_key")
+    private String emailjsPublicKey;
+
     @Builder.Default
     @Column(name = "push_enabled")
     private boolean pushEnabled = false;

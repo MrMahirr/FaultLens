@@ -20,6 +20,8 @@ public class AnalysisResultDto {
     private Long logGroupId;
     @JsonAlias("logEntryId")
     private Long logEntryId;
+    @JsonAlias("sourceId")
+    private Long sourceId;
     @JsonAlias("rootCause")
     private String rootCause;
     private String suggestion;

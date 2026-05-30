@@ -4,17 +4,17 @@ import com.faultlens.common.dto.LogEntryDto;
 import com.faultlens.common.dto.LogEventDto;
 import com.faultlens.common.enums.Severity;
 import com.faultlens.processor.classifier.SeverityClassifier;
-import com.faultlens.processor.kafka.LogErrorProducer;
+import com.faultlens.processor.event.LogProcessedEvent;
 import com.faultlens.processor.model.LogEntry;
 import com.faultlens.processor.model.LogGroup;
 import com.faultlens.processor.parser.ParsedLog;
 import com.faultlens.processor.parser.PatternRegistry;
-import com.faultlens.processor.realtime.RealtimeLogPublisher;
 import com.faultlens.processor.repository.LogEntryRepository;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,8 +25,7 @@ public class LogProcessorService {
     private final SeverityClassifier severityClassifier;
     private final LogGroupingService groupingService;
     private final LogEntryRepository entryRepository;
-    private final LogErrorProducer errorProducer;
-    private final RealtimeLogPublisher realtimeLogPublisher;
+    private final ApplicationEventPublisher eventPublisher;
 
     private final org.springframework.kafka.core.KafkaTemplate<String, LogEventDto> dlqTemplate;
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LogProcessorService.class);
@@ -36,15 +35,13 @@ public class LogProcessorService {
             SeverityClassifier severityClassifier,
             LogGroupingService groupingService,
             LogEntryRepository entryRepository,
-            LogErrorProducer errorProducer,
-            RealtimeLogPublisher realtimeLogPublisher,
+            ApplicationEventPublisher eventPublisher,
             @Qualifier("processorLogEventKafkaTemplate") org.springframework.kafka.core.KafkaTemplate<String, LogEventDto> dlqTemplate) {
         this.patternRegistry = patternRegistry;
         this.severityClassifier = severityClassifier;
         this.groupingService = groupingService;
         this.entryRepository = entryRepository;
-        this.errorProducer = errorProducer;
-        this.realtimeLogPublisher = realtimeLogPublisher;
+        this.eventPublisher = eventPublisher;
         this.dlqTemplate = dlqTemplate;
     }
 
@@ -91,20 +88,8 @@ public class LogProcessorService {
             toPublish.add(dto);
         }
 
-        if (org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive()) {
-            org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
-                new org.springframework.transaction.support.TransactionSynchronization() {
-                    @Override
-                    public void afterCommit() {
-                        toErrorQueue.forEach(errorProducer::send);
-                        toPublish.forEach(realtimeLogPublisher::publish);
-                    }
-                }
-            );
-        } else {
-            toErrorQueue.forEach(errorProducer::send);
-            toPublish.forEach(realtimeLogPublisher::publish);
-        }
+        // Publish event so listeners can dispatch (e.g. Kafka, WebSocket) after commit
+        eventPublisher.publishEvent(new LogProcessedEvent(toErrorQueue, toPublish));
 
         return dtos;
     }

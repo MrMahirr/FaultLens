@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/shared/components/ui/Table";
 import { Badge } from "@/shared/components/ui/Badge";
@@ -8,11 +8,18 @@ import { Button } from "@/shared/components/ui/Button";
 import { Alarm, AlarmStatus } from "../types/alarm.types";
 import { Severity } from "@/shared/types/common.types";
 import { Check, Trash2 } from "lucide-react";
-import { useAlarmStore } from "../store/alarm.store";
 import { cn } from "@/shared/lib/utils";
+import { AlarmDetailModal } from "./AlarmDetailModal";
+import { useAlarmsQuery } from "../api/useAlarmsQuery";
+import { useResolveAlarmMutation, useDeleteAlarmMutation } from "../api/useAlarmsMutation";
 
 export function AlarmsList() {
-  const { alarms, resolveAlarm, deleteAlarm } = useAlarmStore();
+  const { data: alarms = [], isLoading } = useAlarmsQuery();
+  const resolveMutation = useResolveAlarmMutation();
+  const deleteMutation = useDeleteAlarmMutation();
+  
+  const resolveAlarm = (id: string | number) => resolveMutation.mutate(id);
+  const deleteAlarm = (id: string | number) => deleteMutation.mutate(id);
 
   const columns = useMemo<ColumnDef<Alarm>[]>(
     () => [
@@ -90,6 +97,7 @@ export function AlarmsList() {
                     e.stopPropagation();
                     resolveAlarm(alarm.id);
                   }}
+                  disabled={resolveMutation.isPending}
                   title="Çözüldü Olarak İşaretle"
                 >
                   Çöz
@@ -104,6 +112,7 @@ export function AlarmsList() {
                   e.stopPropagation();
                   deleteAlarm(alarm.id);
                 }}
+                disabled={deleteMutation.isPending}
                 title="Sil"
               >
                 Sil
@@ -113,8 +122,10 @@ export function AlarmsList() {
         },
       },
     ],
-    [resolveAlarm, deleteAlarm]
+    [resolveAlarm, deleteAlarm, resolveMutation.isPending, deleteMutation.isPending]
   );
+
+  const [selectedAlarm, setSelectedAlarm] = useState<Alarm | null>(null);
 
   return (
     <div className="space-y-4">
@@ -128,6 +139,14 @@ export function AlarmsList() {
         columns={columns}
         emptyMessage="Herhangi bir alarm bulunmuyor."
         enableSorting={true}
+        loading={isLoading}
+        onRowClick={(row) => setSelectedAlarm(row)}
+      />
+      
+      <AlarmDetailModal 
+        isOpen={!!selectedAlarm}
+        onClose={() => setSelectedAlarm(null)}
+        alarm={selectedAlarm}
       />
     </div>
   );

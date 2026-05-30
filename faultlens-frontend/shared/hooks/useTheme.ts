@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useUIStore } from "@/shared/store/ui.store";
 
 /**
@@ -12,15 +12,36 @@ export function useTheme() {
   const setTheme = useUIStore((state) => state.setTheme);
   const toggleTheme = useUIStore((state) => state.toggleTheme);
 
+  const [resolvedTheme, setResolvedTheme] = useState<"dark" | "light">("dark");
+
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
+    const applyTheme = (currentTheme: string) => {
+      if (currentTheme === "system") {
+        const isSystemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        document.documentElement.setAttribute("data-theme", isSystemDark ? "dark" : "light");
+        setResolvedTheme(isSystemDark ? "dark" : "light");
+      } else {
+        document.documentElement.setAttribute("data-theme", currentTheme);
+        setResolvedTheme(currentTheme as "dark" | "light");
+      }
+    };
+
+    applyTheme(theme);
+
+    if (theme === "system") {
+      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+      const handleChange = () => applyTheme("system");
+      
+      mediaQuery.addEventListener("change", handleChange);
+      return () => mediaQuery.removeEventListener("change", handleChange);
+    }
   }, [theme]);
 
   return {
     theme,
     setTheme,
     toggleTheme,
-    isDark: theme === "dark",
-    isLight: theme === "light",
+    isDark: resolvedTheme === "dark",
+    isLight: resolvedTheme === "light",
   };
 }

@@ -16,6 +16,8 @@ export default function AuthLayout({
   useEffect(() => {
     setMounted(true);
     if (token) {
+      // Sync cookie for existing users who only have token in localStorage
+      document.cookie = `faultlens_token=${token}; path=/; max-age=86400; SameSite=Lax`;
       router.replace("/dashboard");
     }
   }, [token, router]);

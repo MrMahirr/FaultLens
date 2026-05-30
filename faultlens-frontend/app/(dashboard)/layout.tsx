@@ -7,6 +7,7 @@ import { Sidebar } from "@/shared/components/layout/Sidebar";
 import { Topbar } from "@/shared/components/layout/Topbar";
 import { useUIStore } from "@/shared/store/ui.store";
 import { useAuthStore } from "@/features/auth/store/auth.store";
+import { GlobalNotificationListener } from "@/shared/components/layout/GlobalNotificationListener";
 
 export default function DashboardLayout({
   children,
@@ -45,6 +46,8 @@ export default function DashboardLayout({
         animate={{ marginLeft: sidebarOpen ? 240 : 64 }}
         transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
       >
+        <GlobalNotificationListener />
+        
         {/* Topbar */}
         <Topbar />
 

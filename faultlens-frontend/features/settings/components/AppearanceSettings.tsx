@@ -5,7 +5,7 @@ import { Button } from "@/shared/components/ui/Button";
 import { Moon, Sun, MonitorSmartphone } from "lucide-react";
 
 export function AppearanceSettings() {
-  const { theme, setTheme } = useUIStore();
+  const { theme, setTheme, compactMode, setCompactMode } = useUIStore();
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -67,14 +67,24 @@ export function AppearanceSettings() {
               </span>
             </button>
 
-            {/* System Mode (Mock functionality for now) */}
+            {/* System Mode */}
             <button
-              onClick={() => {}}
-              className={`flex flex-col items-center justify-center p-6 rounded-xl border-2 border-border-default hover:border-accent/40 bg-bg-primary transition-all duration-200 cursor-pointer opacity-60`}
-              title="Yakında eklenecek"
+              onClick={() => setTheme("system")}
+              className={`flex flex-col items-center justify-center p-6 rounded-xl border-2 transition-all duration-200 cursor-pointer ${
+                theme === "system"
+                  ? "border-accent bg-accent/5"
+                  : "border-border-default hover:border-accent/40 bg-bg-primary"
+              }`}
             >
-              <MonitorSmartphone size={28} className="text-text-muted" />
-              <span className="mt-3 font-medium text-text-secondary">
+              <MonitorSmartphone
+                size={28}
+                className={theme === "system" ? "text-accent" : "text-text-muted"}
+              />
+              <span
+                className={`mt-3 font-medium ${
+                  theme === "system" ? "text-accent" : "text-text-secondary"
+                }`}
+              >
                 Sistem (Otomatik)
               </span>
             </button>
@@ -83,7 +93,7 @@ export function AppearanceSettings() {
 
         <hr className="border-border-default" />
 
-        {/* Compact View (Mock) */}
+        {/* Compact View */}
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-sm font-medium text-text-primary">
@@ -93,8 +103,12 @@ export function AppearanceSettings() {
               Tablolarda daha dar satır aralıkları kullanarak daha fazla veri görün.
             </p>
           </div>
-          <Button variant="secondary" size="sm" onClick={() => {}}>
-            Etkinleştir
+          <Button 
+            variant={compactMode ? "primary" : "secondary"} 
+            size="sm" 
+            onClick={() => setCompactMode(!compactMode)}
+          >
+            {compactMode ? "Kapat" : "Etkinleştir"}
           </Button>
         </div>
       </div>

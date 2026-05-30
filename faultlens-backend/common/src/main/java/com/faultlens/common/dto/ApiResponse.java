@@ -42,4 +42,15 @@ public class ApiResponse<T> {
                 .timestamp(Instant.now())
                 .build();
     }
+
+    /**
+     * Creates an error REST response envelope.
+     */
+    public static <T> ApiResponse<T> error(String message, int status) {
+        return ApiResponse.<T>builder()
+                .success(false)
+                .message(message)
+                .timestamp(Instant.now())
+                .build();
+    }
 }
