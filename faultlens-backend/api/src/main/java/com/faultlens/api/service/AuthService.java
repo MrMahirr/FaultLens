@@ -1,8 +1,11 @@
 package com.faultlens.api.service;
 
+import com.faultlens.api.dto.AuthDtos.ChangePasswordRequest;
 import com.faultlens.api.dto.AuthDtos.LoginRequest;
+import com.faultlens.api.dto.AuthDtos.ProfileResponse;
 import com.faultlens.api.dto.AuthDtos.RefreshRequest;
 import com.faultlens.api.dto.AuthDtos.TokenResponse;
+import com.faultlens.api.dto.AuthDtos.UpdateProfileRequest;
 import com.faultlens.api.model.UserAccount;
 import com.faultlens.api.repository.UserAccountRepository;
 import com.faultlens.api.security.JwtService;
@@ -46,6 +49,45 @@ public class AuthService {
         UserAccount user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new BadCredentialsException("Invalid token subject"));
         return tokenFor(user);
+    }
+
+    /**
+     * Returns the profile of the authenticated user.
+     */
+    public ProfileResponse getProfile(String username) {
+        UserAccount user = findUserByUsername(username);
+        return new ProfileResponse(user.getUsername(), user.getEmail(), user.getRole());
+    }
+
+    /**
+     * Updates the profile (username, email) of the authenticated user.
+     */
+    @Transactional
+    public ProfileResponse updateProfile(String currentUsername, UpdateProfileRequest request) {
+        UserAccount user = findUserByUsername(currentUsername);
+        user.setUsername(request.username());
+        user.setEmail(request.email());
+        UserAccount saved = userRepository.save(user);
+        return new ProfileResponse(saved.getUsername(), saved.getEmail(), saved.getRole());
+    }
+
+    /**
+     * Changes the password of the authenticated user.
+     * Validates the current password before allowing the change.
+     */
+    @Transactional
+    public void changePassword(String username, ChangePasswordRequest request) {
+        UserAccount user = findUserByUsername(username);
+        if (!passwordMatches(request.currentPassword(), user)) {
+            throw new BadCredentialsException("Current password is incorrect");
+        }
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
+    }
+
+    private UserAccount findUserByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new BadCredentialsException("User not found"));
     }
 
     private boolean passwordMatches(String password, UserAccount user) {

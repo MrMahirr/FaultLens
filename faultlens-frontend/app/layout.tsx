@@ -38,6 +38,8 @@ export const metadata: Metadata = {
   ],
 };
 
+import { Toaster } from "react-hot-toast";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -52,7 +54,27 @@ export default function RootLayout({
     >
       <body className="min-h-screen bg-bg-primary text-text-primary font-body antialiased">
         <QueryProvider>
-          <ThemeProvider>{children}</ThemeProvider>
+          <ThemeProvider>
+            {children}
+            <Toaster
+              position="bottom-right"
+              toastOptions={{
+                className: "!bg-bg-tertiary !text-text-primary !border !border-border-default !rounded-xl !shadow-lg",
+                success: {
+                  iconTheme: {
+                    primary: "var(--color-success)",
+                    secondary: "var(--color-bg-tertiary)",
+                  },
+                },
+                error: {
+                  iconTheme: {
+                    primary: "var(--color-error)",
+                    secondary: "var(--color-bg-tertiary)",
+                  },
+                },
+              }}
+            />
+          </ThemeProvider>
         </QueryProvider>
       </body>
     </html>

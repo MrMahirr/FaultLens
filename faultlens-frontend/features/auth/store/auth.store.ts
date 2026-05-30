@@ -5,6 +5,7 @@ import { persist } from "zustand/middleware";
 
 interface AuthUser {
   username: string;
+  email?: string;
   role: string;
 }
 
@@ -13,6 +14,7 @@ interface AuthStore {
   user: AuthUser | null;
   login: (token: string, user: AuthUser) => void;
   logout: () => void;
+  updateUser: (updates: Partial<AuthUser>) => void;
   isAuthenticated: () => boolean;
 }
 
@@ -27,6 +29,11 @@ export const useAuthStore = create<AuthStore>()(
       login: (token, user) => set({ token, user }),
 
       logout: () => set({ token: null, user: null }),
+
+      updateUser: (updates) =>
+        set((state) => ({
+          user: state.user ? { ...state.user, ...updates } : null,
+        })),
 
       isAuthenticated: () => get().token !== null,
     }),

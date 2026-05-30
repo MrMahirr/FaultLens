@@ -10,6 +10,8 @@ export const Endpoints = {
   AUTH: {
     LOGIN: `${BASE}/auth/login`,
     REFRESH: `${BASE}/auth/refresh`,
+    PROFILE: `${BASE}/auth/profile`,
+    CHANGE_PASSWORD: `${BASE}/auth/password`,
   },
 
   // ── Logs ──────────────────────────────────────────────────
@@ -44,6 +46,12 @@ export const Endpoints = {
   DEPLOYMENTS: {
     LIST: `${BASE}/deployments`,
     CREATE: `${BASE}/deployments`,
+  },
+
+  // ── Settings ──────────────────────────────────────────────
+  SETTINGS: {
+    NOTIFICATIONS: `${BASE}/settings/notifications`,
+    SYSTEM: `${BASE}/settings/system`,
   },
 
   // ── WebSocket ─────────────────────────────────────────────

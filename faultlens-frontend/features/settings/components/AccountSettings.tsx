@@ -1,36 +1,92 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Input } from "@/shared/components/ui/Input";
 import { Button } from "@/shared/components/ui/Button";
 import { useAuthStore } from "@/features/auth/store/auth.store";
+import { apiClient } from "@/shared/api/client";
+import { Endpoints } from "@/shared/api/endpoints";
 import { Save, Shield } from "lucide-react";
+import toast from "react-hot-toast";
 
 export function AccountSettings() {
-  const { user } = useAuthStore();
-  const [username, setUsername] = useState(user?.username || "admin");
-  const [email, setEmail] = useState("admin@faultlens.com");
+  const { user, updateUser } = useAuthStore();
 
+  // Profile state
+  const [username, setUsername] = useState(user?.username || "");
+  const [email, setEmail] = useState(user?.email || "");
+  const [isProfileLoading, setIsProfileLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Password state
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isPasswordSaving, setIsPasswordSaving] = useState(false);
 
-  const handleSaveProfile = () => {
+  // Fetch profile on mount
+  const fetchProfile = useCallback(async () => {
+    try {
+      setIsProfileLoading(true);
+      const response = await apiClient.get(Endpoints.AUTH.PROFILE);
+      const profile = response.data?.data;
+      if (profile) {
+        setUsername(profile.username);
+        setEmail(profile.email || "");
+        updateUser({ username: profile.username, email: profile.email });
+      }
+    } catch {
+      // Fallback to store values if API is unavailable
+      setUsername(user?.username || "");
+      setEmail(user?.email || "");
+    } finally {
+      setIsProfileLoading(false);
+    }
+  }, [user?.username, user?.email, updateUser]);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
+
+  const handleSaveProfile = async () => {
     setIsSaving(true);
-    setTimeout(() => {
+    try {
+      const response = await apiClient.put(Endpoints.AUTH.PROFILE, {
+        username,
+        email,
+      });
+      const profile = response.data?.data;
+      if (profile) {
+        updateUser({ username: profile.username, email: profile.email });
+      }
+      toast.success("Profil bilgileri başarıyla kaydedildi!");
+    } catch (err: any) {
+      const message =
+        err.response?.data?.message || "Profil güncellenirken bir hata oluştu.";
+      toast.error(message);
+    } finally {
       setIsSaving(false);
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 3000);
-    }, 1000);
+    }
   };
 
-  const handleSavePassword = () => {
-    // Mock save
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
+  const handleSavePassword = async () => {
+    setIsPasswordSaving(true);
+    try {
+      await apiClient.put(Endpoints.AUTH.CHANGE_PASSWORD, {
+        currentPassword,
+        newPassword,
+      });
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      toast.success("Şifre başarıyla güncellendi!");
+    } catch (err: any) {
+      const message =
+        err.response?.data?.message || "Şifre değiştirilirken bir hata oluştu.";
+      toast.error(message);
+    } finally {
+      setIsPasswordSaving(false);
+    }
   };
 
   return (
@@ -50,32 +106,36 @@ export function AccountSettings() {
           <h3 className="text-sm font-medium text-text-secondary border-b border-border-default pb-3">
             Kişisel Bilgiler
           </h3>
-          <Input
-            label="Kullanıcı Adı"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-          <Input
-            label="E-posta Adresi"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <div className="pt-2">
-            <Button
-              variant="primary"
-              onClick={handleSaveProfile}
-              loading={isSaving}
-              icon={<Save size={16} />}
-            >
-              Bilgileri Kaydet
-            </Button>
-            {saveSuccess && (
-              <span className="ml-3 text-sm text-success animate-fade-in">
-                Başarıyla kaydedildi!
-              </span>
-            )}
-          </div>
+          {isProfileLoading ? (
+            <div className="space-y-4">
+              <div className="h-10 bg-bg-tertiary rounded animate-pulse" />
+              <div className="h-10 bg-bg-tertiary rounded animate-pulse" />
+            </div>
+          ) : (
+            <>
+              <Input
+                label="Kullanıcı Adı"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+              <Input
+                label="E-posta Adresi"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <div className="pt-2 flex items-center gap-3">
+                <Button
+                  variant="primary"
+                  onClick={handleSaveProfile}
+                  loading={isSaving}
+                  icon={<Save size={16} />}
+                >
+                  Bilgileri Kaydet
+                </Button>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Change Password */}
@@ -109,10 +169,11 @@ export function AccountSettings() {
                 : undefined
             }
           />
-          <div className="pt-2">
+          <div className="pt-2 flex items-center gap-3">
             <Button
               variant="primary"
               onClick={handleSavePassword}
+              loading={isPasswordSaving}
               disabled={
                 !currentPassword ||
                 !newPassword ||

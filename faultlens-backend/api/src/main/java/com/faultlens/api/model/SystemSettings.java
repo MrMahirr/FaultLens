@@ -1,5 +1,6 @@
 package com.faultlens.api.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,14 +17,23 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "users")
-public class UserAccount {
+@Table(name = "system_settings")
+public class SystemSettings {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String username;
-    private String password;
-    private String email;
-    private String role;
-    private Instant createdAt;
+
+    @Builder.Default
+    @Column(name = "log_retention_days")
+    private Integer logRetentionDays = 30;
+
+    @Builder.Default
+    @Column(name = "default_engine")
+    private String defaultEngine = "ai";
+
+    @Builder.Default
+    private String language = "tr";
+
+    @Column(name = "updated_at")
+    private Instant updatedAt;
 }
