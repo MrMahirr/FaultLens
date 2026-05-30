@@ -1,12 +1,12 @@
 "use client";
 
 import { BellRing, ShieldAlert, CheckCircle2 } from "lucide-react";
-import { useAlarmStore } from "../store/alarm.store";
+import { useAlarmsQuery } from "../api/useAlarmsQuery";
 import { AlarmStatus } from "../types/alarm.types";
 import { Severity } from "@/shared/types/common.types";
 
 export function AlarmStats() {
-  const alarms = useAlarmStore((state) => state.alarms);
+  const { data: alarms = [] } = useAlarmsQuery();
 
   const activeAlarms = alarms.filter((a) => a.status === AlarmStatus.ACTIVE);
   const criticalAlarms = activeAlarms.filter(

@@ -13,7 +13,10 @@ public final class SettingsDtos {
             boolean slackEnabled,
             String slackWebhook,
             boolean pushEnabled,
-            boolean mobileEnabled) {
+            boolean mobileEnabled,
+            String emailjsServiceId,
+            String emailjsTemplateId,
+            String emailjsPublicKey) {
     }
 
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
@@ -22,7 +25,10 @@ public final class SettingsDtos {
             boolean slackEnabled,
             String slackWebhook,
             boolean pushEnabled,
-            boolean mobileEnabled) {
+            boolean mobileEnabled,
+            String emailjsServiceId,
+            String emailjsTemplateId,
+            String emailjsPublicKey) {
     }
 
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)

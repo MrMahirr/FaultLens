@@ -25,6 +25,7 @@ public class Analysis {
     private Long id;
     private Long logGroupId;
     private Long logEntryId;
+    private Long sourceId;
     @Column(columnDefinition = "TEXT")
     private String rootCause;
     @Column(columnDefinition = "TEXT")

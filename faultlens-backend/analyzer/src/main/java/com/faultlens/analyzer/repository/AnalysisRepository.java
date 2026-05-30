@@ -13,6 +13,11 @@ public interface AnalysisRepository extends JpaRepository<Analysis, Long> {
     List<Analysis> findByLogGroupIdOrderByAnalyzedAtDesc(Long logGroupId);
 
     /**
+     * Finds the most recent analysis for a group.
+     */
+    Optional<Analysis> findFirstByLogGroupIdOrderByAnalyzedAtDesc(Long logGroupId);
+
+    /**
      * Finds one analysis by group id.
      */
     Optional<Analysis> findByLogGroupId(Long logGroupId);
@@ -21,4 +26,14 @@ public interface AnalysisRepository extends JpaRepository<Analysis, Long> {
      * Finds analyses after a timestamp.
      */
     List<Analysis> findByAnalyzedAtAfter(Instant after);
+
+    /**
+     * Finds analyses by source id.
+     */
+    org.springframework.data.domain.Page<Analysis> findBySourceId(Long sourceId, org.springframework.data.domain.Pageable pageable);
+
+    /**
+     * Deletes analyses by source id.
+     */
+    void deleteBySourceId(Long sourceId);
 }

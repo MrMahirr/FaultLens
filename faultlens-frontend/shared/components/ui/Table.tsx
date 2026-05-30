@@ -13,6 +13,8 @@ import { useState, useCallback } from "react";
 import { ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 
+import { useUIStore } from "@/shared/store/ui.store";
+
 /* ── Types ─────────────────────────────────────────────────── */
 
 interface DataTableProps<TData> {
@@ -42,6 +44,7 @@ function DataTable<TData>({
 }: DataTableProps<TData>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const { compactMode } = useUIStore();
 
   const table = useReactTable({
     data,
@@ -162,7 +165,10 @@ function DataTable<TData>({
                 )}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="px-4 py-3">
+                  <td 
+                    key={cell.id} 
+                    className={cn("px-4", compactMode ? "py-1" : "py-3")}
+                  >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}

@@ -26,9 +26,17 @@ export const useAuthStore = create<AuthStore>()(
       token: null,
       user: null,
 
-      login: (token, user) => set({ token, user }),
+      login: (token, user) => {
+        // Cookie'ye token kaydet (Middleware okuyabilsin diye)
+        document.cookie = `faultlens_token=${token}; path=/; max-age=86400; SameSite=Lax`;
+        set({ token, user });
+      },
 
-      logout: () => set({ token: null, user: null }),
+      logout: () => {
+        // Cookie'yi temizle
+        document.cookie = "faultlens_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+        set({ token: null, user: null });
+      },
 
       updateUser: (updates) =>
         set((state) => ({

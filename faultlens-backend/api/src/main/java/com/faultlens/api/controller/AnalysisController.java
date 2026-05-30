@@ -21,8 +21,20 @@ public class AnalysisController {
      * Lists analyses.
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<?>> list(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "50") int size) {
-        return ResponseEntity.ok(ApiResponse.ok(service.list(page, size)));
+    public ResponseEntity<ApiResponse<?>> list(
+            @RequestParam(required = false) Long sourceId,
+            @RequestParam(defaultValue = "0") int page, 
+            @RequestParam(defaultValue = "50") int size) {
+        return ResponseEntity.ok(ApiResponse.ok(service.list(sourceId, page, size)));
+    }
+
+    /**
+     * Clears history.
+     */
+    @org.springframework.web.bind.annotation.DeleteMapping
+    public ResponseEntity<ApiResponse<?>> deleteHistory(@RequestParam(required = false) Long sourceId) {
+        service.deleteHistory(sourceId);
+        return ResponseEntity.ok(ApiResponse.ok("Analiz geçmişi başarıyla temizlendi."));
     }
 
     /**

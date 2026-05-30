@@ -17,7 +17,7 @@ export interface AlarmRule {
 }
 
 export interface Alarm {
-  id: string;
+  id: string | number;
   ruleId: string;
   ruleName: string;
   sourceId?: number;

@@ -62,6 +62,32 @@ public class AnalyzerKafkaConfig {
     }
 
     /**
+     * Creates consumer factory for analysis results.
+     */
+    @Bean
+    public ConsumerFactory<String, AnalysisResultDto> analysisConsumerFactory(KafkaProperties kafkaProperties) {
+        Map<String, Object> props = new HashMap<>(kafkaProperties.buildConsumerProperties());
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        props.put(JsonDeserializer.TRUSTED_PACKAGES, "com.faultlens.*");
+        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, AnalysisResultDto.class.getName());
+        return new DefaultKafkaConsumerFactory<>(props);
+    }
+
+    /**
+     * Creates listener factory for analysis results.
+     */
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, AnalysisResultDto> analysisKafkaListenerContainerFactory(
+            ConsumerFactory<String, AnalysisResultDto> analysisConsumerFactory) {
+        ConcurrentKafkaListenerContainerFactory<String, AnalysisResultDto> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(analysisConsumerFactory);
+        factory.setConcurrency(1);
+        factory.setCommonErrorHandler(new DefaultErrorHandler(new FixedBackOff(1000L, 2L)));
+        return factory;
+    }
+
+    /**
      * Creates Kafka template for analysis results.
      */
     @Bean

@@ -46,6 +46,9 @@ public class NotificationSettingsService {
         settings.setSlackWebhook(request.slackWebhook());
         settings.setPushEnabled(request.pushEnabled());
         settings.setMobileEnabled(request.mobileEnabled());
+        settings.setEmailjsServiceId(request.emailjsServiceId());
+        settings.setEmailjsTemplateId(request.emailjsTemplateId());
+        settings.setEmailjsPublicKey(request.emailjsPublicKey());
         settings.setUpdatedAt(Instant.now());
 
         NotificationSettings saved = settingsRepository.save(settings);
@@ -75,7 +78,10 @@ public class NotificationSettingsService {
                 settings.isSlackEnabled(),
                 settings.getSlackWebhook(),
                 settings.isPushEnabled(),
-                settings.isMobileEnabled()
+                settings.isMobileEnabled(),
+                settings.getEmailjsServiceId(),
+                settings.getEmailjsTemplateId(),
+                settings.getEmailjsPublicKey()
         );
     }
 }

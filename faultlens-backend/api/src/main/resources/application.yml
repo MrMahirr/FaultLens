@@ -42,6 +42,17 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+  mail:
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PORT:1025}
+    username: ${SMTP_USER:}
+    password: ${SMTP_PASS:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
 server:
   port: ${PORT:3500}

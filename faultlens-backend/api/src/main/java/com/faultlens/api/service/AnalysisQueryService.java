@@ -23,10 +23,14 @@ public class AnalysisQueryService {
     private final ApiDtoMapper mapper;
 
     /**
-     * Lists analyses.
+     * Lists analyses optionally filtered by sourceId.
      */
-    public PagedResponse<AnalysisResultDto> list(int page, int size) {
-        Page<Analysis> result = repository.findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "analyzedAt")));
+    public PagedResponse<AnalysisResultDto> list(Long sourceId, int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "analyzedAt"));
+        Page<Analysis> result = (sourceId != null) 
+                ? repository.findBySourceId(sourceId, pageRequest)
+                : repository.findAll(pageRequest);
+                
         return PagedResponse.<AnalysisResultDto>builder()
                 .content(result.map(mapper::toAnalysisDto).getContent())
                 .page(result.getNumber())
@@ -34,6 +38,18 @@ public class AnalysisQueryService {
                 .totalElements(result.getTotalElements())
                 .totalPages(result.getTotalPages())
                 .build();
+    }
+
+    /**
+     * Deletes history for a specific source.
+     */
+    @Transactional
+    public void deleteHistory(Long sourceId) {
+        if (sourceId != null) {
+            repository.deleteBySourceId(sourceId);
+        } else {
+            repository.deleteAll();
+        }
     }
 
     /**
