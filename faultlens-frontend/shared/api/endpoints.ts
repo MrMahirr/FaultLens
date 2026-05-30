@@ -28,6 +28,7 @@ export const Endpoints = {
     DETAIL: (id: number) => `${BASE}/sources/${id}`,
     CREATE: `${BASE}/sources`,
     TEST: (id: number) => `${BASE}/sources/${id}/test`,
+    TEST_CONFIG: `${BASE}/sources/test-config`,
     ENABLE: (id: number) => `${BASE}/sources/${id}/enable`,
     DISABLE: (id: number) => `${BASE}/sources/${id}/disable`,
   },

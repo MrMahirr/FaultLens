@@ -8,6 +8,8 @@ import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
+import com.github.dockerjava.transport.DockerHttpClient;
+import com.github.dockerjava.zerodep.ZerodepDockerHttpClient;
 import com.faultlens.collector.model.LogSource;
 import com.faultlens.common.dto.LogEventDto;
 import com.faultlens.common.enums.LogSourceType;
@@ -104,13 +106,16 @@ public class DockerAdapter implements LogSourceAdapter {
 
     private DockerClient createClient(Map<String, String> config) {
         String dockerHost = config.get("dockerHost");
-        if (dockerHost == null || dockerHost.isBlank()) {
-            return DockerClientBuilder.getInstance().build();
+        DefaultDockerClientConfig.Builder configBuilder = DefaultDockerClientConfig.createDefaultConfigBuilder();
+        if (dockerHost != null && !dockerHost.isBlank()) {
+            configBuilder.withDockerHost(dockerHost);
         }
-        DockerClientConfig clientConfig = DefaultDockerClientConfig.createDefaultConfigBuilder()
-                .withDockerHost(dockerHost)
+        DockerClientConfig clientConfig = configBuilder.build();
+        DockerHttpClient httpClient = new ZerodepDockerHttpClient.Builder()
+                .dockerHost(clientConfig.getDockerHost())
+                .sslConfig(clientConfig.getSSLConfig())
                 .build();
-        return DockerClientBuilder.getInstance(clientConfig).build();
+        return DockerClientBuilder.getInstance(clientConfig).withDockerHttpClient(httpClient).build();
     }
 
     private LogEventDto toEvent(LogSource source, Map<String, String> config, String line) {
