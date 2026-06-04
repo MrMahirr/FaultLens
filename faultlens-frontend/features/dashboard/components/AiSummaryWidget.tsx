@@ -4,8 +4,13 @@ import { motion } from "framer-motion";
 import { Sparkles, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/shared/components/ui/Button";
+import { useAnalysesQuery } from "@/features/analyses/api/useAnalysisQuery";
 
 function AiSummaryWidget() {
+  const { data: analysisData, isLoading } = useAnalysesQuery({ page: 0, size: 1 });
+  
+  const totalElements = analysisData?.totalElements || 0;
+  const latestAnalysis = analysisData?.content?.[0];
   return (
     <motion.div
       initial={{ opacity: 0, y: -20 }}
@@ -25,17 +30,40 @@ function AiSummaryWidget() {
             <h2 className="text-lg font-bold font-display text-text-primary mb-1">
               FaultLens AI Analizi
             </h2>
-            <p className="text-sm text-text-secondary leading-relaxed max-w-2xl">
-              Son 24 saat içinde <strong className="text-text-primary">3 yeni hata grubu</strong> tespit edildi.
-              Bunlardan biri son yapılan <strong className="text-text-primary">payment-service v2.3.1</strong> deployment'ı ile doğrudan ilişkili. Yapay zeka kök neden analizini tamamladı.
-            </p>
+            {isLoading ? (
+              <div className="space-y-2 mt-2">
+                <div className="h-4 w-64 bg-bg-tertiary rounded animate-pulse" />
+                <div className="h-4 w-48 bg-bg-tertiary rounded animate-pulse" />
+              </div>
+            ) : totalElements > 0 ? (
+              <p className="text-sm text-text-secondary leading-relaxed max-w-2xl">
+                Sistemde toplam <strong className="text-text-primary">{totalElements} hata analizi</strong> gerçekleştirildi.
+                {latestAnalysis && (
+                  <>
+                    {" "}En son yapılan analiz
+                    {latestAnalysis.affectedDeployment ? (
+                      <>
+                        {" "}<strong className="text-text-primary">{latestAnalysis.affectedDeployment}</strong> deployment'ı ile
+                      </>
+                    ) : (
+                      " genel sistem hataları ile"
+                    )}{" "}
+                    ilişkili. Yapay zeka kök neden analizini tamamladı.
+                  </>
+                )}
+              </p>
+            ) : (
+              <p className="text-sm text-text-secondary leading-relaxed max-w-2xl">
+                Şu an için sistemde yapay zeka tarafından incelenmiş bir hata veya anomali bulunmuyor. Sistem durumu stabil.
+              </p>
+            )}
           </div>
         </div>
 
         <div className="shrink-0 flex items-center gap-3">
           <Link href="/analyses">
             <Button variant="primary" size="md" icon={<ArrowRight size={16} />} iconPosition="right">
-              Analizi İncele
+              {totalElements > 0 ? "Analizi İncele" : "Analiz Sayfasına Git"}
             </Button>
           </Link>
         </div>
