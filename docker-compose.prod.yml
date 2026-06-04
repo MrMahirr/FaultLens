@@ -8,7 +8,7 @@ services:
     container_name: faultlens-backend-prod
     restart: always
     ports:
-      - "${BACKEND_PORT:-3600}:3600"
+      - "${BACKEND_PORT:-3500}:3500"
     environment:
       # Database connection should point to managed DB
       - DB_HOST=${DB_HOST}
@@ -23,7 +23,7 @@ services:
       - KAFKA_SERVERS=${KAFKA_SERVERS}
       # Security & CORS
       - JWT_SECRET=${JWT_SECRET}
-      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3100}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
       - AI_ENABLED=${AI_ENABLED:-false}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
     logging:
@@ -32,7 +32,7 @@ services:
         max-size: "50m"
         max-file: "3"
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:3600/actuator/health"]
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:3500/actuator/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -45,7 +45,7 @@ services:
     container_name: faultlens-frontend-prod
     restart: always
     ports:
-      - "${FRONTEND_PORT:-3100}:3100"
+      - "${FRONTEND_PORT:-3000}:3000"
     environment:
       # These must be provided during build or runtime
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://api.faultlens.com/api/v1}
@@ -56,7 +56,7 @@ services:
         max-size: "50m"
         max-file: "3"
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:3100/api/health"]
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:3000/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3

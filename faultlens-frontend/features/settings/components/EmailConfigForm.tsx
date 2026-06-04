@@ -75,7 +75,7 @@ export function EmailConfigForm({ serviceId, templateId, publicKey, onChange }: 
             placeholder="ornek@sirket.com"
             className="flex-1 bg-bg-primary text-text-primary rounded-lg border border-border-default px-3 py-2 text-sm focus:outline-none focus:border-accent"
           />
-          <Button variant="outline" size="sm" onClick={handleTest}>
+          <Button variant="secondary" size="sm" onClick={handleTest}>
             Test Gönder
           </Button>
         </div>

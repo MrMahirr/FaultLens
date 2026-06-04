@@ -8,13 +8,13 @@ import com.faultlens.common.dto.LogEntryDto;
 import com.faultlens.common.dto.LogEventDto;
 import com.faultlens.common.enums.Severity;
 import com.faultlens.processor.classifier.SeverityClassifier;
-import com.faultlens.processor.kafka.LogErrorProducer;
+import com.faultlens.processor.parser.PatternRegistry;
+import com.faultlens.processor.event.LogProcessedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import com.faultlens.processor.model.LogEntry;
 import com.faultlens.processor.model.LogGroup;
 import com.faultlens.processor.parser.LogParser;
 import com.faultlens.processor.parser.ParsedLog;
-import com.faultlens.processor.parser.PatternRegistry;
-import com.faultlens.processor.realtime.RealtimeLogPublisher;
 import com.faultlens.processor.repository.LogEntryRepository;
 import java.time.Instant;
 import java.util.List;
@@ -27,8 +27,7 @@ class LogProcessorServiceTest {
     private SeverityClassifier severityClassifier;
     private LogGroupingService groupingService;
     private LogEntryRepository entryRepository;
-    private LogErrorProducer errorProducer;
-    private RealtimeLogPublisher realtimeLogPublisher;
+    private ApplicationEventPublisher eventPublisher;
     private org.springframework.kafka.core.KafkaTemplate<String, LogEventDto> dlqTemplate;
     private LogProcessorService service;
 
@@ -38,8 +37,7 @@ class LogProcessorServiceTest {
         severityClassifier = mock(SeverityClassifier.class);
         groupingService = mock(LogGroupingService.class);
         entryRepository = mock(LogEntryRepository.class);
-        errorProducer = mock(LogErrorProducer.class);
-        realtimeLogPublisher = mock(RealtimeLogPublisher.class);
+        eventPublisher = mock(ApplicationEventPublisher.class);
         dlqTemplate = mock(org.springframework.kafka.core.KafkaTemplate.class);
 
         service = new LogProcessorService(
@@ -47,8 +45,7 @@ class LogProcessorServiceTest {
                 severityClassifier,
                 groupingService,
                 entryRepository,
-                errorProducer,
-                realtimeLogPublisher,
+                eventPublisher,
                 dlqTemplate
         );
     }
@@ -87,8 +84,7 @@ class LogProcessorServiceTest {
         assertThat(result.getSeverity()).isEqualTo(Severity.ERROR);
         assertThat(result.getGroupId()).isEqualTo(456L);
 
-        verify(errorProducer).send(any(LogEntryDto.class));
-        verify(realtimeLogPublisher).publish(any(LogEntryDto.class));
+        verify(eventPublisher).publishEvent(any(LogProcessedEvent.class));
         verify(entryRepository).saveAll(anyList());
     }
 
@@ -119,7 +115,6 @@ class LogProcessorServiceTest {
         LogEntryDto result = service.process(event);
 
         assertThat(result.getSeverity()).isEqualTo(Severity.INFO);
-        verify(errorProducer, never()).send(any());
-        verify(realtimeLogPublisher).publish(any());
+        verify(eventPublisher).publishEvent(any(LogProcessedEvent.class));
     }
 }

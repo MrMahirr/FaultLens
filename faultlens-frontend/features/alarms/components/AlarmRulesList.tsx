@@ -53,7 +53,7 @@ export function AlarmRulesList() {
         cell: ({ row }) => {
           const isActive = row.original.isActive;
           return (
-            <Badge variant={isActive ? "success" : "secondary"}>
+            <Badge variant={isActive ? "success" : "default"}>
               {isActive ? "Aktif" : "Pasif"}
             </Badge>
           );

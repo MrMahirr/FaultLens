@@ -158,7 +158,7 @@ function LogFiltersBar({
 
           {filters.source && (
             <Button
-              variant="error"
+              variant="danger"
               size="sm"
               icon={<Trash2 size={14} />}
               loading={clearLogs.isPending}

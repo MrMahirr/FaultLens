@@ -77,4 +77,5 @@ export const SOURCE_TYPE_LABELS: Record<LogSourceType, string> = {
   [LogSourceType.SSH]: "SSH",
   [LogSourceType.DOCKER]: "Docker",
   [LogSourceType.CICD]: "CI/CD",
+  [LogSourceType.LOCAL_FILE]: "Yerel Dosya",
 };
