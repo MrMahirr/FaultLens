@@ -35,7 +35,7 @@ export function SlackConfigForm({ webhookUrl, onChange }: SlackConfigFormProps) 
         />
       </div>
       <div className="flex justify-end mt-2">
-        <Button variant="outline" size="sm" onClick={handleTest}>
+        <Button variant="secondary" size="sm" onClick={handleTest}>
           Test Mesajı Gönder
         </Button>
       </div>

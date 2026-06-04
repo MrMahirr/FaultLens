@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Menu, Sun, Moon, LogOut, User } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
@@ -24,6 +24,7 @@ const ROUTE_LABELS: Record<string, string> = {
 
 function Topbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const toggleSidebar = useUIStore((state) => state.toggleSidebar);
   const sidebarOpen = useUIStore((state) => state.sidebarOpen);
   const { theme, toggleTheme } = useTheme();
@@ -45,6 +46,9 @@ function Topbar() {
 
   const handleUserMenuSelect = (value: string) => {
     switch (value) {
+      case "profile":
+        router.push("/settings?tab=account");
+        break;
       case "logout":
         useAuthStore.getState().logout();
         if (typeof window !== "undefined") {

@@ -38,7 +38,7 @@ function AnalysisCard({ analysis, index, sourceName }: AnalysisCardProps) {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <div className="flex items-center gap-3">
               {sourceName && (
-                <Badge variant="ghost" size="sm" className="border-border-default text-text-secondary bg-bg-secondary">
+                <Badge variant="outline" size="sm" className="border-border-default text-text-secondary bg-bg-secondary">
                   {sourceName}
                 </Badge>
               )}

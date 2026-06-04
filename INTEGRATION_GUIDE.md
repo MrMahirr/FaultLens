@@ -247,7 +247,48 @@ FaultLens, platform bağımsız bir mimariye sahip olduğu için projelerinizin 
    - *Bağlantı Yöntemi: SSH üzerinden log dosyası izleme*
 
 5. **CI/CD ve Otomasyon Süreçleri**
-   - Jenkins, GitLab CI, GitHub Actions (Devreye alma logları)
-   - *Bağlantı Yöntemi: İlerleyen güncellemelerle CICD entegrasyon modülü eklenecektir.*
+   - Jenkins, GitLab CI, GitHub Actions (Devreye alma logları ve Deployment takibi)
+   - *Bağlantı Yöntemi: FaultLens REST API (Webhook) üzerinden. Detaylar için Bölüm 6'ya bakınız.*
 
 > **Not:** Serverless ortamlar (AWS Lambda, Google Cloud Functions) doğrudan bir dosya veya container erişimi sunmadığı için bu ortamlardaki logların FaultLens'e aktarılması için aracı bir CloudWatch/PubSub -> Kafka tetikleyicisi yazılması gerekir.
+
+---
+
+## 6. Otomatik Deployment (CI/CD) Entegrasyonu
+
+FaultLens, yeni kodunuzun canlıya (veya test ortamına) alındığı anı tespit edip oluşan logları/hataları bu deployment ile ilişkilendirebilir (Korelasyon). Bunu sağlamak için CI/CD pipeline'ınıza ufak bir webhook (API çağrısı) eklemeniz yeterlidir.
+
+### 🐙 GitHub Actions Örneği
+Mevcut `deploy.yml` veya `ci.yml` dosyanızın en son adımına (başarılı deploy sonrası) şu curl komutunu ekleyin:
+
+```yaml
+    - name: Notify FaultLens Deployment
+      run: |
+        curl -X POST https://api.faultlens.com/api/v1/deployments \
+          -H "Content-Type: application/json" \
+          -d '{"serviceName":"my-backend-service", "version":"${{ github.sha }}", "environment":"PRODUCTION"}'
+```
+
+### 🦊 GitLab CI Örneği
+`.gitlab-ci.yml` dosyanızdaki deploy aşamasının `script` bloğuna ekleyin:
+
+```yaml
+deploy_production:
+  stage: deploy
+  script:
+    - echo "Uygulama sunucuya yükleniyor..."
+    - # Kendi deploy komutlarınız...
+    - curl -X POST https://api.faultlens.com/api/v1/deployments -H "Content-Type: application/json" -d '{"serviceName":"my-frontend", "version":"'$CI_COMMIT_SHORT_SHA'", "environment":"PRODUCTION"}'
+```
+
+### ⚙️ Genel cURL Kullanımı (Jenkins, Bitbucket vb.)
+Herhangi bir bash/shell script içinden FaultLens'i tetiklemek için:
+```bash
+curl -X POST https://api.faultlens.com/api/v1/deployments \
+  -H "Content-Type: application/json" \
+  -d '{"serviceName":"servis-adiniz", "version":"v1.2.3", "environment":"PRODUCTION"}'
+```
+
+*(Not: `environment` alanı için `PRODUCTION`, `STAGING` veya `DEVELOPMENT` değerlerinden birini kullanmalısınız.)*
+
+Bu entegrasyon sayesinde Deployments arayüzünde "Kırmızı Hata Parlaması" özelliğinden faydalanabilir ve hataların hangi versiyondan sonra patlak verdiğini saniyeler içinde görebilirsiniz.

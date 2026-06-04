@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import { motion } from "framer-motion";
 import { MoreVertical, Wifi, WifiOff, TestTube } from "lucide-react";
 import { Card } from "@/shared/components/ui/Card";
@@ -14,6 +16,7 @@ import {
 import { formatRelativeTime } from "@/shared/lib/utils";
 import { useTestConnectionMutation } from "@/features/sources/api/useSourceMutation";
 import { cn } from "@/shared/lib/utils";
+import { SourceDetailModal } from "./SourceDetailModal";
 
 /* ── Status Dot ────────────────────────────────────────────── */
 
@@ -63,6 +66,7 @@ interface SourceCardProps {
 /* ── Component ─────────────────────────────────────────────── */
 
 function SourceCard({ source, index }: SourceCardProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const testConnection = useTestConnectionMutation();
   const config = source.config ? JSON.parse(source.config) : {};
 
@@ -81,18 +85,21 @@ function SourceCard({ source, index }: SourceCardProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1, duration: 0.3 }}
     >
-      <Card variant="default" hover glow>
+      <Card variant="default" hover glow onClick={() => setIsModalOpen(true)}>
         {/* Header */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2">
             <StatusDot status={source.status ?? ConnectionStatus.CONNECTED} />
           </div>
-          <Dropdown
-            trigger={
-              <button className="p-1 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-tertiary transition-colors">
-                <MoreVertical size={16} />
-              </button>
-            }
+            <Dropdown
+              trigger={
+                <button
+                  className="p-1 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-tertiary transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <MoreVertical size={16} />
+                </button>
+              }
             items={menuItems}
             onSelect={() => {}}
           />
@@ -137,12 +144,21 @@ function SourceCard({ source, index }: SourceCardProps) {
             fullWidth
             icon={<TestTube size={14} />}
             loading={testConnection.isPending}
-            onClick={() => testConnection.mutate(source.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              testConnection.mutate(source.id);
+            }}
           >
             Test
           </Button>
         </div>
       </Card>
+      
+      <SourceDetailModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        source={source} 
+      />
     </motion.div>
   );
 }

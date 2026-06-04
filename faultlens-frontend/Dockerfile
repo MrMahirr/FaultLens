@@ -21,7 +21,7 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV PORT=3100
+ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
 # Copy necessary files from builder
@@ -38,6 +38,6 @@ COPY --from=builder --chown=node:node /app/.next/static ./.next/static
 
 USER node
 
-EXPOSE 3100
+EXPOSE 3000
 
 CMD ["node", "server.js"]

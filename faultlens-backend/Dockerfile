@@ -15,7 +15,7 @@ WORKDIR /app
 COPY --from=builder /app/api/target/*.jar app.jar
 
 # Expose the new backend port
-EXPOSE 3600
+EXPOSE 3500
 
 # Run the application
 ENTRYPOINT ["java", "-jar", "app.jar"]

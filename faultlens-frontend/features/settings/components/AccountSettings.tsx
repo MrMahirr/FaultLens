@@ -73,8 +73,8 @@ export function AccountSettings() {
     setIsPasswordSaving(true);
     try {
       await apiClient.put(Endpoints.AUTH.CHANGE_PASSWORD, {
-        currentPassword,
-        newPassword,
+        current_password: currentPassword,
+        new_password: newPassword,
       });
       setCurrentPassword("");
       setNewPassword("");

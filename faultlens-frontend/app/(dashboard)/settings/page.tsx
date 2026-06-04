@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Palette, User, Bell, Settings2 } from "lucide-react";
 import { AppearanceSettings } from "@/features/settings/components/AppearanceSettings";
 import { AccountSettings } from "@/features/settings/components/AccountSettings";
@@ -16,8 +17,23 @@ interface TabDefinition {
   component: React.ReactNode;
 }
 
-export default function SettingsPage() {
+function SettingsContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabQuery = searchParams.get("tab") as TabId | null;
+  
   const [activeTab, setActiveTab] = useState<TabId>("appearance");
+
+  useEffect(() => {
+    if (tabQuery && ["appearance", "account", "notifications", "system"].includes(tabQuery)) {
+      setActiveTab(tabQuery);
+    }
+  }, [tabQuery]);
+
+  const handleTabChange = (tabId: TabId) => {
+    setActiveTab(tabId);
+    router.replace(`/settings?tab=${tabId}`);
+  };
 
   const TABS: TabDefinition[] = [
     {
@@ -66,7 +82,7 @@ export default function SettingsPage() {
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => handleTabChange(tab.id)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 whitespace-nowrap cursor-pointer ${
                     isActive
                       ? "bg-accent/10 text-accent font-medium"
@@ -89,5 +105,13 @@ export default function SettingsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SettingsPage() {
+  return (
+    <Suspense fallback={<div className="p-8 animate-pulse">Yükleniyor...</div>}>
+      <SettingsContent />
+    </Suspense>
   );
 }

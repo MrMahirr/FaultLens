@@ -87,7 +87,7 @@ export function NotificationSettings() {
               <div className="flex items-center justify-between">
                 <p className="text-sm text-text-secondary">Uygulama içi anlık bildirimleri test edin.</p>
                 <Button 
-                  variant="outline" 
+                  variant="secondary" 
                   size="sm" 
                   onClick={async () => {
                     try {

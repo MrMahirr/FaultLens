@@ -26,7 +26,7 @@ export function AnalysisDetailModal({ isOpen, onClose, analysis, sourceName }: A
         <div className="flex flex-col gap-2 border-b border-border-default pb-4">
           <div className="flex items-center gap-2">
             {sourceName && (
-              <Badge variant="ghost" size="md" className="border-border-default text-text-secondary bg-bg-secondary">
+              <Badge variant="outline" size="md" className="border-border-default text-text-secondary bg-bg-secondary">
                 {sourceName}
               </Badge>
             )}
