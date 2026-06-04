@@ -9,6 +9,8 @@ import type { LogFilters } from "@/features/logs/types/log.types";
 import { cn } from "@/shared/lib/utils";
 import { useSourcesQuery } from "@/features/sources/api/useSourceQuery";
 import { useClearLogsMutation } from "@/features/logs/api/useLogMutation";
+import toast from "react-hot-toast";
+import Swal from "sweetalert2";
 
 /* ── Props ─────────────────────────────────────────────────── */
 
@@ -48,10 +50,26 @@ function LogFiltersBar({
 
   const handleClearLogs = async () => {
     if (!filters.source) return;
-    const confirmDelete = window.confirm("Bu projeye ait tüm logları ve analizleri kalıcı olarak silmek istediğinize emin misiniz?");
-    if (confirmDelete) {
-      await clearLogs.mutateAsync(Number(filters.source));
-      onFilterChange("source", undefined);
+    
+    const result = await Swal.fire({
+      title: 'Emin misiniz?',
+      text: "Bu projeye ait tüm logları ve analizleri kalıcı olarak silmek istediğinize emin misiniz?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#3b82f6',
+      confirmButtonText: 'Evet, Sil',
+      cancelButtonText: 'İptal'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await clearLogs.mutateAsync(Number(filters.source));
+        onFilterChange("source", undefined);
+        toast.success("Loglar başarıyla temizlendi.");
+      } catch (error) {
+        toast.error("Loglar temizlenirken bir hata oluştu.");
+      }
     }
   };
   const toggleSeverity = (severity: Severity) => {

@@ -10,6 +10,7 @@ import { useSourcesQuery } from "@/features/sources/api/useSourceQuery";
 import { Brain, Trash2, ChevronLeft, ChevronRight, Filter } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import toast from "react-hot-toast";
+import Swal from "sweetalert2";
 
 export default function AnalysesPage() {
   const [selectedSourceId, setSelectedSourceId] = useState<number | undefined>(undefined);
@@ -23,8 +24,19 @@ export default function AnalysesPage() {
   const analyses = analysisData?.content || [];
   const totalPages = analysisData?.totalPages || 1;
 
-  const handleClearHistory = () => {
-    if (confirm("Seçili projenin analiz geçmişini silmek istediğinize emin misiniz? Bu işlem geri alınamaz.")) {
+  const handleClearHistory = async () => {
+    const result = await Swal.fire({
+      title: 'Emin misiniz?',
+      text: "Seçili projenin analiz geçmişini silmek istediğinize emin misiniz? Bu işlem geri alınamaz.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#3b82f6',
+      confirmButtonText: 'Evet, Sil',
+      cancelButtonText: 'İptal'
+    });
+
+    if (result.isConfirmed) {
       deleteHistory.mutate(selectedSourceId, {
         onSuccess: () => {
           toast.success("Analiz geçmişi temizlendi.");
