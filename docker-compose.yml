@@ -85,6 +85,12 @@ services:
       - REDIS_PORT=6379
       - KAFKA_SERVERS=kafka:29092
       - PORT=3500
+      # Values below come from the root .env (see .env.example).
+      # Empty JWT_SECRET -> random key per start (you are logged out on every backend restart).
+      - JWT_SECRET=${JWT_SECRET:-}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
+      - AI_ENABLED=${AI_ENABLED:-false}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       # Empty -> generated and printed once in the backend log; must be changed at first login
       - ADMIN_INITIAL_PASSWORD=${ADMIN_INITIAL_PASSWORD:-}
       - COLLECTOR_FILE_ALLOWED_DIRS=${COLLECTOR_FILE_ALLOWED_DIRS:-/var/log}
