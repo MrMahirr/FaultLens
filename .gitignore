@@ -24,6 +24,10 @@ desktop.ini
 # Obsidian vault (local project notes / todo list)
 FaultLens-Vault/
 
+# Ruflo / Claude Flow runtime state (local memory DB, daemon pid, metrics)
+.claude-flow/
+.swarm/
+
 # Secrets / credentials (never commit)
 *.pem
 *.key
