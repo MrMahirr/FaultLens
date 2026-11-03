@@ -152,4 +152,38 @@ class LogSourceServiceTest {
         assertThat(result).isTrue();
         verify(orchestrator).testSource(source);
     }
+
+    @Test
+    void updateKeepsStoredSecretWhenClientSendsMaskBack() {
+        LogSource existing = LogSource.builder()
+                .id(7L).name("ssh").type(LogSourceType.SSH)
+                .config("{\"host\":\"10.0.0.5\",\"username\":\"deploy\",\"password\":\"s3cret!\"}")
+                .enabled(false).build();
+        when(repository.findById(7L)).thenReturn(Optional.of(existing));
+        when(repository.save(any(LogSource.class))).thenAnswer(inv -> inv.getArgument(0));
+        doCallRealMethod().when(mapper).updateEntity(any(LogSource.class), any(LogSourceUpdateRequest.class));
+
+        service.update(7L, LogSourceUpdateRequest.builder()
+                .name("ssh").type(LogSourceType.SSH).enabled(false)
+                .config("{\"host\":\"10.0.0.6\",\"username\":\"deploy\",\"password\":\"••••••••\"}")
+                .build());
+
+        assertThat(existing.getConfig()).contains("\"password\":\"s3cret!\"").contains("10.0.0.6");
+    }
+
+    @Test
+    void updateStoresNewSecretWhenClientSendsOne() {
+        LogSource existing = LogSource.builder()
+                .id(7L).name("ssh").type(LogSourceType.SSH)
+                .config("{\"password\":\"old\"}").enabled(false).build();
+        when(repository.findById(7L)).thenReturn(Optional.of(existing));
+        when(repository.save(any(LogSource.class))).thenAnswer(inv -> inv.getArgument(0));
+        doCallRealMethod().when(mapper).updateEntity(any(LogSource.class), any(LogSourceUpdateRequest.class));
+
+        service.update(7L, LogSourceUpdateRequest.builder()
+                .name("ssh").type(LogSourceType.SSH).enabled(false)
+                .config("{\"password\":\"new-secret\"}").build());
+
+        assertThat(existing.getConfig()).contains("new-secret").doesNotContain("old");
+    }
 }

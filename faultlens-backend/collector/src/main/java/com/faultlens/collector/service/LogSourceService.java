@@ -1,5 +1,6 @@
 package com.faultlens.collector.service;
 
+import com.faultlens.collector.mapper.SourceConfigSecrets;
 import com.faultlens.collector.dto.LogSourceCreateRequest;
 import com.faultlens.collector.dto.LogSourceUpdateRequest;
 import com.faultlens.collector.mapper.LogSourceMapper;
@@ -43,6 +44,8 @@ public class LogSourceService {
      */
     public LogSource update(Long id, LogSourceUpdateRequest request) {
         LogSource existing = get(id);
+        // Clients receive secrets masked; a mask sent back means "keep the stored value".
+        request.setConfig(SourceConfigSecrets.restoreMasked(request.getConfig(), existing.getConfig()));
         mapper.updateEntity(existing, request);
         return saveAndRestart(id, existing);
     }
@@ -54,7 +57,7 @@ public class LogSourceService {
         LogSource existing = get(id);
         existing.setName(source.getName());
         existing.setType(source.getType());
-        existing.setConfig(source.getConfig());
+        existing.setConfig(SourceConfigSecrets.restoreMasked(source.getConfig(), existing.getConfig()));
         existing.setEnabled(source.isEnabled());
         return saveAndRestart(id, existing);
     }

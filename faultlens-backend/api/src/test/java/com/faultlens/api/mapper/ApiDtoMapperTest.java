@@ -95,6 +95,25 @@ class ApiDtoMapperTest {
     }
 
     @Test
+    void masksSourceSecretsButKeepsOtherConfig() {
+        LogSource source = LogSource.builder()
+                .id(6L)
+                .name("ssh")
+                .type(LogSourceType.SSH)
+                .config("{\"host\":\"10.0.0.5\",\"password\":\"s3cret!\",\"privateKeyPath\":\"/keys/id_ed25519\"}")
+                .enabled(true)
+                .build();
+
+        String config = mapper.toLogSourceDto(source).getConfig();
+
+        assertThat(config)
+                .doesNotContain("s3cret!")
+                .contains("\"password\":\"••••••••\"")
+                .contains("10.0.0.5")
+                .contains("/keys/id_ed25519");
+    }
+
+    @Test
     void mapsDeploymentBothWays() {
         DeploymentDto dto = DeploymentDto.builder()
                 .serviceName("payment")
