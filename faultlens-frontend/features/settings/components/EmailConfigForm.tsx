@@ -2,6 +2,7 @@ import { Button } from "@/shared/components/ui/Button";
 import { apiClient } from "@/shared/api/client";
 import { Endpoints } from "@/shared/api/endpoints";
 import toast from "react-hot-toast";
+import { getApiErrorMessage } from "@/shared/api/errors";
 
 interface EmailConfigFormProps {
   serviceId: string | null;
@@ -21,8 +22,8 @@ export function EmailConfigForm({ serviceId, templateId, publicKey, onChange }: 
     try {
       await apiClient.post(Endpoints.SETTINGS.TEST.EMAIL, { emailAddress: testEmail });
       toast.success("Test e-postası başarıyla gönderildi!");
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "E-posta gönderilemedi.");
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "E-posta gönderilemedi."));
     }
   };
 

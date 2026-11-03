@@ -1,5 +1,6 @@
 "use client";
 
+import { AnalysisType } from "@/shared/types/common.types";
 import { motion } from "framer-motion";
 import { X, Clock, Server, Layers, Code, Lightbulb, Brain } from "lucide-react";
 import { SeverityBadge } from "@/features/logs/components/SeverityBadge";
@@ -159,13 +160,13 @@ function LogDetailPanel({ log, onClose }: LogDetailPanelProps) {
             </div>
           ) : analyses && analyses.length > 0 ? (
             <div className="space-y-3">
-              {analyses.map((analysis: any, i: number) => (
+              {analyses.map((analysis, i) => (
                 <Card key={analysis.id || i} variant="glass" padding="sm" className="border-l-2 border-l-accent">
                   <div className="flex items-start gap-2">
                     <Brain size={14} className="text-accent shrink-0 mt-0.5" />
                     <div className="flex-1">
                       <p className="text-xs font-semibold text-text-primary uppercase tracking-wider">
-                        {analysis.engineType === "AI_ANALYSIS" ? "AI Analizi" : "Kural Tabanlı Analiz"}
+                        {analysis.engineType === AnalysisType.RULE_BASED ? "Kural Tabanlı Analiz" : "AI Analizi"}
                       </p>
                       <p className="text-xs text-text-secondary mt-1">
                         <strong>Kök Neden:</strong> {analysis.rootCause}

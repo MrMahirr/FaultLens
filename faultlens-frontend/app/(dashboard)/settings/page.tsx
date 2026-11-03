@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Palette, User, Bell, Settings2 } from "lucide-react";
 import { AppearanceSettings } from "@/features/settings/components/AppearanceSettings";
@@ -8,7 +8,12 @@ import { AccountSettings } from "@/features/settings/components/AccountSettings"
 import { NotificationSettings } from "@/features/settings/components/NotificationSettings";
 import { SystemSettings } from "@/features/settings/components/SystemSettings";
 
-type TabId = "appearance" | "account" | "notifications" | "system";
+const TAB_IDS = ["appearance", "account", "notifications", "system"] as const;
+type TabId = (typeof TAB_IDS)[number];
+
+function isTabId(value: string | null): value is TabId {
+  return value !== null && (TAB_IDS as readonly string[]).includes(value);
+}
 
 interface TabDefinition {
   id: TabId;
@@ -20,18 +25,12 @@ interface TabDefinition {
 function SettingsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const tabQuery = searchParams.get("tab") as TabId | null;
-  
-  const [activeTab, setActiveTab] = useState<TabId>("appearance");
+  const tabQuery = searchParams.get("tab");
 
-  useEffect(() => {
-    if (tabQuery && ["appearance", "account", "notifications", "system"].includes(tabQuery)) {
-      setActiveTab(tabQuery);
-    }
-  }, [tabQuery]);
+  // The URL is the single source of truth for the selected tab.
+  const activeTab: TabId = isTabId(tabQuery) ? tabQuery : "appearance";
 
   const handleTabChange = (tabId: TabId) => {
-    setActiveTab(tabId);
     router.replace(`/settings?tab=${tabId}`);
   };
 

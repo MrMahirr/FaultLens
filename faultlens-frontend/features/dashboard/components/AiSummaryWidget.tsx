@@ -43,7 +43,7 @@ function AiSummaryWidget() {
                     {" "}En son yapılan analiz
                     {latestAnalysis.affectedDeployment ? (
                       <>
-                        {" "}<strong className="text-text-primary">{latestAnalysis.affectedDeployment}</strong> deployment'ı ile
+                        {" "}<strong className="text-text-primary">{latestAnalysis.affectedDeployment}</strong> deployment&apos;ı ile
                       </>
                     ) : (
                       " genel sistem hataları ile"

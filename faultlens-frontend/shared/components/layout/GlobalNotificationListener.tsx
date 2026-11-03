@@ -1,24 +1,29 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useIsClient } from "@/shared/hooks/useIsClient";
 import { useWebSocket } from "@/shared/hooks/useWebSocket";
 import { Endpoints } from "@/shared/api/endpoints";
 import { useAuthStore } from "@/features/auth/store/auth.store";
 import toast from "react-hot-toast";
 import { AlertTriangle } from "lucide-react";
 
-export function GlobalNotificationListener() {
-  const [mounted, setMounted] = useState(false);
-  const token = useAuthStore((state) => state.token);
+/** In-app alarm broadcast sent over /ws/logs (InAppNotificationService). */
+interface AlarmSocketMessage {
+  type?: string;
+  title?: string;
+  message?: string;
+}
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+export function GlobalNotificationListener() {
+  const mounted = useIsClient();
+  const token = useAuthStore((state) => state.token);
 
   // Play a soft chime sound using Web Audio API
   const playNotificationSound = () => {
     try {
-      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+      const AudioContext =
+        window.AudioContext ||
+        (window as Window & { webkitAudioContext?: typeof window.AudioContext }).webkitAudioContext;
       if (!AudioContext) return;
       
       const audioCtx = new AudioContext();
@@ -43,7 +48,8 @@ export function GlobalNotificationListener() {
     }
   };
 
-  const handleMessage = (data: any) => {
+  const handleMessage = (raw: unknown) => {
+    const data = raw as AlarmSocketMessage | null;
     if (data?.type === "ALARM") {
       playNotificationSound();
       toast.custom(

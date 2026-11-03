@@ -22,6 +22,10 @@ import {
 import { formatDate } from "@/shared/lib/utils";
 import { cn } from "@/shared/lib/utils";
 
+/** Example CI step shown on the page (kept as a string so quotes need no JSX escaping). */
+const CI_WEBHOOK_EXAMPLE =
+  `curl -X POST https://api.faultlens.com/api/v1/deployments -H "Content-Type: application/json" -d '{"serviceName":"my-service","version":"v1.0.0","environment":"PRODUCTION"}'`;
+
 /* ── Status Badge Variant Map ──────────────────────────────── */
 
 function getStatusVariant(status: DeploymentStatus) {
@@ -127,11 +131,11 @@ export default function DeploymentsPage() {
           <div className="flex-1 w-full min-w-0">
             <h3 className="font-semibold text-text-primary mb-1">CI/CD Entegrasyonu</h3>
             <p className="text-sm text-text-secondary mb-4 leading-relaxed">
-              Deployment'larınızı otomatik takip etmek için CI/CD pipeline'ınıza (GitHub Actions, vb.) aşağıdaki webhook isteğini ekleyin.
+              Deployment&apos;larınızı otomatik takip etmek için CI/CD pipeline&apos;ınıza (GitHub Actions, vb.) aşağıdaki webhook isteğini ekleyin.
             </p>
             <div className="bg-bg-primary p-4 rounded-xl border border-border-default overflow-x-auto w-full shadow-inner">
               <code className="text-[13px] text-text-primary font-mono whitespace-nowrap block">
-                curl -X POST https://api.faultlens.com/api/v1/deployments -H "Content-Type: application/json" -d '&#123;"serviceName":"my-service","version":"v1.0.0","environment":"PRODUCTION"&#125;'
+                {CI_WEBHOOK_EXAMPLE}
               </code>
             </div>
           </div>
@@ -153,7 +157,7 @@ export default function DeploymentsPage() {
           <DropdownSelect
             value={envFilter}
             options={[{label: "Tüm Ortamlar", value: "ALL"}, ...envOptions]}
-            onChange={(v) => setEnvFilter(v as any)}
+            onChange={(v) => setEnvFilter(v as DeploymentEnvironment | "ALL")}
             placeholder="Ortam Filtresi"
           />
         </div>

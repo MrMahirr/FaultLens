@@ -9,6 +9,7 @@ import { useNotificationSettings } from "../hooks/useNotificationSettings";
 import { NotificationToggleCard } from "./NotificationToggleCard";
 import { EmailConfigForm } from "./EmailConfigForm";
 import { SlackConfigForm } from "./SlackConfigForm";
+import { getApiErrorMessage } from "@/shared/api/errors";
 
 export function NotificationSettings() {
   const { settings, setSettings, isLoading, isSaving, toggleOption, handleSave } = useNotificationSettings();
@@ -93,8 +94,8 @@ export function NotificationSettings() {
                     try {
                       await apiClient.post(Endpoints.SETTINGS.TEST.PUSH);
                       toast.success("Push bildirimi tetiklendi.");
-                    } catch (err: any) {
-                      toast.error(err.response?.data?.message || "Bildirim tetiklenemedi.");
+                    } catch (err) {
+                      toast.error(getApiErrorMessage(err, "Bildirim tetiklenemedi."));
                     }
                   }}
                 >

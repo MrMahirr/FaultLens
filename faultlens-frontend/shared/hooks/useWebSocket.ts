@@ -56,6 +56,9 @@ export function useWebSocket({
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const enabledRef = useRef(enabled);
   const mountedRef = useRef(true);
+  // Reconnect timers call the latest `connect` through this ref (a callback
+  // cannot reference itself while it is being declared).
+  const connectRef = useRef<() => void>(() => {});
 
   // Refs for callbacks to prevent unnecessary reconnects
   const onMessageRef = useRef(onMessage);
@@ -131,7 +134,7 @@ export function useWebSocket({
             maxDelay,
           );
           retryCountRef.current += 1;
-          retryTimerRef.current = setTimeout(connect, delay);
+          retryTimerRef.current = setTimeout(() => connectRef.current(), delay);
         }
       };
     } catch {
@@ -140,6 +143,10 @@ export function useWebSocket({
       }
     }
   }, [url, token, maxRetries, baseDelay, maxDelay]);
+
+  useEffect(() => {
+    connectRef.current = connect;
+  }, [connect]);
 
   const disconnect = useCallback(() => {
     if (retryTimerRef.current) {

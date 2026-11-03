@@ -23,7 +23,7 @@ export function useSourceWizard(onClose: () => void) {
   };
 
   const buildConfigObj = () => {
-    let configObj: Record<string, any> = {};
+    let configObj: Record<string, string> = {};
     if (selectedType === LogSourceType.SSH) {
       configObj = { host, username, password, logFilePath };
     } else if (selectedType === LogSourceType.DOCKER) {

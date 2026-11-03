@@ -23,7 +23,7 @@ export const AnalysisApi = {
     };
   },
 
-  triggerAnalysis: async (groupId: number): Promise<any> => {
+  triggerAnalysis: async (groupId: number): Promise<AnalysisResultDto> => {
     const response = await apiClient({
       method: HttpMethod.POST,
       url: Endpoints.ANALYSES.TRIGGER(groupId),

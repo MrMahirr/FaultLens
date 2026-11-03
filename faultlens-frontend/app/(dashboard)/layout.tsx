@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useIsClient } from "@/shared/hooks/useIsClient";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Sidebar } from "@/shared/components/layout/Sidebar";
@@ -18,10 +19,9 @@ export default function DashboardLayout({
   const token = useAuthStore((state) => state.token);
   const mustChangePassword = useAuthStore((state) => state.user?.mustChangePassword ?? false);
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useIsClient();
 
   useEffect(() => {
-    setMounted(true);
     if (!token) {
       router.replace("/login");
     } else if (mustChangePassword) {

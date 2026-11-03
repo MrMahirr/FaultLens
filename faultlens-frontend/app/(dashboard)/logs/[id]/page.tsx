@@ -1,5 +1,6 @@
 "use client";
 
+import { AnalysisType } from "@/shared/types/common.types";
 import { use } from "react";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -122,10 +123,10 @@ export default function LogDetailPage({
             AI & Kural Tabanlı Kök Neden Analizi
           </h2>
           <div className="grid grid-cols-1 gap-4">
-            {detailData.analyses.map((analysis: any, i: number) => (
+            {detailData.analyses.map((analysis, i) => (
               <Card key={analysis.id || i} variant="default" className="border-l-4 border-l-accent">
                 <p className="text-sm font-semibold text-text-primary uppercase tracking-wider">
-                  {analysis.engineType === "AI_ANALYSIS" ? "AI Analizi" : "Kural Tabanlı Analiz"}
+                  {analysis.engineType === AnalysisType.RULE_BASED ? "Kural Tabanlı Analiz" : "AI Analizi"}
                 </p>
                 <p className="text-sm text-text-secondary mt-2">
                   <strong>Kök Neden:</strong> {analysis.rootCause}

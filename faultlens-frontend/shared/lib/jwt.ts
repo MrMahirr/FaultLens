@@ -8,7 +8,7 @@ export interface JwtPayload {
   roles: string[];
   iat: number;
   exp: number;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export function decodeJwt(token: string): JwtPayload | null {

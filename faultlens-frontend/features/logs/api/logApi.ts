@@ -6,7 +6,7 @@ import type { PagedResponse } from "@/shared/types/api.types";
 
 export const LogApi = {
   getLogs: async (filters: LogFilters): Promise<PagedResponse<LogEntryDto>> => {
-    const params: Record<string, any> = {
+    const params: Record<string, string | number> = {
       page: filters.page ?? 0,
       size: filters.size ?? 20,
     };

@@ -7,12 +7,21 @@ import {
 } from "./authApi";
 import { useAuthStore } from "@/features/auth/store/auth.store";
 import { decodeJwt } from "@/shared/lib/jwt";
+import { getApiErrorMessage } from "@/shared/api/errors";
 
 export const useLoginMutation = () => {
   const loginStore = useAuthStore.getState().login;
 
   return useMutation({
-    mutationFn: (data: LoginRequest) => AuthApi.login(data),
+    mutationFn: async (data: LoginRequest) => {
+      try {
+        return await AuthApi.login(data);
+      } catch (error) {
+        // Surface the backend message (e.g. "Invalid username or password") instead of
+        // axios' generic "Request failed with status code 401".
+        throw new Error(getApiErrorMessage(error, "Geçersiz kullanıcı adı veya şifre"));
+      }
+    },
     onSuccess: (data: LoginResponse) => {
       const payload = decodeJwt(data.token);
       let username = "admin";
@@ -29,10 +38,6 @@ export const useLoginMutation = () => {
         mustChangePassword: data.mustChangePassword,
       });
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.error?.message || error.message || "Geçersiz kullanıcı adı veya şifre";
-      throw new Error(message);
-    }
   });
 };
 

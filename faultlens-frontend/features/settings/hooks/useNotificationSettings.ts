@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { apiClient } from "@/shared/api/client";
 import { Endpoints } from "@/shared/api/endpoints";
 import toast from "react-hot-toast";
+import { getApiErrorMessage } from "@/shared/api/errors";
 
 export interface NotificationState {
   emailEnabled: boolean;
@@ -30,33 +31,37 @@ export function useNotificationSettings() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  const fetchSettings = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const response = await apiClient.get(Endpoints.SETTINGS.NOTIFICATIONS);
-      const data = response.data?.data;
-      if (data) {
-        setSettings({
-          emailEnabled: data.emailEnabled ?? true,
-          slackEnabled: data.slackEnabled ?? false,
-          slackWebhook: data.slackWebhook ?? null,
-          pushEnabled: data.pushEnabled ?? false,
-          mobileEnabled: data.mobileEnabled ?? false,
-          emailjsServiceId: data.emailjsServiceId ?? null,
-          emailjsTemplateId: data.emailjsTemplateId ?? null,
-          emailjsPublicKey: data.emailjsPublicKey ?? null,
-        });
-      }
-    } catch {
-      // Fallback to defaults if API is unavailable
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
+  // Load once on mount. State is only set in the promise callbacks, and not at
+  // all after unmount.
   useEffect(() => {
-    fetchSettings();
-  }, [fetchSettings]);
+    let active = true;
+    apiClient
+      .get(Endpoints.SETTINGS.NOTIFICATIONS)
+      .then((response) => {
+        const data = response.data?.data;
+        if (active && data) {
+          setSettings({
+            emailEnabled: data.emailEnabled ?? true,
+            slackEnabled: data.slackEnabled ?? false,
+            slackWebhook: data.slackWebhook ?? null,
+            pushEnabled: data.pushEnabled ?? false,
+            mobileEnabled: data.mobileEnabled ?? false,
+            emailjsServiceId: data.emailjsServiceId ?? null,
+            emailjsTemplateId: data.emailjsTemplateId ?? null,
+            emailjsPublicKey: data.emailjsPublicKey ?? null,
+          });
+        }
+      })
+      .catch(() => {
+        // Fallback to defaults if API is unavailable
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const toggleOption = async (field: "emailEnabled" | "slackEnabled" | "pushEnabled" | "mobileEnabled") => {
     const previousSettings = { ...settings };
@@ -85,8 +90,8 @@ export function useNotificationSettings() {
         });
       }
       toast.success("Bildirim tercihi güncellendi!");
-    } catch (err: any) {
-      toast.error("Ayarlar kaydedilemedi.");
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Ayarlar kaydedilemedi."));
       setSettings(previousSettings);
     }
   };
@@ -112,12 +117,8 @@ export function useNotificationSettings() {
         });
       }
       toast.success("Bildirim tercihleri kaydedildi!");
-    } catch (err: any) {
-      const message =
-        err.response?.data?.error?.message ||
-        err.response?.data?.message ||
-        "Ayarlar kaydedilirken bir hata oluştu.";
-      toast.error(message);
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Ayarlar kaydedilirken bir hata oluştu."));
     } finally {
       setIsSaving(false);
     }

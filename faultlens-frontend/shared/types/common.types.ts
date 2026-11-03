@@ -22,7 +22,8 @@ export enum LogSourceType {
 
 export enum AnalysisType {
   RULE_BASED = "RULE_BASED",
-  AI_ANALYSIS = "AI_ANALYSIS",
+  /** Backend AiAnalysisEngine stores engine_type = "AI" */
+  AI = "AI",
 }
 
 export enum DeploymentStatus {

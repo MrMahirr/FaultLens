@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/shared/components/ui/Input";
 import { Button } from "@/shared/components/ui/Button";
 import { useAuthStore } from "@/features/auth/store/auth.store";
@@ -8,6 +8,7 @@ import { apiClient } from "@/shared/api/client";
 import { Endpoints } from "@/shared/api/endpoints";
 import { Save, Shield } from "lucide-react";
 import toast from "react-hot-toast";
+import { getApiErrorMessage } from "@/shared/api/errors";
 
 export function AccountSettings() {
   const { user, updateUser } = useAuthStore();
@@ -24,29 +25,30 @@ export function AccountSettings() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isPasswordSaving, setIsPasswordSaving] = useState(false);
 
-  // Fetch profile on mount
-  const fetchProfile = useCallback(async () => {
-    try {
-      setIsProfileLoading(true);
-      const response = await apiClient.get(Endpoints.AUTH.PROFILE);
-      const profile = response.data?.data;
-      if (profile) {
-        setUsername(profile.username);
-        setEmail(profile.email || "");
-        updateUser({ username: profile.username, email: profile.email });
-      }
-    } catch {
-      // Fallback to store values if API is unavailable
-      setUsername(user?.username || "");
-      setEmail(user?.email || "");
-    } finally {
-      setIsProfileLoading(false);
-    }
-  }, [user?.username, user?.email, updateUser]);
-
+  // Fetch profile on mount; state is only set in promise callbacks and not after
+  // unmount. If the API is unavailable the fields keep the values from the store.
   useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
+    let active = true;
+    apiClient
+      .get(Endpoints.AUTH.PROFILE)
+      .then((response) => {
+        const profile = response.data?.data;
+        if (active && profile) {
+          setUsername(profile.username);
+          setEmail(profile.email || "");
+          updateUser({ username: profile.username, email: profile.email });
+        }
+      })
+      .catch(() => {
+        // keep store values
+      })
+      .finally(() => {
+        if (active) setIsProfileLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [updateUser]);
 
   const handleSaveProfile = async () => {
     setIsSaving(true);
@@ -60,10 +62,8 @@ export function AccountSettings() {
         updateUser({ username: profile.username, email: profile.email });
       }
       toast.success("Profil bilgileri başarıyla kaydedildi!");
-    } catch (err: any) {
-      const message =
-        err.response?.data?.message || "Profil güncellenirken bir hata oluştu.";
-      toast.error(message);
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Profil güncellenirken bir hata oluştu."));
     } finally {
       setIsSaving(false);
     }
@@ -86,12 +86,8 @@ export function AccountSettings() {
       setNewPassword("");
       setConfirmPassword("");
       toast.success("Şifre başarıyla güncellendi!");
-    } catch (err: any) {
-      const message =
-        err.response?.data?.error?.message ||
-        err.response?.data?.message ||
-        "Şifre değiştirilirken bir hata oluştu.";
-      toast.error(message);
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Şifre değiştirilirken bir hata oluştu."));
     } finally {
       setIsPasswordSaving(false);
     }

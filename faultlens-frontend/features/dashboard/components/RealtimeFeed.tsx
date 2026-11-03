@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Radio } from "lucide-react";
 import { Card } from "@/shared/components/ui/Card";
@@ -33,8 +33,12 @@ function getSeverityVariant(severity: Severity) {
 
 /* ── Component ─────────────────────────────────────────────── */
 
+const MAX_FEED_ITEMS = 30; // cap to keep memory bounded on a busy stream
+
 function RealtimeFeed() {
-  const [logs, setLogs] = useState<LogEntryDto[]>([]);
+  // Only logs received over the WebSocket live in state; the initial page comes
+  // from the query and is merged at render time (no state syncing in an effect).
+  const [liveLogs, setLiveLogs] = useState<LogEntryDto[]>([]);
 
   // Fetch initial error/critical logs
   const { data: initialData } = useLogsQuery({
@@ -43,26 +47,23 @@ function RealtimeFeed() {
     severity: [Severity.ERROR, Severity.CRITICAL],
   });
 
-  // Sync initial logs when query completes
-  useEffect(() => {
-    if (initialData?.content) {
-      setLogs(initialData.content);
-    }
-  }, [initialData]);
-
   // Connect to live WebSocket log stream
   const { isConnected } = useLogStream({
     enabled: true,
     onNewLog: (newLog) => {
       if (newLog.severity === Severity.ERROR || newLog.severity === Severity.CRITICAL) {
-        setLogs((prev) => {
-          // Avoid duplicate logs in list if query also fetched them
-          if (prev.some((l) => l.id === newLog.id)) return prev;
-          return [newLog, ...prev].slice(0, 30); // Cap at 30 to prevent memory leaks (OOM)
-        });
+        setLiveLogs((prev) =>
+          prev.some((l) => l.id === newLog.id) ? prev : [newLog, ...prev].slice(0, MAX_FEED_ITEMS),
+        );
       }
     },
   });
+
+  const logs = useMemo(() => {
+    const seen = new Set(liveLogs.map((l) => l.id));
+    const initial = (initialData?.content ?? []).filter((l) => !seen.has(l.id));
+    return [...liveLogs, ...initial].slice(0, MAX_FEED_ITEMS);
+  }, [liveLogs, initialData]);
 
   return (
     <Card variant="default" padding="none">

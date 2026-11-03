@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useIsClient } from "@/shared/hooks/useIsClient";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/features/auth/store/auth.store";
 
@@ -12,10 +13,9 @@ export default function AuthLayout({
   const token = useAuthStore((state) => state.token);
   const mustChangePassword = useAuthStore((state) => state.user?.mustChangePassword ?? false);
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useIsClient();
 
   useEffect(() => {
-    setMounted(true);
     if (token) {
       // Sync cookie for existing users who only have token in localStorage
       document.cookie = `faultlens_token=${token}; path=/; max-age=86400; SameSite=Lax`;
