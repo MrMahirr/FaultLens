@@ -1,6 +1,6 @@
 # FaultLens Backend — System Architecture Document
 
-FaultLens (also known as LogLens) is a real-time distributed log analysis, group indexing, and anomaly-correlation platform built with **Java 21**, **Spring Boot 3.3**, **Apache Kafka**, **Redis**, and **PostgreSQL**.
+FaultLens is a real-time distributed log analysis, group indexing, and anomaly-correlation platform built with **Java 21**, **Spring Boot 3.3**, **Apache Kafka**, **Redis**, and **PostgreSQL**.
 
 ---
 
@@ -97,7 +97,7 @@ flowchart TD
 ## 3. Key Architectural Design Decisions & Core Mechanisms
 
 ### A. Thread-Safe and Idempotent Streaming Ingestion
-The **`CollectorOrchestrator`** runs each active log source in a dedicated thread managed by a cached thread pool with custom thread naming (e.g. `loglens-collector-*`).
+The **`CollectorOrchestrator`** runs each active log source in a dedicated thread managed by a cached thread pool with custom thread naming (e.g. `faultlens-collector-*`).
 - Uses `ConcurrentHashMap` for running states and active connection resource scopes.
 - Gracefully reacts to `SIGTERM` / shutdown hooks via `@PreDestroy` method, closing active SSH channels, socket connections, and executor threads cleanly without leaking connections.
 

@@ -15,7 +15,7 @@ export default function LoginPage() {
         </div>
         <div>
           <h1 className="text-2xl font-bold font-display text-text-primary">
-            Log<span className="text-accent">Lens</span>
+            Fault<span className="text-accent">Lens</span>
           </h1>
           <p className="text-sm text-text-secondary mt-1">
             Log analiz platformuna giriş yapın

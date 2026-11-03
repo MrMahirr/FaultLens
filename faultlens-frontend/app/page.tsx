@@ -179,7 +179,7 @@ export default function LandingPage() {
               <Hexagon size={28} className="text-accent" />
             </div>
             <span className="text-3xl font-bold font-display text-text-primary">
-              Log<span className="text-accent">Lens</span>
+              Fault<span className="text-accent">Lens</span>
             </span>
           </motion.div>
 
@@ -360,7 +360,7 @@ export default function LandingPage() {
           <div className="flex items-center gap-2">
             <Hexagon size={18} className="text-accent" />
             <span className="font-display font-bold text-text-primary">
-              Log<span className="text-accent">Lens</span>
+              Fault<span className="text-accent">Lens</span>
             </span>
           </div>
           <p className="text-xs text-text-muted">

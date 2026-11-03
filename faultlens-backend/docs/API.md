@@ -1,6 +1,6 @@
 # FaultLens API Contract Specification
 
-This document details the REST API endpoints and real-time WebSocket channels provided by the FaultLens (LogLens) backend application.
+This document details the REST API endpoints and real-time WebSocket channels provided by the FaultLens backend application.
 
 - **Base URL:** `http://localhost:3500/api/v1`
 - **WebSocket Protocol URL:** `ws://localhost:3500/ws`
