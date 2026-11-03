@@ -102,11 +102,14 @@ services:
     build:
       context: ./faultlens-frontend
       dockerfile: Dockerfile
+      # NEXT_PUBLIC_* are baked into the bundle at build time (runtime env has no effect).
+      # They are the URLs the *browser* uses, so localhost is correct for local use.
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3500/api/v1}
+        NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL:-ws://localhost:3500/ws}
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:3500/api/v1
-      - NEXT_PUBLIC_WS_URL=ws://localhost:3500/ws
       - PORT=3000
     depends_on:
       - backend

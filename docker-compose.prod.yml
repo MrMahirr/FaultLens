@@ -43,15 +43,15 @@ services:
     build:
       context: ./faultlens-frontend
       dockerfile: Dockerfile
+      # Baked into the client bundle at build time; rebuild the image when they change.
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.faultlens.com/api/v1}
+        NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL:-wss://api.faultlens.com/ws}
     image: faultlens-frontend:latest
     container_name: faultlens-frontend-prod
     restart: always
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
-    environment:
-      # These must be provided during build or runtime
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://api.faultlens.com/api/v1}
-      - NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL:-wss://api.faultlens.com/ws}
     logging:
       driver: "json-file"
       options:

@@ -2,8 +2,10 @@
  * Backend API endpoint definitions.
  * Hiçbir feature dosyasında URL string'i olmayacak — sadece Endpoints.* kullanılır.
  */
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3500/api/v1";
-const WS = process.env.NEXT_PUBLIC_WS_URL ?? "ws://localhost:3500/ws";
+// NEXT_PUBLIC_* values are inlined at build time. `||` (not `??`) so an empty
+// value — e.g. a Docker build ARG that was not passed — falls back to the default.
+const BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3500/api/v1";
+const WS = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:3500/ws";
 
 export const Endpoints = {
   // ── Auth ──────────────────────────────────────────────────
