@@ -13,11 +13,13 @@ import { useAuthStore } from "@/features/auth/store/auth.store";
 /* ── Breadcrumb Map ────────────────────────────────────────── */
 
 const ROUTE_LABELS: Record<string, string> = {
-  "/dashboard": "Dashboard",
-  "/logs": "Logs",
-  "/sources": "Sources",
-  "/analyses": "Analyses",
-  "/deployments": "Deployments",
+  "/dashboard": "Panel",
+  "/logs": "Loglar",
+  "/sources": "Kaynaklar",
+  "/analyses": "Analizler",
+  "/deployments": "Dağıtımlar",
+  "/alarms": "Alarmlar",
+  "/settings": "Ayarlar",
 };
 
 /* ── Component ─────────────────────────────────────────────── */
@@ -37,7 +39,7 @@ function Topbar() {
         .filter(Boolean)
         .map((seg) => seg.charAt(0).toUpperCase() + seg.slice(1))
         .join(" / ")
-    : "Dashboard";
+    : "Panel";
 
   const userMenuItems: DropdownItem[] = [
     { label: "Profil", value: "profile", icon: <User size={14} /> },

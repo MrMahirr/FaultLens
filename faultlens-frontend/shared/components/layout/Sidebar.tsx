@@ -32,11 +32,11 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { label: "Anasayfa", href: "/", icon: <Home size={20} /> },
-  { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard size={20} /> },
-  { label: "Logs", href: "/logs", icon: <ScrollText size={20} /> },
+  { label: "Panel", href: "/dashboard", icon: <LayoutDashboard size={20} /> },
+  { label: "Loglar", href: "/logs", icon: <ScrollText size={20} /> },
   { label: "Kaynaklar", href: "/sources", icon: <Server size={20} /> },
   { label: "Analizler", href: "/analyses", icon: <Brain size={20} /> },
-  { label: "Deployments", href: "/deployments", icon: <Rocket size={20} /> },
+  { label: "Dağıtımlar", href: "/deployments", icon: <Rocket size={20} /> },
   { label: "Alarmlar", href: "/alarms", icon: <Bell size={20} /> },
   { label: "Ayarlar", href: "/settings", icon: <Settings size={20} /> },
 ];
@@ -87,18 +87,21 @@ function Sidebar() {
         {NAV_ITEMS.map((item) => {
           const active = isActive(item.href);
 
-          const linkContent = (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg",
-                "transition-all duration-200 group relative",
-                active
-                  ? "bg-accent/10 text-accent"
-                  : "text-text-secondary hover:text-text-primary hover:bg-bg-tertiary"
-              )}
-            >
+          // `key` is set on the wrapping <Tooltip>/<div>; spreading it here
+          // would trigger React's "key spread into JSX" warning.
+          const linkProps = {
+            href: item.href,
+            className: cn(
+              "flex items-center gap-3 px-3 py-2.5 rounded-lg",
+              "transition-all duration-200 group relative",
+              active
+                ? "bg-accent/10 text-accent"
+                : "text-text-secondary hover:text-text-primary hover:bg-bg-tertiary"
+            ),
+          };
+
+          const linkInner = (
+            <>
               {/* Active indicator */}
               {active && (
                 <motion.div
@@ -120,7 +123,15 @@ function Sidebar() {
               >
                 {item.label}
               </motion.span>
-            </Link>
+            </>
+          );
+
+          // "/" is the standalone landing page (outside the dashboard layout),
+          // so it gets a full page load instead of client-side navigation.
+          const linkContent = item.href === "/" ? (
+            <a {...linkProps}>{linkInner}</a>
+          ) : (
+            <Link {...linkProps}>{linkInner}</Link>
           );
 
           // Show tooltip when sidebar is collapsed
