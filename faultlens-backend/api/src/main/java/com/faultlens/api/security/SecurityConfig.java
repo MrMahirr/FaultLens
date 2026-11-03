@@ -32,6 +32,8 @@ public class SecurityConfig {
                         .accessDeniedHandler((request, response, accessDeniedException) ->
                                 writeError(response, objectMapper, HttpServletResponse.SC_FORBIDDEN, "ACCESS_DENIED", "Access denied")))
                 .authorizeHttpRequests(auth -> auth
+                        // WebSocket handshakes carry the JWT as a sub-protocol, not an Authorization header;
+                        // they are authenticated by JwtHandshakeInterceptor (see WebSocketConfig).
                         .requestMatchers(org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher("/ws/**")).permitAll()
                         .requestMatchers("/api/v1/auth/**", "/actuator/health", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/actuator/**").hasRole("ADMIN")

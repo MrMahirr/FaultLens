@@ -1,5 +1,7 @@
 package com.faultlens.api.ws;
 
+import com.faultlens.api.security.JwtService;
+import java.util.Arrays;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,23 +20,35 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 @EnableWebSocket
 public class WebSocketConfig implements WebSocketConfigurer {
     private final LogWebSocketHandler handler;
+    private final JwtService jwtService;
     private final int maxConnections;
+    private final String[] allowedOrigins;
 
     public WebSocketConfig(
             LogWebSocketHandler handler,
-            @Value("${faultlens.ws.max-connections:1000}") int maxConnections) {
+            JwtService jwtService,
+            @Value("${faultlens.ws.max-connections:1000}") int maxConnections,
+            @Value("${faultlens.cors.allowed-origins:http://localhost:3000}") String allowedOrigins) {
         this.handler = handler;
+        this.jwtService = jwtService;
         this.maxConnections = maxConnections;
+        this.allowedOrigins = Arrays.stream(allowedOrigins.split(","))
+                .map(String::trim)
+                .filter(origin -> !origin.isEmpty())
+                .toArray(String[]::new);
     }
 
     /**
      * Registers the raw WebSocket endpoint.
+     *
+     * <p>Origins are limited to the same list as REST CORS ({@code CORS_ORIGINS}). Interceptor order
+     * matters: unauthenticated clients are rejected before the connection limit is consulted.
      */
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(handler, "/ws/logs")
-                .setAllowedOriginPatterns("*")
-                .addInterceptors(new HandshakeLimitInterceptor());
+                .setAllowedOrigins(allowedOrigins)
+                .addInterceptors(new JwtHandshakeInterceptor(jwtService), new HandshakeLimitInterceptor());
     }
 
     /**
@@ -47,7 +61,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
                 ServerHttpResponse response,
                 WebSocketHandler wsHandler,
                 Map<String, Object> attributes) throws Exception {
-            
+
             int activeConnections = handler.getActiveConnectionCount();
             if (activeConnections >= maxConnections) {
                 log.warn("WebSocket handshake rejected. Max connections reached (limit: {}, active: {})", maxConnections, activeConnections);
@@ -67,4 +81,3 @@ public class WebSocketConfig implements WebSocketConfigurer {
         }
     }
 }
-

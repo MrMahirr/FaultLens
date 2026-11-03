@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.faultlens.api.security.JwtService;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +27,8 @@ class WebSocketIntegrationTest {
     void setUp() {
         objectMapper = new ObjectMapper();
         handler = new LogWebSocketHandler(objectMapper, 2); // Limit set to 2 for easy testing
-        config = new WebSocketConfig(handler, 2);
+        JwtService jwtService = new JwtService("faultlens-test-secret-needs-at-least-256-bits-value", 60_000);
+        config = new WebSocketConfig(handler, jwtService, 2, "http://localhost:3000");
     }
 
     @Test
@@ -105,5 +107,34 @@ class WebSocketIntegrationTest {
         boolean blocked = interceptor.beforeHandshake(request, response, wsHandler, attributes);
         assertThat(blocked).isFalse();
         verify(response).setStatusCode(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    @Test
+    void heartbeatClosesSessionsWithExpiredToken() throws Exception {
+        WebSocketSession expired = mock(WebSocketSession.class);
+        when(expired.getId()).thenReturn("expired");
+        when(expired.isOpen()).thenReturn(true);
+        when(expired.getAttributes()).thenReturn(new HashMap<>(Map.of(
+                JwtHandshakeInterceptor.ATTR_EXPIRES_AT, System.currentTimeMillis() - 1_000)));
+
+        WebSocketSession valid = mock(WebSocketSession.class);
+        when(valid.getId()).thenReturn("valid");
+        when(valid.isOpen()).thenReturn(true);
+        when(valid.getAttributes()).thenReturn(new HashMap<>(Map.of(
+                JwtHandshakeInterceptor.ATTR_EXPIRES_AT, System.currentTimeMillis() + 60_000)));
+
+        handler.afterConnectionEstablished(expired);
+        handler.afterConnectionEstablished(valid);
+
+        handler.sendHeartbeats();
+
+        verify(expired).close(LogWebSocketHandler.TOKEN_EXPIRED);
+        verify(valid, never()).close(any(CloseStatus.class));
+        assertThat(handler.getActiveConnectionCount()).isEqualTo(1);
+    }
+
+    @Test
+    void handlerAdvertisesBearerSubProtocol() {
+        assertThat(handler.getSubProtocols()).containsExactly("bearer");
     }
 }

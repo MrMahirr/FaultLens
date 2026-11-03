@@ -276,7 +276,19 @@ Requires authentication.
 A stateless, full-duplex WebSocket stream intended for front-end dashboards to receive parsed, structured logs instantly.
 
 - **Endpoint:** `ws://localhost:3500/ws/logs`
-- **Connection Handshake:** Publicly accessible, but capped to a maximum of **2 active global concurrent socket sessions** to protect backend resources from OOM.
+- **Authentication (required):** send the JWT from `/api/v1/auth/login` as WebSocket sub-protocols `["bearer", <token>]`. Browsers cannot set an `Authorization` header on WebSocket requests, and a query parameter would leak the token into proxy/access logs.
+  ```js
+  const ws = new WebSocket("ws://localhost:3500/ws/logs", ["bearer", token]);
+  // server selects the "bearer" sub-protocol: ws.protocol === "bearer"
+  ```
+  CLI example: `wscat -c ws://localhost:3500/ws/logs -s bearer -s <token> -o http://localhost:3000`
+- **Handshake rejections:**
+  | Status | Reason |
+  |---|---|
+  | `401` | Missing, malformed, wrongly signed or expired token |
+  | `403` | `Origin` not in `CORS_ORIGINS` (same allow-list as the REST API) |
+  | `503` | Global connection limit reached (`faultlens.ws.max-connections`, default 1000) |
+- **Token expiry:** the server checks open sessions every 10 seconds and closes those whose token has expired with close code **`4401` (`Token expired`)**. Clients should not auto-retry on `4401`; reconnect after obtaining a new token.
 - **Message Payload Broadcast (Server to Client):**
   ```json
   {

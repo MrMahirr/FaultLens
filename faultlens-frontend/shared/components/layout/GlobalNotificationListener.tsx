@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 import { useWebSocket } from "@/shared/hooks/useWebSocket";
 import { Endpoints } from "@/shared/api/endpoints";
+import { useAuthStore } from "@/features/auth/store/auth.store";
 import toast from "react-hot-toast";
 import { AlertTriangle } from "lucide-react";
 
 export function GlobalNotificationListener() {
   const [mounted, setMounted] = useState(false);
+  const token = useAuthStore((state) => state.token);
 
   useEffect(() => {
     setMounted(true);
@@ -83,8 +85,9 @@ export function GlobalNotificationListener() {
 
   useWebSocket({
     url: Endpoints.WS.LOGS,
+    token,
     onMessage: handleMessage,
-    enabled: mounted,
+    enabled: mounted && !!token,
   });
 
   return null; // This component doesn't render anything
