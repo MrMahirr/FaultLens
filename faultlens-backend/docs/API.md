@@ -10,7 +10,12 @@ This document details the REST API endpoints and real-time WebSocket channels pr
 
 ## 1. Authentication Endpoints (`/api/v1/auth`)
 
-All auth endpoints are public.
+`/login` and `/refresh` are public; `/profile` and `/password` require a bearer token.
+
+> **Initial admin account.** On first start the backend creates `admin` with the password from
+> `ADMIN_INITIAL_PASSWORD`, or generates one and prints it **once** in the backend log. An admin
+> still using a well-known default (the old `admin123` / V6 seed) is reset the same way on startup.
+> Either way the admin must change the password at first login (see *Password change required*).
 
 ### A. Login User
 - **Method:** `POST`
@@ -19,7 +24,7 @@ All auth endpoints are public.
   ```json
   {
     "username": "admin",
-    "password": "admin123"
+    "password": "<password>"
   }
   ```
 - **Response (`200 OK`):**
@@ -28,13 +33,17 @@ All auth endpoints are public.
     "success": true,
     "data": {
       "token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIs...",
-      "expires_at": "2026-05-26T12:22:00.089Z"
+      "expires_at": "2026-05-26T12:22:00.089Z",
+      "must_change_password": false
     },
     "message": "OK",
     "timestamp": "2026-05-25T15:30:00.000Z"
   }
   ```
-- **Error Codes:** `401 BadCredentialsException` (invalid user/pass).
+- **Error Codes:** `401 AUTH_FAILED` (invalid user/pass).
+- **Password change required:** when `must_change_password` is `true`, the token only allows
+  `PUT /auth/password`, `GET /auth/profile` and `POST /auth/refresh`. Every other endpoint answers
+  `403` with error code `PASSWORD_CHANGE_REQUIRED`, and the WebSocket handshake is refused (`403`).
 
 ### B. Refresh Token
 - **Method:** `POST`
@@ -52,6 +61,14 @@ All auth endpoints are public.
     "timestamp": "2026-05-25T15:31:00.000Z"
   }
   ```
+
+### C. Change Password
+- **Method:** `PUT`
+- **Path:** `/api/v1/auth/password`
+- **Headers:** `Authorization: Bearer <JWT_TOKEN>`
+- **Request Body:** `{ "current_password": "...", "new_password": "..." }` (`new_password`: 8-128 characters, must differ from the current one)
+- **Response (`200 OK`):** a fresh token (same shape as login) with `must_change_password: false`. Clients should replace their stored token.
+- **Error Codes:** `400 INVALID_CURRENT_PASSWORD`, `400 PASSWORD_REUSED`, `422 VALIDATION_FAILED`. A wrong current password is deliberately **not** `401`, so clients do not treat it as a logged-out session.
 
 ---
 

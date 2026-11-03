@@ -72,17 +72,25 @@ export function AccountSettings() {
   const handleSavePassword = async () => {
     setIsPasswordSaving(true);
     try {
-      await apiClient.put(Endpoints.AUTH.CHANGE_PASSWORD, {
+      const response = await apiClient.put(Endpoints.AUTH.CHANGE_PASSWORD, {
         current_password: currentPassword,
         new_password: newPassword,
       });
+      // Backend returns a fresh token after a password change
+      const fresh = response.data?.data;
+      const { user: currentUser, login } = useAuthStore.getState();
+      if (fresh?.token && currentUser) {
+        login(fresh.token, { ...currentUser, mustChangePassword: false });
+      }
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
       toast.success("Şifre başarıyla güncellendi!");
     } catch (err: any) {
       const message =
-        err.response?.data?.message || "Şifre değiştirilirken bir hata oluştu.";
+        err.response?.data?.error?.message ||
+        err.response?.data?.message ||
+        "Şifre değiştirilirken bir hata oluştu.";
       toast.error(message);
     } finally {
       setIsPasswordSaving(false);
@@ -156,6 +164,11 @@ export function AccountSettings() {
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             placeholder="••••••••"
+            error={
+              newPassword && newPassword.length < 8
+                ? "Yeni şifre en az 8 karakter olmalıdır"
+                : undefined
+            }
           />
           <Input
             label="Yeni Şifre (Tekrar)"
@@ -176,7 +189,7 @@ export function AccountSettings() {
               loading={isPasswordSaving}
               disabled={
                 !currentPassword ||
-                !newPassword ||
+                newPassword.length < 8 ||
                 newPassword !== confirmPassword
               }
             >

@@ -51,6 +51,11 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
         }
 
         Claims claims = jwtService.parse(token.get());
+        if (JwtService.requiresPasswordChange(claims)) {
+            log.debug("WebSocket handshake rejected for {}: password change required", claims.getSubject());
+            response.setStatusCode(HttpStatus.FORBIDDEN);
+            return false;
+        }
         attributes.put(ATTR_USERNAME, claims.getSubject());
         if (claims.getExpiration() != null) {
             attributes.put(ATTR_EXPIRES_AT, claims.getExpiration().getTime());

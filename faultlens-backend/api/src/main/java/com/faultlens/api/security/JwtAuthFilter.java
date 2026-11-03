@@ -1,5 +1,7 @@
 package com.faultlens.api.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.faultlens.api.dto.ErrorEnvelope;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -7,7 +9,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,10 +21,18 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Slf4j
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
-    private final JwtService jwtService;
+    /** Endpoints a user with a pending password change may still call ("METHOD path"). */
+    static final Set<String> PASSWORD_CHANGE_ALLOWED = Set.of(
+            "PUT /api/v1/auth/password",
+            "GET /api/v1/auth/profile",
+            "POST /api/v1/auth/refresh");
 
-    public JwtAuthFilter(JwtService jwtService) {
+    private final JwtService jwtService;
+    private final ObjectMapper objectMapper;
+
+    public JwtAuthFilter(JwtService jwtService, ObjectMapper objectMapper) {
         this.jwtService = jwtService;
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -38,6 +50,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     return;
                 }
                 Claims claims = jwtService.parse(token);
+                if (JwtService.requiresPasswordChange(claims) && !isAllowedDuringPasswordChange(request)) {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                    objectMapper.writeValue(response.getWriter(), ErrorEnvelope.of(
+                            "PASSWORD_CHANGE_REQUIRED", "Password must be changed before using the API"));
+                    return;
+                }
                 Object rawRoles = claims.get("roles");
                 List<SimpleGrantedAuthority> authorities = rawRoles instanceof List<?> roles
                         ? roles.stream()
@@ -54,5 +73,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
         }
         filterChain.doFilter(request, response);
+    }
+
+    private static boolean isAllowedDuringPasswordChange(HttpServletRequest request) {
+        String path = request.getRequestURI().substring(request.getContextPath().length());
+        return PASSWORD_CHANGE_ALLOWED.contains(request.getMethod() + " " + path);
     }
 }

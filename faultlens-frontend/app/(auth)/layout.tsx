@@ -10,6 +10,7 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   const token = useAuthStore((state) => state.token);
+  const mustChangePassword = useAuthStore((state) => state.user?.mustChangePassword ?? false);
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
@@ -18,9 +19,9 @@ export default function AuthLayout({
     if (token) {
       // Sync cookie for existing users who only have token in localStorage
       document.cookie = `faultlens_token=${token}; path=/; max-age=86400; SameSite=Lax`;
-      router.replace("/dashboard");
+      router.replace(mustChangePassword ? "/change-password" : "/dashboard");
     }
-  }, [token, router]);
+  }, [token, mustChangePassword, router]);
 
   if (!mounted) return null;
 

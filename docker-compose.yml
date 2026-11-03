@@ -85,6 +85,8 @@ services:
       - REDIS_PORT=6379
       - KAFKA_SERVERS=kafka:29092
       - PORT=3500
+      # Empty -> generated and printed once in the backend log; must be changed at first login
+      - ADMIN_INITIAL_PASSWORD=${ADMIN_INITIAL_PASSWORD:-}
     depends_on:
       postgres:
         condition: service_healthy

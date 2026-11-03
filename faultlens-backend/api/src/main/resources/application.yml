@@ -81,6 +81,10 @@ faultlens:
       model: gpt-4o-mini
   cors:
     allowed-origins: ${CORS_ORIGINS:http://localhost:3000}
+  security:
+    # Initial password for the 'admin' account (min 8 chars). Empty -> a random one is generated
+    # and logged once at startup. Either way it must be changed at first login.
+    admin-initial-password: ${ADMIN_INITIAL_PASSWORD:}
 
 logging:
   level:

@@ -39,8 +39,8 @@ function LoginForm() {
 
   const onSubmit = (data: LoginFormData) => {
     loginMutation.mutate(data, {
-      onSuccess: () => {
-        router.push("/dashboard");
+      onSuccess: (response) => {
+        router.push(response.mustChangePassword ? "/change-password" : "/dashboard");
       },
     });
   };
@@ -91,12 +91,6 @@ function LoginForm() {
       >
         Giriş Yap
       </Button>
-
-      {/* Dev hint */}
-      <p className="text-xs text-text-muted text-center">
-        Demo: <span className="font-mono text-text-secondary">admin</span> /{" "}
-        <span className="font-mono text-text-secondary">admin123</span>
-      </p>
     </form>
   );
 }

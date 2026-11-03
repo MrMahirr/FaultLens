@@ -14,6 +14,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class JwtService {
+    /** Claim set while the user still has to replace a bootstrap/default password. */
+    public static final String CLAIM_PASSWORD_CHANGE = "pwd_change";
+
     private final SecretKey key;
     private final long expirationMs;
 
@@ -28,10 +31,22 @@ public class JwtService {
      * Generates a JWT for the supplied username and roles.
      */
     public String generateToken(String username, List<String> roles) {
+        return generateToken(username, roles, false);
+    }
+
+    /**
+     * Generates a JWT; when {@code passwordChangeRequired} is true the token only grants access to
+     * the password-change flow (enforced by {@link JwtAuthFilter}).
+     */
+    public String generateToken(String username, List<String> roles, boolean passwordChangeRequired) {
         Instant now = Instant.now();
-        return Jwts.builder()
+        var builder = Jwts.builder()
                 .subject(username)
-                .claim("roles", roles)
+                .claim("roles", roles);
+        if (passwordChangeRequired) {
+            builder.claim(CLAIM_PASSWORD_CHANGE, true);
+        }
+        return builder
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plusMillis(expirationMs)))
                 .signWith(key, Jwts.SIG.HS256)
@@ -55,6 +70,13 @@ public class JwtService {
         } catch (JwtException | IllegalArgumentException ex) {
             return false;
         }
+    }
+
+    /**
+     * Returns true when the token was issued for a user who must change their password first.
+     */
+    public static boolean requiresPasswordChange(Claims claims) {
+        return Boolean.TRUE.equals(claims.get(CLAIM_PASSWORD_CHANGE, Boolean.class));
     }
 
     /**

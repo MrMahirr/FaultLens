@@ -3,6 +3,7 @@ package com.faultlens.api.dto;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import java.time.Instant;
 
 public final class AuthDtos {
@@ -18,7 +19,10 @@ public final class AuthDtos {
     }
 
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    public record TokenResponse(String token, Instant expiresAt) {
+    public record TokenResponse(String token, Instant expiresAt, boolean mustChangePassword) {
+        public TokenResponse(String token, Instant expiresAt) {
+            this(token, expiresAt, false);
+        }
     }
 
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
@@ -32,6 +36,6 @@ public final class AuthDtos {
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public record ChangePasswordRequest(
             @NotBlank String currentPassword,
-            @NotBlank String newPassword) {
+            @NotBlank @Size(min = 8, max = 128, message = "New password must be 8-128 characters") String newPassword) {
     }
 }

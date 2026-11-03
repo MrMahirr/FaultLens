@@ -26,4 +26,8 @@ public class UserAccount {
     private String email;
     private String role;
     private Instant createdAt;
+
+    /** When true the user may only change their password until they do so. */
+    @Builder.Default
+    private boolean mustChangePassword = false;
 }

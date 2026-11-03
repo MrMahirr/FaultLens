@@ -65,6 +65,19 @@ class JwtHandshakeInterceptorTest {
     }
 
     @Test
+    void rejectsTokenWithPendingPasswordChange() {
+        String token = jwtService.generateToken("admin", List.of("ADMIN"), true);
+        MockHttpServletResponse servletResponse = new MockHttpServletResponse();
+
+        boolean allowed = interceptor.beforeHandshake(
+                request("bearer, " + token), new ServletServerHttpResponse(servletResponse),
+                mock(WebSocketHandler.class), new HashMap<>());
+
+        assertThat(allowed).isFalse();
+        assertThat(servletResponse.getStatus()).isEqualTo(HttpStatus.FORBIDDEN.value());
+    }
+
+    @Test
     void extractsTokenRegardlessOfProtocolOrder() {
         assertThat(JwtHandshakeInterceptor.extractToken(request("v1.logs, bearer, abc.def.ghi")))
                 .contains("abc.def.ghi");

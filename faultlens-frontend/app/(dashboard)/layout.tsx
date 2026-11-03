@@ -16,6 +16,7 @@ export default function DashboardLayout({
 }) {
   const sidebarOpen = useUIStore((state) => state.sidebarOpen);
   const token = useAuthStore((state) => state.token);
+  const mustChangePassword = useAuthStore((state) => state.user?.mustChangePassword ?? false);
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
@@ -23,11 +24,13 @@ export default function DashboardLayout({
     setMounted(true);
     if (!token) {
       router.replace("/login");
+    } else if (mustChangePassword) {
+      router.replace("/change-password");
     }
-  }, [token, router]);
+  }, [token, mustChangePassword, router]);
 
   // Prevent flash of content during initial SSR or before redirect
-  if (!mounted || !token) {
+  if (!mounted || !token || mustChangePassword) {
     return (
       <div className="min-h-screen bg-bg-primary flex items-center justify-center">
         <div className="w-10 h-10 border-2 border-accent border-t-transparent rounded-full animate-spin" />
