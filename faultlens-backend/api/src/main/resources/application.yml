@@ -2,7 +2,7 @@ spring:
   lifecycle:
     timeout-per-shutdown-phase: 30s
   application:
-    name: faultlens-api
+    name: faultlens-api9
   threads:
     virtual:
       enabled: true
@@ -69,6 +69,9 @@ faultlens:
     secret: ${JWT_SECRET:faultlens-secret-change-in-production-needs-256-bits-minimum}
     expiration-ms: 86400000
   collector:
+    file:
+      # Comma-separated directories LOCAL_FILE sources may read; anything else is rejected.
+      allowed-dirs: ${COLLECTOR_FILE_ALLOWED_DIRS:/var/log}
     k8s:
       reconnect-interval-seconds: 30
     ssh:

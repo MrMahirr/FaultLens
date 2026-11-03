@@ -5,6 +5,7 @@ import com.faultlens.api.service.EmailNotificationService;
 import com.faultlens.api.service.InAppNotificationService;
 import com.faultlens.api.service.NotificationSettingsService;
 import com.faultlens.api.service.SlackNotificationService;
+import com.faultlens.api.service.SlackWebhookUrls;
 import com.faultlens.common.dto.ApiResponse;
 import java.security.Principal;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,10 @@ public class NotificationTestController {
         
         if (request.webhookUrl() == null || request.webhookUrl().isBlank()) {
             return ResponseEntity.badRequest().body(ApiResponse.error("Webhook URL boş olamaz.", 400));
+        }
+        if (!SlackWebhookUrls.isAllowed(request.webhookUrl())) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(
+                    "Geçersiz Slack webhook URL'si. https://hooks.slack.com/services/... biçiminde olmalı.", 400));
         }
 
         String testMessage = "🚀 *FaultLens Test:* " + principal.getName() + " kullanıcısı Slack entegrasyonunu test ediyor. Bağlantı başarılı!";

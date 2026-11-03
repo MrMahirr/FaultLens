@@ -114,7 +114,9 @@ export function useNotificationSettings() {
       toast.success("Bildirim tercihleri kaydedildi!");
     } catch (err: any) {
       const message =
-        err.response?.data?.message || "Ayarlar kaydedilirken bir hata oluştu.";
+        err.response?.data?.error?.message ||
+        err.response?.data?.message ||
+        "Ayarlar kaydedilirken bir hata oluştu.";
       toast.error(message);
     } finally {
       setIsSaving(false);

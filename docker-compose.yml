@@ -87,6 +87,7 @@ services:
       - PORT=3500
       # Empty -> generated and printed once in the backend log; must be changed at first login
       - ADMIN_INITIAL_PASSWORD=${ADMIN_INITIAL_PASSWORD:-}
+      - COLLECTOR_FILE_ALLOWED_DIRS=${COLLECTOR_FILE_ALLOWED_DIRS:-/var/log}
     depends_on:
       postgres:
         condition: service_healthy

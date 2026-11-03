@@ -6,6 +6,7 @@ import com.faultlens.api.model.NotificationSettings;
 import com.faultlens.api.model.UserAccount;
 import com.faultlens.api.repository.NotificationSettingsRepository;
 import com.faultlens.api.repository.UserAccountRepository;
+import com.faultlens.common.exception.FaultLensException;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -40,6 +41,12 @@ public class NotificationSettingsService {
         UserAccount user = findUser(username);
         NotificationSettings settings = settingsRepository.findByUserId(user.getId())
                 .orElseGet(() -> createDefault(user.getId()));
+
+        String slackWebhook = request.slackWebhook();
+        if (slackWebhook != null && !slackWebhook.isBlank() && !SlackWebhookUrls.isAllowed(slackWebhook)) {
+            throw new FaultLensException(
+                    "Slack webhook must be an https://hooks.slack.com/... URL", "INVALID_SLACK_WEBHOOK");
+        }
 
         settings.setEmailEnabled(request.emailEnabled());
         settings.setSlackEnabled(request.slackEnabled());

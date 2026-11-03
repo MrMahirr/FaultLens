@@ -21,6 +21,8 @@ public class SlackNotificationService {
         this.objectMapper = objectMapper;
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(5))
+                // A redirect could bounce the request to an internal address after validation.
+                .followRedirects(HttpClient.Redirect.NEVER)
                 .build();
     }
 
@@ -34,6 +36,11 @@ public class SlackNotificationService {
     public boolean sendNotification(String webhookUrl, String message) {
         if (webhookUrl == null || webhookUrl.isBlank()) {
             log.warn("Slack webhook URL is empty, skipping notification.");
+            return false;
+        }
+        // Checked at send time as well, so webhooks stored before validation existed are covered.
+        if (!SlackWebhookUrls.isAllowed(webhookUrl)) {
+            log.warn("Refusing to send Slack notification to a non-Slack URL.");
             return false;
         }
 
@@ -52,7 +59,7 @@ public class SlackNotificationService {
                 log.info("Successfully sent Slack notification.");
                 return true;
             } else {
-                log.error("Failed to send Slack notification. Status: {}, Body: {}", response.statusCode(), response.body());
+                log.error("Failed to send Slack notification. Status: {}", response.statusCode());
                 return false;
             }
         } catch (Exception e) {
