@@ -28,7 +28,7 @@ npm install
 Proje kök dizininde bir `.env.local` dosyası oluşturun ve backend API adresinizi belirtin:
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:3500/api/v1
-NEXT_PUBLIC_WS_URL=ws://localhost:3500/ws/logs
+NEXT_PUBLIC_WS_URL=ws://localhost:3500/ws
 ```
 
 ### Geliştirme Sunucusunu Başlatma
