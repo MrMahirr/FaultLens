@@ -98,6 +98,168 @@
       "lastAccessed": "2026-11-03T12:20:31.444Z",
       "accessCount": 0,
       "expiresAt": "2026-12-03T12:20:31.444Z"
+    },
+    "cmd-1793709172147": {
+      "key": "cmd-1793709172147",
+      "value": "{\"command\":\"cd /c/Users/MrMahirr/Desktop/FaultLens; git grep -n -i \\\"loglens\\\" -- . ':!*.lock' ':!pnpm-lock.yaml' | grep -v \\\"faultlens-backend/.mvn\\\" | head -40; echo; git grep -c -i loglens | head -20\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-03T12:32:52.147Z",
+      "lastAccessed": "2026-11-03T12:32:52.147Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-03T12:32:52.147Z"
+    },
+    "cmd-1793709176010": {
+      "key": "cmd-1793709176010",
+      "value": "{\"command\":\"cd /c/Users/MrMahirr/Desktop/FaultLens; grep -rn \\\"Log<span\\\\|LogLens\\\\|loglens\\\" faultlens-frontend --include=*.ts --include=*.tsx --include=*.json --include=*.md -i --exclude-dir=node_modules --exclude-dir=.next; grep -n -i loglens faultlens-backend/docs/API.md faultlens-backend/docs/ARCHITECTURE.md\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-03T12:32:56.010Z",
+      "lastAccessed": "2026-11-03T12:32:56.010Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-03T12:32:56.010Z"
+    },
+    "cmd-1793709183878": {
+      "key": "cmd-1793709183878",
+      "value": "{\"command\":\"cd /c/Users/MrMahirr/Desktop/FaultLens\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-03T12:33:03.878Z",
+      "lastAccessed": "2026-11-03T12:33:03.878Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-03T12:33:03.878Z"
+    },
+    "cmd-1793709189208": {
+      "key": "cmd-1793709189208",
+      "value": "{\"command\":\"cd /c/Users/MrMahirr/Desktop/FaultLens; grep -rn \\\"ThreadFactory\\\\|setName\\\\|ofVirtual\\\\|-collector\\\" faultlens-backend/collector/src/main --include=*.java | head\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-03T12:33:09.208Z",
+      "lastAccessed": "2026-11-03T12:33:09.208Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-03T12:33:09.208Z"
+    },
+    "cmd-1793709194981": {
+      "key": "cmd-1793709194981",
+      "value": "{\"command\":\"cd /c/Users/MrMahirr/Desktop/FaultLens; sed -i 's/`loglens-collector-\\\\*`/`faultlens-collector-*`/' faultlens-backend/docs/ARCHITECTURE.md; git diff --stat\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-03T12:33:14.981Z",
+      "lastAccessed": "2026-11-03T12:33:14.981Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-03T12:33:14.981Z"
+    },
+    "cmd-1793709220863": {
+      "key": "cmd-1793709220863",
+      "value": "{\"command\":\"cd /c/Users/MrMahirr/Desktop/FaultLens/faultlens-frontend; pnpm exec eslint \\\"app/(auth)/login/page.tsx\\\" app/page.tsx && cd .. && git add \\\"faultlens-frontend/app/(auth)/login/page.tsx\\\" faultlens-frontend/app/page.tsx faultlens-backend/docs/API.md faultlens-backend/docs/ARCHITECTURE.md && git commit -q -F - <<'EOF'\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-03T12:33:40.863Z",
+      "lastAccessed": "2026-11-03T12:33:40.863Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-03T12:33:40.863Z"
+    },
+    "cmd-1793709227167": {
+      "key": "cmd-1793709227167",
+      "value": "{\"command\":\"cd /c/Users/MrMahirr/Desktop/FaultLens; git log --oneline -7 --format=\\\"%h %ad %an %s\\\" --date=iso; git show --stat a85848c | head -40\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-03T12:33:47.167Z",
+      "lastAccessed": "2026-11-03T12:33:47.167Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-03T12:33:47.167Z"
+    },
+    "cmd-1793709254275": {
+      "key": "cmd-1793709254275",
+      "value": "{\"command\":\"cd /c/Users/MrMahirr/Desktop/FaultLens\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-03T12:34:14.275Z",
+      "lastAccessed": "2026-11-03T12:34:14.275Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-03T12:34:14.275Z"
+    },
+    "cmd-1793709261969": {
+      "key": "cmd-1793709261969",
+      "value": "{\"command\":\"cd /c/Users/MrMahirr/Desktop/FaultLens; cat -n faultlens-backend/api/src/main/java/com/faultlens/api/service/RealtimeLogConsumer.java; head -15 Test.java | iconv -f UTF-16 -t UTF-8 2>/dev/null | head -15; head -20 TestDocker.java; head -15 faultlens-frontend/update_mock.js\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-03T12:34:21.969Z",
+      "lastAccessed": "2026-11-03T12:34:21.969Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-03T12:34:21.969Z"
+    },
+    "cmd-1793709269207": {
+      "key": "cmd-1793709269207",
+      "value": "{\"command\":\"cd /c/Users/MrMahirr/Desktop/FaultLens; ls faultlens-frontend/shared/mocks 2>&1; grep -rln \\\"apache-maven-3.9.8\\\" .idea .vscode faultlens-backend/.idea 2>/dev/null; echo done\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-03T12:34:29.207Z",
+      "lastAccessed": "2026-11-03T12:34:29.207Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-03T12:34:29.207Z"
+    },
+    "cmd-1793709280093": {
+      "key": "cmd-1793709280093",
+      "value": "{\"command\":\"cd /c/Users/MrMahirr/Desktop/FaultLens\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-03T12:34:40.093Z",
+      "lastAccessed": "2026-11-03T12:34:40.093Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-03T12:34:40.093Z"
+    },
+    "cmd-1793709299117": {
+      "key": "cmd-1793709299117",
+      "value": "{\"command\":\"cd /c/Users/MrMahirr/Desktop/FaultLens/faultlens-backend; ./mvnw -B -q -DskipTests compile 2>&1 | tail -20; echo \\\"exit=${PIPESTATUS[0]}\\\"\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-03T12:34:59.117Z",
+      "lastAccessed": "2026-11-03T12:34:59.117Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-03T12:34:59.117Z"
+    },
+    "cmd-1793709306429": {
+      "key": "cmd-1793709306429",
+      "value": "{\"command\":\"java -version 2>&1; echo \\\"JAVA_HOME=$JAVA_HOME\\\"; ls \\\"/c/Program Files/Java\\\" \\\"/c/Program Files/Eclipse Adoptium\\\" \\\"/c/Program Files/Microsoft\\\" ~/.jdks 2>/dev/null | grep -i \\\"jdk\\\\|temurin\\\\|^/\\\"\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-03T12:35:06.429Z",
+      "lastAccessed": "2026-11-03T12:35:06.429Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-03T12:35:06.429Z"
+    },
+    "cmd-1793709344094": {
+      "key": "cmd-1793709344094",
+      "value": "{\"command\":\"cd /c/Users/MrMahirr/Desktop/FaultLens/faultlens-backend; export JAVA_HOME=\\\"/c/Program Files/Java/jdk-21.0.12\\\"; export PATH=\\\"$JAVA_HOME/bin:$PATH\\\"; ./mvnw -B -q -DskipTests compile 2>&1 | tail -20; echo \\\"exit=${PIPESTATUS[0]}\\\"\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-03T12:35:44.094Z",
+      "lastAccessed": "2026-11-03T12:35:44.094Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-03T12:35:44.094Z"
+    },
+    "cmd-1793709359089": {
+      "key": "cmd-1793709359089",
+      "value": "{\"command\":\"cd /c/Users/MrMahirr/Desktop/FaultLens/faultlens-backend; export JAVA_HOME=\\\"/c/Program Files/Java/jdk-21.0.12\\\"; export PATH=\\\"$JAVA_HOME/bin:$PATH\\\"; ./mvnw -B -q test-compile 2>&1 | tail -10; echo \\\"exit=${PIPESTATUS[0]}\\\"\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-03T12:35:59.089Z",
+      "lastAccessed": "2026-11-03T12:35:59.089Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-03T12:35:59.089Z"
+    },
+    "cmd-1793709368469": {
+      "key": "cmd-1793709368469",
+      "value": "{\"command\":\"cd /c/Users/MrMahirr/Desktop/FaultLens; git add .gitignore; git commit -q -F - <<'EOF'\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-03T12:36:08.469Z",
+      "lastAccessed": "2026-11-03T12:36:08.469Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-03T12:36:08.469Z"
+    },
+    "cmd-1793709397289": {
+      "key": "cmd-1793709397289",
+      "value": "{\"command\":\"cd \\\"/c/Users/MrMahirr/Desktop/FaultLens/FaultLens-Vault\\\"\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-03T12:36:37.289Z",
+      "lastAccessed": "2026-11-03T12:36:37.289Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-03T12:36:37.289Z"
+    },
+    "cmd-1793709401964": {
+      "key": "cmd-1793709401964",
+      "value": "{\"command\":\"cd \\\"/c/Users/MrMahirr/Desktop/FaultLens/FaultLens-Vault\\\"; grep -n \\\"JAVA_HOME\\\" \\\"Plan/P01 Hazırlık ve Repo Temizliği.md\\\"\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-03T12:36:41.964Z",
+      "lastAccessed": "2026-11-03T12:36:41.964Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-03T12:36:41.964Z"
     }
   },
   "version": "3.0.0"

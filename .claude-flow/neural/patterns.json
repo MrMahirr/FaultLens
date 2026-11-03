@@ -1198,8 +1198,8 @@
       "durationMs": 5
     },
     "createdAt": 1793707507283,
-    "usageCount": 57,
-    "lastUsedAt": 1793708827058
+    "usageCount": 78,
+    "lastUsedAt": 1793709427143
   },
   {
     "id": "pattern-1793707626575-52s4",
@@ -1599,8 +1599,8 @@
       "durationMs": 25
     },
     "createdAt": 1793707626575,
-    "usageCount": 58,
-    "lastUsedAt": 1793708827061
+    "usageCount": 71,
+    "lastUsedAt": 1793709427145
   },
   {
     "id": "pattern-1793707746572-njhh",
@@ -2000,8 +2000,8 @@
       "durationMs": 16
     },
     "createdAt": 1793707746572,
-    "usageCount": 51,
-    "lastUsedAt": 1793708827058
+    "usageCount": 67,
+    "lastUsedAt": 1793709427143
   },
   {
     "id": "pattern-1793708226572-7dly",
@@ -2401,8 +2401,8 @@
       "durationMs": 25
     },
     "createdAt": 1793708226572,
-    "usageCount": 74,
-    "lastUsedAt": 1793708827058
+    "usageCount": 108,
+    "lastUsedAt": 1793709427143
   },
   {
     "id": "pattern-1793708226920-diuk",
@@ -2802,8 +2802,8 @@
       "durationMs": 303
     },
     "createdAt": 1793708226920,
-    "usageCount": 46,
-    "lastUsedAt": 1793708827057
+    "usageCount": 52,
+    "lastUsedAt": 1793709307390
   },
   {
     "id": "pattern-1793708226992-iysw",
@@ -3195,7 +3195,7 @@
       0.033423591405153275,
       -0.025875139981508255
     ],
-    "confidence": 0.808,
+    "confidence": 0.914,
     "metadata": {
       "source": "worker-daemon",
       "worker": "testgaps",
@@ -3203,8 +3203,8 @@
       "durationMs": 26
     },
     "createdAt": 1793708226992,
-    "usageCount": 8,
-    "lastUsedAt": 1793708827057
+    "usageCount": 17,
+    "lastUsedAt": 1793709427143
   },
   {
     "id": "pattern-1793708227032-os1u",
@@ -3596,7 +3596,7 @@
       0.07530254870653152,
       0.007326712366193533
     ],
-    "confidence": 0.912,
+    "confidence": 1,
     "metadata": {
       "source": "worker-daemon",
       "worker": "backup",
@@ -3604,7 +3604,7 @@
       "durationMs": 77
     },
     "createdAt": 1793708227032,
-    "usageCount": 14,
-    "lastUsedAt": 1793708827058
+    "usageCount": 26,
+    "lastUsedAt": 1793709427143
   }
 ]
