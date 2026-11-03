@@ -21,6 +21,9 @@ desktop.ini
 *.sublime-project
 *.sublime-workspace
 
+# Obsidian vault (local project notes / todo list)
+FaultLens-Vault/
+
 # Temporary & Log files
 *.log
 *.tmp
