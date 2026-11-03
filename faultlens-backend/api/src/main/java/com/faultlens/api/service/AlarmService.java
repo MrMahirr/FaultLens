@@ -1,40 +1,111 @@
 package com.faultlens.api.service;
 
 import com.faultlens.api.dto.AlarmDto;
+import com.faultlens.api.dto.AlarmStatsDto;
 import com.faultlens.api.model.Alarm;
+import com.faultlens.api.model.AlarmStatus;
 import com.faultlens.api.repository.AlarmRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
+import com.faultlens.common.dto.PagedResponse;
+import com.faultlens.common.exception.FaultLensException;
+import com.faultlens.common.exception.ResourceNotFoundException;
+import jakarta.persistence.criteria.Predicate;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Locale;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class AlarmService {
 
     private final AlarmRepository alarmRepository;
 
-    public List<AlarmDto> getAllAlarms() {
-        return alarmRepository.findAll().stream()
-                .map(this::mapToDto)
-                .collect(Collectors.toList());
+    /**
+     * Lists alarms newest first, optionally filtered by status and severity.
+     */
+    public PagedResponse<AlarmDto> list(AlarmStatus status, String severity, int page, int size) {
+        Page<Alarm> result = alarmRepository.findAll(filter(status, severity),
+                PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "triggeredAt")));
+        return PagedResponse.<AlarmDto>builder()
+                .content(result.getContent().stream().map(this::mapToDto).toList())
+                .page(result.getNumber())
+                .size(result.getSize())
+                .totalElements(result.getTotalElements())
+                .totalPages(result.getTotalPages())
+                .build();
     }
 
+    /**
+     * Counts alarms per state, independent of list pagination.
+     */
+    public AlarmStatsDto stats() {
+        return new AlarmStatsDto(
+                alarmRepository.countByStatus(AlarmStatus.ACTIVE),
+                alarmRepository.countByStatus(AlarmStatus.ACKNOWLEDGED),
+                alarmRepository.countByStatus(AlarmStatus.RESOLVED),
+                alarmRepository.countByStatusInAndSeverity(
+                        List.of(AlarmStatus.ACTIVE, AlarmStatus.ACKNOWLEDGED), "CRITICAL"));
+    }
+
+    /**
+     * Marks an alarm as acknowledged. Resolved alarms cannot be acknowledged (400).
+     */
+    @Transactional
+    public AlarmDto acknowledge(Long id) {
+        Alarm alarm = find(id);
+        if (alarm.getStatus() == AlarmStatus.RESOLVED) {
+            throw new FaultLensException("Alarm is already resolved: " + id, "ALARM_ALREADY_RESOLVED");
+        }
+        alarm.setStatus(AlarmStatus.ACKNOWLEDGED);
+        return mapToDto(alarmRepository.save(alarm));
+    }
+
+    /**
+     * Marks an alarm as resolved; resolving twice keeps the first resolution time.
+     */
+    @Transactional
     public AlarmDto resolveAlarm(Long id) {
-        Alarm alarm = alarmRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Alarm not found with id: " + id));
-        alarm.setStatus("RESOLVED");
-        alarm.setResolvedAt(Instant.now());
-        Alarm updated = alarmRepository.save(alarm);
-        return mapToDto(updated);
+        Alarm alarm = find(id);
+        if (alarm.getStatus() != AlarmStatus.RESOLVED) {
+            alarm.setStatus(AlarmStatus.RESOLVED);
+            alarm.setResolvedAt(Instant.now());
+            alarm = alarmRepository.save(alarm);
+        }
+        return mapToDto(alarm);
     }
 
+    /**
+     * Deletes an alarm (404 when it does not exist).
+     */
+    @Transactional
     public void deleteAlarm(Long id) {
-        alarmRepository.deleteById(id);
+        alarmRepository.delete(find(id));
+    }
+
+    private Alarm find(Long id) {
+        return alarmRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Alarm not found: " + id));
+    }
+
+    private static Specification<Alarm> filter(AlarmStatus status, String severity) {
+        return (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            if (status != null) {
+                predicates.add(cb.equal(root.get("status"), status));
+            }
+            if (severity != null && !severity.isBlank()) {
+                predicates.add(cb.equal(root.get("severity"), severity.trim().toUpperCase(Locale.ROOT)));
+            }
+            return cb.and(predicates.toArray(Predicate[]::new));
+        };
     }
 
     private AlarmDto mapToDto(Alarm alarm) {

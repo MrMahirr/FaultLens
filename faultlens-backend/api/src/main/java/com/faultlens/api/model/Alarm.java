@@ -1,5 +1,7 @@
 package com.faultlens.api.model;
 
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -36,8 +38,9 @@ public class Alarm {
     @Column(name = "severity", nullable = false)
     private String severity; // CRITICAL, ERROR, WARN, INFO
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private String status; // ACTIVE, ACKNOWLEDGED, RESOLVED
+    private AlarmStatus status;
 
     @Column(name = "message", columnDefinition = "TEXT")
     private String message;

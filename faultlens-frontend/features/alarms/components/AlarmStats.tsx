@@ -1,39 +1,37 @@
 "use client";
 
-import { BellRing, ShieldAlert, CheckCircle2 } from "lucide-react";
-import { useAlarmsQuery } from "../api/useAlarmsQuery";
-import { AlarmStatus } from "../types/alarm.types";
-import { Severity } from "@/shared/types/common.types";
+import { BellRing, ShieldAlert, CheckCircle2, UserCheck } from "lucide-react";
+import { useAlarmStatsQuery } from "../api/useAlarmsQuery";
 
 export function AlarmStats() {
-  const { data: alarms = [] } = useAlarmsQuery();
-
-  const activeAlarms = alarms.filter((a) => a.status === AlarmStatus.ACTIVE);
-  const criticalAlarms = activeAlarms.filter(
-    (a) => a.severity === Severity.CRITICAL || a.severity === Severity.ERROR
-  );
-  const resolvedAlarms = alarms.filter(
-    (a) => a.status === AlarmStatus.RESOLVED
-  );
+  // Server-side counters: correct regardless of which list page is shown.
+  const { data } = useAlarmStatsQuery();
 
   const stats = [
     {
       title: "Aktif Alarmlar",
-      value: activeAlarms.length,
+      value: data?.active,
       icon: <BellRing size={24} className="text-accent" />,
       bg: "bg-accent/10",
       border: "border-accent/20",
     },
     {
-      title: "Kritik & Hata",
-      value: criticalAlarms.length,
+      title: "Açık Kritik",
+      value: data?.openCritical,
       icon: <ShieldAlert size={24} className="text-error" />,
       bg: "bg-error/10",
       border: "border-error/20",
     },
     {
+      title: "Üstlenilenler",
+      value: data?.acknowledged,
+      icon: <UserCheck size={24} className="text-warning" />,
+      bg: "bg-warning/10",
+      border: "border-warning/20",
+    },
+    {
       title: "Çözülenler",
-      value: resolvedAlarms.length,
+      value: data?.resolved,
       icon: <CheckCircle2 size={24} className="text-success" />,
       bg: "bg-success/10",
       border: "border-success/20",
@@ -41,10 +39,10 @@ export function AlarmStats() {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-      {stats.map((stat, i) => (
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+      {stats.map((stat) => (
         <div
-          key={i}
+          key={stat.title}
           className={`flex items-center p-6 rounded-2xl border ${stat.bg} ${stat.border} backdrop-blur-md transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg`}
         >
           <div className="p-4 rounded-xl bg-bg-primary/50 shadow-inner mr-5">
@@ -55,7 +53,7 @@ export function AlarmStats() {
               {stat.title}
             </p>
             <h3 className="text-3xl font-bold text-text-primary tracking-tight">
-              {stat.value}
+              {stat.value ?? "–"}
             </h3>
           </div>
         </div>

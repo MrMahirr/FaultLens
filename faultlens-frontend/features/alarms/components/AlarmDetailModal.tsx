@@ -1,6 +1,6 @@
 import { Modal } from "@/shared/components/ui/Modal";
 import { Badge } from "@/shared/components/ui/Badge";
-import { Alarm, AlarmStatus } from "../types/alarm.types";
+import { Alarm, AlarmStatus, ALARM_STATUS_LABELS } from "../types/alarm.types";
 import { Severity } from "@/shared/types/common.types";
 import { Clock, AlertTriangle, CheckCircle, Info } from "lucide-react";
 
@@ -38,7 +38,7 @@ export function AlarmDetailModal({ isOpen, onClose, alarm }: AlarmDetailModalPro
               variant={alarm.status === AlarmStatus.ACTIVE ? "error" : "success"}
               className={alarm.status === AlarmStatus.ACTIVE ? "animate-pulse" : ""}
             >
-              {alarm.status === AlarmStatus.ACTIVE ? "Aktif" : "Çözüldü"}
+              {ALARM_STATUS_LABELS[alarm.status]}
             </Badge>
           </div>
           

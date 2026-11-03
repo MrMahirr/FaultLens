@@ -288,6 +288,20 @@ Requires authentication.
 
 ---
 
+## 4b. Alarms (`/api/v1/alarms`)
+
+All endpoints require a bearer token and use the standard `ApiResponse` wrapper; fields are snake_case.
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/v1/alarms?status=&severity=&page=0&size=20` | Paged list, newest first. `status`: `ACTIVE` / `ACKNOWLEDGED` / `RESOLVED`; `size` 1-200 |
+| `GET` | `/api/v1/alarms/stats` | `{ active, acknowledged, resolved, open_critical }` (independent of paging) |
+| `PUT` | `/api/v1/alarms/{id}/ack` | `ACTIVE` -> `ACKNOWLEDGED`; `400 ALARM_ALREADY_RESOLVED` for resolved alarms |
+| `PUT` | `/api/v1/alarms/{id}/resolve` | -> `RESOLVED` (idempotent, keeps the first `resolved_at`) |
+| `DELETE` | `/api/v1/alarms/{id}` | `204`; `404` when the alarm does not exist |
+
+Alarm object: `id, rule_id, rule_name, source_id, severity, status, message, triggered_at, resolved_at`.
+
 ## 5. Real-time Log Stream WebSocket (`/ws/logs`)
 
 A stateless, full-duplex WebSocket stream intended for front-end dashboards to receive parsed, structured logs instantly.

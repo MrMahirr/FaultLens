@@ -6,6 +6,12 @@ export enum AlarmStatus {
   RESOLVED = "RESOLVED",
 }
 
+export const ALARM_STATUS_LABELS: Record<AlarmStatus, string> = {
+  [AlarmStatus.ACTIVE]: "Aktif",
+  [AlarmStatus.ACKNOWLEDGED]: "Üstlenildi",
+  [AlarmStatus.RESOLVED]: "Çözüldü",
+};
+
 export interface AlarmRule {
   id: string;
   name: string;
@@ -17,8 +23,8 @@ export interface AlarmRule {
 }
 
 export interface Alarm {
-  id: string | number;
-  ruleId: string;
+  id: number;
+  ruleId?: string;
   ruleName: string;
   sourceId?: number;
   severity: Severity;
@@ -28,8 +34,18 @@ export interface Alarm {
   resolvedAt?: string;
 }
 
+/** Backend AlarmStatsDto: counters independent of list pagination. */
 export interface AlarmStats {
-  totalActive: number;
-  criticalCount: number;
-  resolvedCount: number;
+  active: number;
+  acknowledged: number;
+  resolved: number;
+  /** CRITICAL alarms that are ACTIVE or ACKNOWLEDGED */
+  openCritical: number;
+}
+
+export interface AlarmFilters {
+  status?: AlarmStatus;
+  severity?: Severity;
+  page?: number;
+  size?: number;
 }

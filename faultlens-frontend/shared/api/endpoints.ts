@@ -35,6 +35,15 @@ export const Endpoints = {
     DISABLE: (id: number) => `${BASE}/sources/${id}/disable`,
   },
 
+  // ── Alarms ────────────────────────────────────────────────
+  ALARMS: {
+    LIST: `${BASE}/alarms`,
+    STATS: `${BASE}/alarms/stats`,
+    ACK: (id: number) => `${BASE}/alarms/${id}/ack`,
+    RESOLVE: (id: number) => `${BASE}/alarms/${id}/resolve`,
+    DELETE: (id: number) => `${BASE}/alarms/${id}`,
+  },
+
   // ── Analyses ──────────────────────────────────────────────
   ANALYSES: {
     LIST: `${BASE}/analyses`,
