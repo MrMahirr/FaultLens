@@ -1,0 +1,104 @@
+{
+  "entries": {
+    "cmd-1793707381088": {
+      "key": "cmd-1793707381088",
+      "value": "{\"command\":\"cd /c/Users/MrMahirr/Desktop/FaultLens; find FaultLens-Vault -not -path '*/.obsidian/*' | head -200; echo ---; find FaultLens-Vault -name '*.md' -not -path '*/.obsidian/*' | xargs wc -l | tail -1\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-03T12:03:01.088Z",
+      "lastAccessed": "2026-11-03T12:03:01.088Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-03T12:03:01.088Z"
+    },
+    "cmd-1793707385926": {
+      "key": "cmd-1793707385926",
+      "value": "{\"command\":\"cd \\\"/c/Users/MrMahirr/Desktop/FaultLens/FaultLens-Vault\\\"; for f in *.md Dashboard.base; do echo \\\"=================== $f\\\"; cat \\\"$f\\\"; done\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-03T12:03:05.926Z",
+      "lastAccessed": "2026-11-03T12:03:05.926Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-03T12:03:05.926Z"
+    },
+    "cmd-1793707397240": {
+      "key": "cmd-1793707397240",
+      "value": "{\"command\":\"cd /c/Users/MrMahirr/Desktop/FaultLens; git log --oneline -3; git diff --stat; ls faultlens-frontend/design-system; find faultlens-frontend/design-system -type f | head -30; git diff .gitignore\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-03T12:03:17.240Z",
+      "lastAccessed": "2026-11-03T12:03:17.240Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-03T12:03:17.240Z"
+    },
+    "cmd-1793707419503": {
+      "key": "cmd-1793707419503",
+      "value": "{\"command\":\"cd /c/Users/MrMahirr/Desktop/FaultLens; B=faultlens-backend; F=faultlens-frontend\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-03T12:03:39.503Z",
+      "lastAccessed": "2026-11-03T12:03:39.503Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-03T12:03:39.503Z"
+    },
+    "cmd-1793707518635": {
+      "key": "cmd-1793707518635",
+      "value": "{\"command\":\"cd \\\"/c/Users/MrMahirr/Desktop/FaultLens/FaultLens-Vault/Plan\\\"; f=\\\"P00 Plan MOC.md\\\"\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-03T12:05:18.635Z",
+      "lastAccessed": "2026-11-03T12:05:18.635Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-03T12:05:18.635Z"
+    },
+    "cmd-1793707589524": {
+      "key": "cmd-1793707589524",
+      "value": "{\"command\":\"ls /c/Users/MrMahirr/Desktop/FaultLens/faultlens-backend/api/src/main/resources/db/migration/\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-03T12:06:29.524Z",
+      "lastAccessed": "2026-11-03T12:06:29.524Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-03T12:06:29.524Z"
+    },
+    "cmd-1793707804553": {
+      "key": "cmd-1793707804553",
+      "value": "{\"command\":\"cd \\\"/c/Users/MrMahirr/Desktop/FaultLens/FaultLens-Vault\\\"\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-03T12:10:04.553Z",
+      "lastAccessed": "2026-11-03T12:10:04.553Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-03T12:10:04.553Z"
+    },
+    "cmd-1793708355569": {
+      "key": "cmd-1793708355569",
+      "value": "{\"command\":\"cd /c/Users/MrMahirr/Desktop/FaultLens/faultlens-frontend; cat -n shared/components/layout/Sidebar.tsx; echo ----; cat -n app/page.tsx; echo ----; sed -n 1,60p shared/components/layout/Topbar.tsx; git log --oneline -3 -- shared/components/layout/Sidebar.tsx\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-03T12:19:15.569Z",
+      "lastAccessed": "2026-11-03T12:19:15.569Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-03T12:19:15.569Z"
+    },
+    "cmd-1793708404723": {
+      "key": "cmd-1793708404723",
+      "value": "{\"command\":\"cd /c/Users/MrMahirr/Desktop/FaultLens/faultlens-frontend\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-03T12:20:04.723Z",
+      "lastAccessed": "2026-11-03T12:20:04.723Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-03T12:20:04.723Z"
+    },
+    "cmd-1793708415636": {
+      "key": "cmd-1793708415636",
+      "value": "{\"command\":\"cd /c/Users/MrMahirr/Desktop/FaultLens\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-03T12:20:15.636Z",
+      "lastAccessed": "2026-11-03T12:20:15.636Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-03T12:20:15.636Z"
+    },
+    "cmd-1793708431444": {
+      "key": "cmd-1793708431444",
+      "value": "{\"command\":\"cd \\\"/c/Users/MrMahirr/Desktop/FaultLens/FaultLens-Vault/Plan\\\"\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-03T12:20:31.444Z",
+      "lastAccessed": "2026-11-03T12:20:31.444Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-03T12:20:31.444Z"
+    }
+  },
+  "version": "3.0.0"
+}

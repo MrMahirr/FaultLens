@@ -1,0 +1,23 @@
+{
+  "timestamp": "2026-11-03T12:17:07.015Z",
+  "backedUp": true,
+  "backups": [
+    {
+      "backedUp": true,
+      "path": "C:\\Users\\MrMahirr\\Desktop\\FaultLens\\.swarm\\backups\\memory-2026-11-03T12-17-06-951Z.db",
+      "sizeBytes": 212992,
+      "rotatedAway": [],
+      "method": "native-online-backup",
+      "dbPath": "C:\\Users\\MrMahirr\\Desktop\\FaultLens\\.swarm\\memory.db"
+    },
+    {
+      "backedUp": false,
+      "skipped": "no-db",
+      "dbPath": "C:\\Users\\MrMahirr\\Desktop\\FaultLens\\.swarm\\agentdb-memory.db"
+    }
+  ],
+  "path": "C:\\Users\\MrMahirr\\Desktop\\FaultLens\\.swarm\\backups\\memory-2026-11-03T12-17-06-951Z.db",
+  "sizeBytes": 212992,
+  "rotatedAway": 0,
+  "method": "native-online-backup"
+}
