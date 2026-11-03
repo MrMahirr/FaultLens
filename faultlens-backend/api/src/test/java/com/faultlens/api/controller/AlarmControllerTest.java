@@ -90,6 +90,13 @@ class AlarmControllerTest {
     }
 
     @Test
+    void invalidStatusParameterIs400NotServerError() throws Exception {
+        mockMvc.perform(get("/api/v1/alarms").param("status", "NOPE"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.code").value("BAD_REQUEST"));
+    }
+
+    @Test
     void deleteReturnsNoContent() throws Exception {
         mockMvc.perform(delete("/api/v1/alarms/1")).andExpect(status().isNoContent());
         verify(service).deleteAlarm(1L);

@@ -10,6 +10,7 @@ import com.faultlens.common.exception.FaultLensException;
 import com.faultlens.common.exception.ResourceNotFoundException;
 import jakarta.persistence.criteria.Predicate;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -76,7 +77,9 @@ public class AlarmService {
         Alarm alarm = find(id);
         if (alarm.getStatus() != AlarmStatus.RESOLVED) {
             alarm.setStatus(AlarmStatus.RESOLVED);
-            alarm.setResolvedAt(Instant.now());
+            // PostgreSQL timestamptz keeps microseconds; truncating keeps this response equal
+            // to what later reads return.
+            alarm.setResolvedAt(Instant.now().truncatedTo(ChronoUnit.MICROS));
             alarm = alarmRepository.save(alarm);
         }
         return mapToDto(alarm);
