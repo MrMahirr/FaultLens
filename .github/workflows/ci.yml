@@ -88,6 +88,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # Runtime (production) dependencies only: dev tooling advisories are handled by Dependabot PRs.
+      - name: Audit production dependencies
+        run: pnpm audit --prod --audit-level=high
+
       - name: Lint
         run: pnpm lint
 
@@ -107,3 +111,15 @@ jobs:
           # Placeholder values; NEXT_PUBLIC_* are inlined at build time.
           NEXT_PUBLIC_API_URL: http://localhost:3500/api/v1
           NEXT_PUBLIC_WS_URL: ws://localhost:3500/ws
+
+  # Pull requests only: fails when a PR adds a dependency with a known high/critical advisory
+  # (GitHub advisory database, covers Maven and npm manifests).
+  dependency-review:
+    name: Dependency review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high

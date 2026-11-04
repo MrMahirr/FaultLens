@@ -1,0 +1,68 @@
+# Weekly update PRs against dev. Minor/patch updates are grouped into one PR per ecosystem;
+# majors arrive one by one so each gets its own review (see the P05 notes on blocked majors).
+version: 2
+updates:
+  - package-ecosystem: maven
+    directory: /faultlens-backend
+    target-branch: dev
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 10
+    groups:
+      maven-minor-patch:
+        update-types: [minor, patch]
+    ignore:
+      # Managed by the Spring Boot parent; Dependabot proposes the parent instead.
+      - dependency-name: "org.springframework*"
+        update-types: [version-update:semver-major]
+
+  - package-ecosystem: npm
+    directory: /faultlens-frontend
+    target-branch: dev
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 10
+    groups:
+      npm-minor-patch:
+        update-types: [minor, patch]
+    ignore:
+      # Blocked until the lint toolchain supports them (typescript-eslint: TS < 6.1;
+      # eslint-plugin-react/jsx-a11y/import: ESLint <= 9).
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
+      - dependency-name: eslint
+        update-types: [version-update:semver-major]
+
+  - package-ecosystem: docker
+    directories: [/faultlens-backend, /faultlens-frontend]
+    target-branch: dev
+    schedule:
+      interval: weekly
+      day: monday
+    ignore:
+      # Stay on LTS lines: Java 25 (next LTS 29), Node 26 LTS.
+      - dependency-name: eclipse-temurin
+        update-types: [version-update:semver-major]
+      - dependency-name: maven
+        update-types: [version-update:semver-major]
+      - dependency-name: node
+        update-types: [version-update:semver-major]
+
+  - package-ecosystem: docker-compose
+    directory: /
+    target-branch: dev
+    schedule:
+      interval: weekly
+      day: monday
+
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: dev
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      actions:
+        patterns: ["*"]
