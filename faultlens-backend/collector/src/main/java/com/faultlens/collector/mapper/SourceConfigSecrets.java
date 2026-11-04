@@ -77,7 +77,7 @@ public final class SourceConfigSecrets {
     }
 
     private static void maskRecursively(ObjectNode node) {
-        Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
+        Iterator<Map.Entry<String, JsonNode>> fields = node.properties().iterator();
         while (fields.hasNext()) {
             Map.Entry<String, JsonNode> field = fields.next();
             JsonNode value = field.getValue();
@@ -90,7 +90,7 @@ public final class SourceConfigSecrets {
     }
 
     private static void restoreRecursively(ObjectNode incoming, ObjectNode stored) {
-        Iterator<Map.Entry<String, JsonNode>> fields = incoming.fields();
+        Iterator<Map.Entry<String, JsonNode>> fields = incoming.properties().iterator();
         while (fields.hasNext()) {
             Map.Entry<String, JsonNode> field = fields.next();
             JsonNode value = field.getValue();
