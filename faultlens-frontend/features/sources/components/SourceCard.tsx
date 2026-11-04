@@ -81,7 +81,7 @@ function SourceCard({ source, index }: SourceCardProps) {
         {/* Header */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2">
-            <StatusDot status={source.status ?? ConnectionStatus.CONNECTED} />
+            <StatusDot status={source.status ?? ConnectionStatus.DISCONNECTED} />
           </div>
           <Dropdown
             trigger={

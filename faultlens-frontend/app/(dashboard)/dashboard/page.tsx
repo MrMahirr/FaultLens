@@ -11,7 +11,7 @@ import { SystemHealthMap } from "@/features/dashboard/components/SystemHealthMap
 export default function DashboardPage() {
   return (
     <div className="space-y-6">
-      <PageHeader title="Dashboard" description="Sistem durumunu ve log aktivitesini izleyin" />
+      <PageHeader title="Panel" description="Sistem durumunu ve log aktivitesini izleyin" />
 
       {/* AI Summary */}
       <AiSummaryWidget />

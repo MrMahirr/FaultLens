@@ -37,7 +37,7 @@ function LogTable({ data, loading = false, onRowClick }: LogTableProps) {
       },
       {
         accessorKey: "severity",
-        header: "Severity",
+        header: "Seviye",
         cell: ({ getValue }) => <SeverityBadge severity={getValue() as LogEntryDto["severity"]} />,
         size: 90,
       },

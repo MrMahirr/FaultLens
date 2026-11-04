@@ -57,7 +57,7 @@ function SystemHealthMap() {
               className="bg-bg-tertiary/50 border border-border-default rounded-lg p-3 hover:border-border-hover transition-colors"
             >
               <div className="flex items-center gap-2 mb-2">
-                <StatusDot status={source.status ?? ConnectionStatusEnum.CONNECTED} />
+                <StatusDot status={source.status ?? ConnectionStatusEnum.DISCONNECTED} />
                 <span className="text-xs font-medium text-text-primary truncate">
                   {source.name}
                 </span>

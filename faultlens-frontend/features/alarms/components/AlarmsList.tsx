@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import Swal from "sweetalert2";
 import { DataTable, type DataTableColumnDef } from "@/shared/components/ui/Table";
 import { Badge } from "@/shared/components/ui/Badge";
 import { Button } from "@/shared/components/ui/Button";
@@ -59,13 +60,34 @@ export function AlarmsList() {
   const updateFilter = (key: "status" | "severity", value: string) =>
     setFilters((current) => ({ ...current, [key]: value || undefined, page: 0 }));
 
+  // Deleting is permanent (unlike resolve), so ask first — same dialog as the other deletes.
+  const { mutate: deleteAlarm } = deleteMutation;
+  const confirmDelete = useCallback(
+    async (id: number) => {
+      const result = await Swal.fire({
+        title: "Alarm silinsin mi?",
+        text: "Alarm kaydı kalıcı olarak silinir. Yalnızca kapatmak için “Çöz” kullanın.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#ef4444",
+        cancelButtonColor: "#3b82f6",
+        confirmButtonText: "Evet, Sil",
+        cancelButtonText: "İptal",
+      });
+      if (result.isConfirmed) deleteAlarm(id);
+    },
+    [deleteAlarm],
+  );
+
   const columns = useMemo<DataTableColumnDef<Alarm>[]>(
     () => [
       {
         accessorKey: "ruleName",
         header: "Alarm Adı",
         cell: ({ row }) => (
-          <div className="font-medium text-text-primary">{row.original.ruleName}</div>
+          <div className="font-medium text-text-primary min-w-[8.5rem]">
+            {row.original.ruleName}
+          </div>
         ),
       },
       {
@@ -86,7 +108,10 @@ export function AlarmsList() {
         accessorKey: "message",
         header: "Mesaj",
         cell: ({ row }) => (
-          <div className="text-text-muted truncate max-w-[300px]">{row.original.message}</div>
+          // Full text is in the detail modal (row click); keep the column narrow so actions stay visible.
+          <div className="text-text-muted truncate max-w-[150px] 2xl:max-w-[320px]">
+            {row.original.message}
+          </div>
         ),
       },
       {
@@ -106,16 +131,24 @@ export function AlarmsList() {
       },
       {
         accessorKey: "triggeredAt",
-        header: "Tetiklenme Zamanı",
-        cell: ({ row }) => new Date(row.original.triggeredAt).toLocaleString("tr-TR"),
+        header: "Tetiklenme",
+        cell: ({ row }) => (
+          <span className="whitespace-nowrap">
+            {new Date(row.original.triggeredAt).toLocaleString("tr-TR", {
+              dateStyle: "short",
+              timeStyle: "short",
+            })}
+          </span>
+        ),
       },
       {
         id: "actions",
         header: "Aksiyon",
+        // Icon buttons (label in title/aria-label) so the column fits next to the message.
         cell: ({ row }) => {
           const alarm = row.original;
           return (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 whitespace-nowrap">
               {alarm.status === AlarmStatus.ACTIVE && (
                 <Button
                   variant="secondary"
@@ -127,9 +160,8 @@ export function AlarmsList() {
                   }}
                   disabled={isMutating}
                   title="Üstlen (ilgileniyorum)"
-                >
-                  Üstlen
-                </Button>
+                  aria-label="Üstlen"
+                />
               )}
               {alarm.status !== AlarmStatus.RESOLVED && (
                 <Button
@@ -142,9 +174,8 @@ export function AlarmsList() {
                   }}
                   disabled={isMutating}
                   title="Çözüldü Olarak İşaretle"
-                >
-                  Çöz
-                </Button>
+                  aria-label="Çöz"
+                />
               )}
               <Button
                 variant="ghost"
@@ -153,19 +184,18 @@ export function AlarmsList() {
                 icon={<Trash2 size={14} />}
                 onClick={(e) => {
                   e.stopPropagation();
-                  deleteMutation.mutate(alarm.id);
+                  void confirmDelete(alarm.id);
                 }}
                 disabled={isMutating}
                 title="Sil"
-              >
-                Sil
-              </Button>
+                aria-label="Sil"
+              />
             </div>
           );
         },
       },
     ],
-    [acknowledgeMutation, resolveMutation, deleteMutation, isMutating],
+    [acknowledgeMutation, resolveMutation, isMutating, confirmDelete],
   );
 
   return (

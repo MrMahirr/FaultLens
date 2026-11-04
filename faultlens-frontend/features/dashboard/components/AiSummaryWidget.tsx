@@ -5,6 +5,7 @@ import { Sparkles, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/shared/components/ui/Button";
 import { useAnalysesQuery } from "@/features/analyses/api/useAnalysisQuery";
+import { AnalysisType } from "@/shared/types/common.types";
 
 function AiSummaryWidget() {
   const { data: analysisData, isLoading } = useAnalysesQuery({ page: 0, size: 1 });
@@ -28,7 +29,7 @@ function AiSummaryWidget() {
           </div>
           <div>
             <h2 className="text-lg font-bold font-display text-text-primary mb-1">
-              FaultLens AI Analizi
+              FaultLens Analiz Özeti
             </h2>
             {isLoading ? (
               <div className="space-y-2 mt-2">
@@ -55,14 +56,17 @@ function AiSummaryWidget() {
                     ) : (
                       " genel sistem hataları ile"
                     )}{" "}
-                    ilişkili. Yapay zeka kök neden analizini tamamladı.
+                    ilişkili.{" "}
+                    {latestAnalysis.engineType === AnalysisType.AI
+                      ? "Yapay zeka kök neden analizini tamamladı."
+                      : "Kök neden kural tabanlı motorla belirlendi."}
                   </>
                 )}
               </p>
             ) : (
               <p className="text-sm text-text-secondary leading-relaxed max-w-2xl">
-                Şu an için sistemde yapay zeka tarafından incelenmiş bir hata veya anomali
-                bulunmuyor. Sistem durumu stabil.
+                Şu an için sistemde analiz edilmiş bir hata veya anomali bulunmuyor. Sistem durumu
+                stabil.
               </p>
             )}
           </div>

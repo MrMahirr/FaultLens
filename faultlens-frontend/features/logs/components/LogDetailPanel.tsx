@@ -1,6 +1,7 @@
 "use client";
 
-import { AnalysisType } from "@/shared/types/common.types";
+import Link from "next/link";
+import { AnalysisType, Severity } from "@/shared/types/common.types";
 import { motion } from "framer-motion";
 import { X, Clock, Server, Layers, Code, Lightbulb, Brain } from "lucide-react";
 import { SeverityBadge } from "@/features/logs/components/SeverityBadge";
@@ -10,6 +11,9 @@ import type { LogEntryDto } from "@/features/logs/types/log.types";
 import { formatDate } from "@/shared/lib/utils";
 import { cn } from "@/shared/lib/utils";
 import { useLogDetailQuery } from "@/features/logs/api/useLogQuery";
+
+/** Severities the analyzer receives (processor forwards only these to log-errors). */
+const ANALYZED_SEVERITIES = new Set<string>([Severity.ERROR, Severity.CRITICAL]);
 
 /* ── Props ─────────────────────────────────────────────────── */
 
@@ -175,18 +179,25 @@ function LogDetailPanel({ log, onClose }: LogDetailPanelProps) {
                 </Card>
               ))}
             </div>
+          ) : !ANALYZED_SEVERITIES.has(log.severity) ? (
+            // Only ERROR/CRITICAL entries go to the analyzer (log-errors topic).
+            <p className="text-xs text-text-muted">
+              {log.severity} seviyesindeki loglar analiz edilmez; yalnızca ERROR ve CRITICAL loglar
+              için kök neden analizi yapılır.
+            </p>
           ) : log.groupId ? (
             <Card variant="glass" padding="sm">
               <div className="flex items-start gap-2">
                 <Lightbulb size={14} className="text-warning shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm text-text-primary">
-                    Bu log bir hata grubuna ait. Analiz sayfasından detaylı kök neden analizi
-                    görüntüleyebilirsiniz.
+                    Bu log bir hata grubuna ait. Grubun kök neden analizi Analizler sayfasında.
                   </p>
-                  <Button variant="ghost" size="sm" className="mt-2">
-                    Analize Git →
-                  </Button>
+                  <Link href="/analyses">
+                    <Button variant="ghost" size="sm" className="mt-2">
+                      Analize Git →
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </Card>

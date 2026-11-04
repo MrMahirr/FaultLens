@@ -17,10 +17,18 @@ import { useDeploymentsQuery } from "@/features/deployments/api/useDeploymentQue
 import { useCreateDeploymentMutation } from "@/features/deployments/api/useDeploymentMutation";
 import { DeploymentStatus, DeploymentEnvironment } from "@/shared/types/common.types";
 import { formatDate } from "@/shared/lib/utils";
+import { Endpoints } from "@/shared/api/endpoints";
 import { cn } from "@/shared/lib/utils";
 
-/** Example CI step shown on the page (kept as a string so quotes need no JSX escaping). */
-const CI_WEBHOOK_EXAMPLE = `curl -X POST https://api.faultlens.com/api/v1/deployments -H "Content-Type: application/json" -d '{"serviceName":"my-service","version":"v1.0.0","environment":"PRODUCTION"}'`;
+/**
+ * Example CI step shown on the page (kept as a string so quotes need no JSX escaping).
+ * Mirrors what the API accepts: snake_case fields, `deployed_at` is required and the endpoint
+ * needs a bearer token (FAULTLENS_TOKEN as a CI secret).
+ */
+const CI_WEBHOOK_EXAMPLE = `curl -X POST ${Endpoints.DEPLOYMENTS.CREATE} \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer $FAULTLENS_TOKEN" \\
+  -d '{"service_name":"my-service","version":"v1.0.0","environment":"PRODUCTION","deployed_at":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'","deployed_by":"ci"}'`;
 
 /* ── Status Badge Variant Map ──────────────────────────────── */
 
@@ -105,7 +113,7 @@ export default function DeploymentsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Deployments"
+        title="Dağıtımlar"
         description="Deployment geçmişi ve hata korelasyonları"
         action={
           <Button variant="primary" icon={<Plus size={16} />} onClick={() => setShowModal(true)}>
@@ -127,7 +135,7 @@ export default function DeploymentsPage() {
               Actions, vb.) aşağıdaki webhook isteğini ekleyin.
             </p>
             <div className="bg-bg-primary p-4 rounded-xl border border-border-default overflow-x-auto w-full shadow-inner">
-              <code className="text-[13px] text-text-primary font-mono whitespace-nowrap block">
+              <code className="text-[13px] text-text-primary font-mono whitespace-pre block">
                 {CI_WEBHOOK_EXAMPLE}
               </code>
             </div>
