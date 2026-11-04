@@ -1,8 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { ColumnDef } from "@tanstack/react-table";
-import { DataTable } from "@/shared/components/ui/Table";
+import { DataTable, type DataTableColumnDef } from "@/shared/components/ui/Table";
 import { Badge } from "@/shared/components/ui/Badge";
 import { Button } from "@/shared/components/ui/Button";
 import { AlarmRule } from "../types/alarm.types";
@@ -13,7 +12,7 @@ import { useAlarmStore } from "../store/alarm.store";
 export function AlarmRulesList() {
   const { rules, toggleRule, deleteRule } = useAlarmStore();
 
-  const columns = useMemo<ColumnDef<AlarmRule>[]>(
+  const columns = useMemo<DataTableColumnDef<AlarmRule>[]>(
     () => [
       {
         accessorKey: "name",

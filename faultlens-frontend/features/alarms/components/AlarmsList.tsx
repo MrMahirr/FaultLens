@@ -1,8 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ColumnDef } from "@tanstack/react-table";
-import { DataTable } from "@/shared/components/ui/Table";
+import { DataTable, type DataTableColumnDef } from "@/shared/components/ui/Table";
 import { Badge } from "@/shared/components/ui/Badge";
 import { Button } from "@/shared/components/ui/Button";
 import { DropdownSelect } from "@/shared/components/ui/Dropdown";
@@ -60,7 +59,7 @@ export function AlarmsList() {
   const updateFilter = (key: "status" | "severity", value: string) =>
     setFilters((current) => ({ ...current, [key]: value || undefined, page: 0 }));
 
-  const columns = useMemo<ColumnDef<Alarm>[]>(
+  const columns = useMemo<DataTableColumnDef<Alarm>[]>(
     () => [
       {
         accessorKey: "ruleName",

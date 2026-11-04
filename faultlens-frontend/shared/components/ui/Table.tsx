@@ -1,13 +1,16 @@
 "use client";
 
 import {
-  useReactTable,
-  getCoreRowModel,
-  getSortedRowModel,
-  type ColumnDef,
-  type SortingState,
-  type RowSelectionState,
+  createSortedRowModel,
   flexRender,
+  rowSelectionFeature,
+  rowSortingFeature,
+  sortFns,
+  tableFeatures,
+  useTable,
+  type ColumnDef,
+  type RowSelectionState,
+  type SortingState,
 } from "@tanstack/react-table";
 import { useState, useCallback } from "react";
 import { ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
@@ -15,11 +18,28 @@ import { cn } from "@/shared/lib/utils";
 
 import { useUIStore } from "@/shared/store/ui.store";
 
+/* ── Features ──────────────────────────────────────────────── */
+
+/**
+ * Table v9 registers features explicitly. DataTable uses sorting and row selection; the
+ * built-in sort functions keep v8's automatic per-column sort choice. Module-level so the
+ * object is stable across renders.
+ */
+const dataTableFeatures = tableFeatures({
+  rowSortingFeature,
+  rowSelectionFeature,
+  sortedRowModel: createSortedRowModel(),
+  sortFns,
+});
+
+/** Column definition for {@link DataTable}; use this instead of react-table's `ColumnDef`. */
+type DataTableColumnDef<TData extends object> = ColumnDef<typeof dataTableFeatures, TData, unknown>;
+
 /* ── Types ─────────────────────────────────────────────────── */
 
-interface DataTableProps<TData> {
+interface DataTableProps<TData extends object> {
   data: TData[];
-  columns: ColumnDef<TData, unknown>[];
+  columns: DataTableColumnDef<TData>[];
   onRowClick?: (row: TData) => void;
   enableSorting?: boolean;
   enableSelection?: boolean;
@@ -31,7 +51,7 @@ interface DataTableProps<TData> {
 
 /* ── Component ─────────────────────────────────────────────── */
 
-function DataTable<TData>({
+function DataTable<TData extends object>({
   data,
   columns,
   onRowClick,
@@ -46,7 +66,8 @@ function DataTable<TData>({
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const { compactMode } = useUIStore();
 
-  const table = useReactTable({
+  const table = useTable({
+    features: dataTableFeatures,
     data,
     columns,
     state: {
@@ -55,8 +76,7 @@ function DataTable<TData>({
     },
     onSortingChange: setSorting,
     onRowSelectionChange: setRowSelection,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: enableSorting ? getSortedRowModel() : undefined,
+    enableSorting,
     enableRowSelection: enableSelection,
   });
 
@@ -145,7 +165,8 @@ function DataTable<TData>({
                   row.getIsSelected() && "bg-accent/5",
                 )}
               >
-                {row.getVisibleCells().map((cell) => (
+                {/* No column-visibility feature registered, so every cell is visible. */}
+                {row.getAllCells().map((cell) => (
                   <td key={cell.id} className={cn("px-4", compactMode ? "py-1" : "py-3")}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
@@ -159,4 +180,4 @@ function DataTable<TData>({
   );
 }
 
-export { DataTable, type DataTableProps };
+export { DataTable, type DataTableColumnDef, type DataTableProps };
