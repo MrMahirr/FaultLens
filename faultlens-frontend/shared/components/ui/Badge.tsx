@@ -6,14 +6,7 @@ import { cn } from "@/shared/lib/utils";
 /* ── Types ─────────────────────────────────────────────────── */
 
 type BadgeVariant =
-  | "default"
-  | "accent"
-  | "success"
-  | "warning"
-  | "error"
-  | "critical"
-  | "info"
-  | "outline";
+  "default" | "accent" | "success" | "warning" | "error" | "critical" | "info" | "outline";
 type BadgeSize = "sm" | "md" | "lg";
 
 interface BadgeProps {

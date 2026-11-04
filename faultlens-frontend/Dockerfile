@@ -1,9 +1,10 @@
-FROM node:20-alpine AS builder
+FROM node:26-alpine AS builder
 
 WORKDIR /app
 
-# pnpm version comes from "packageManager" in package.json
-RUN corepack enable
+# pnpm version comes from "packageManager" in package.json. Node 25+ no longer bundles
+# corepack, so install it from npm first.
+RUN npm install -g corepack@latest && corepack enable
 
 # Copy dependency definitions
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -26,7 +27,7 @@ COPY . .
 RUN pnpm build
 
 # Stage 2: Runner
-FROM node:20-alpine AS runner
+FROM node:26-alpine AS runner
 
 WORKDIR /app
 

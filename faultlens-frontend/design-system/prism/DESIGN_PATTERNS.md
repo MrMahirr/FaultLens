@@ -101,30 +101,30 @@ Logs, Deployments: sol liste `flex: 999 1 520px`, sağ detay `flex: 1 1 380px`. 
 
 Her bileşen: **varsayılan · hover · focus-visible · active · disabled · loading · error** durumlarını tanımlar.
 
-| Bileşen               | Sınıf / varyant                                                                            | Notlar                                                                                                                      |
+| Bileşen | Sınıf / varyant | Notlar |
 | --------------------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- | ------ | ------ | ------- | ------- | ---- | ----- | ------------------------------- |
-| Button                | `.btn` + `.btn-primary .btn-ai .btn-danger .btn-ghost` · boyut `.btn-sm .btn-lg .btn-icon` | Min 44×44. Sayfa başına **tek** `.btn-primary`. İkon-only → `aria-label`. Loading → spinner + metin değişir, genişlik sabit |
-| Input                 | `.field > .label + .input + .help/.err`                                                    | Label her zaman görünür (placeholder label değildir). Hata alanın **altında**, `.is-error`                                  |
-| Search / ⌘K           | `.search` + `.kbd`                                                                         | Global; `⌘K` command palette'i açar                                                                                         |
-| Switch                | `button.switch[role=switch][aria-checked]`                                                 | Anında etki eden ayarlar. Form gönderimi gerekiyorsa checkbox                                                               |
-| Checkbox / Radio      | `input.check` / `input.radio`                                                              | Native input, özel görünüm                                                                                                  |
-| Segmented             | `.seg > button[aria-pressed]`                                                              | 2–4 karşılıklı seçenek (zaman aralığı, dil, motor filtresi)                                                                 |
-| Tabs                  | `.tabs > .tab[role=tab][aria-selected]`                                                    | Aynı bağlamda görünüm değişimi; alt çizgi `scaleX` ile kayar                                                                |
-| Badge                 | `.badge.b-crit                                                                             | b-error                                                                                                                     | b-warn | b-info | b-debug | b-trace | b-ok | b-ai` | Metin + nokta; asla yalnız renk |
-| Chip (filtre)         | `button.chip[aria-pressed]`                                                                | Kapalıyken kesikli kenar + .55 opaklık                                                                                      |
-| Live dot              | `.dot.dot-live`                                                                            | Yalnızca **gerçekten canlı** veri varsa; bayatlarsa (>60 sn) gri + "son güncelleme"                                         |
-| Progress / Confidence | `.progress > i`                                                                            | Güven skoru; < eşik ise `--warn`                                                                                            |
-| Spectrum              | `.spectrum > i`                                                                            | Seviye dağılımı tek çubukta                                                                                                 |
-| Table row             | `.trow` (+ `.thead`)                                                                       | Tüm satır `button`; seçili `aria-pressed`                                                                                   |
-| Skeleton              | `.skel`                                                                                    | İçerik geç gelirse ≥300ms sonra göster; alan rezerve (CLS)                                                                  |
-| Empty state           | `.empty`                                                                                   | Başlık + açıklama + tek eylem                                                                                               |
-| Modal                 | `.scrim > .modal[role=dialog][aria-modal]`                                                 | Odak içeri taşınır, Esc kapatır, arkaplan scroll kilitli                                                                    |
-| Toast                 | `.toast-dock > .toast[role=status]`                                                        | 4 sn; hata toast'u kalıcı + kapatma butonu                                                                                  |
-| Tooltip               | `.tip > .tip-b`                                                                            | Hover **ve** focus ile açılır; yalnız ek bilgi                                                                              |
-| Menu / Command        | `.menu > .menu-item`                                                                       | Ok tuşlarıyla gezinme, `aria-selected`                                                                                      |
-| Stepper               | `.stepper > i[style=--k]`                                                                  | Sihirbaz ilerlemesi                                                                                                         |
-| Nav item              | `a.nav-item[aria-current=page]` + `.count`                                                 | Sol aktif çubuk; sayaç kırmızı                                                                                              |
-| Radar                 | `.radar > .radar-sweep + .blip`                                                            | İmza bileşen — bkz. 5                                                                                                       |
+| Button | `.btn` + `.btn-primary .btn-ai .btn-danger .btn-ghost` · boyut `.btn-sm .btn-lg .btn-icon` | Min 44×44. Sayfa başına **tek** `.btn-primary`. İkon-only → `aria-label`. Loading → spinner + metin değişir, genişlik sabit |
+| Input | `.field > .label + .input + .help/.err` | Label her zaman görünür (placeholder label değildir). Hata alanın **altında**, `.is-error` |
+| Search / ⌘K | `.search` + `.kbd` | Global; `⌘K` command palette'i açar |
+| Switch | `button.switch[role=switch][aria-checked]` | Anında etki eden ayarlar. Form gönderimi gerekiyorsa checkbox |
+| Checkbox / Radio | `input.check` / `input.radio` | Native input, özel görünüm |
+| Segmented | `.seg > button[aria-pressed]` | 2–4 karşılıklı seçenek (zaman aralığı, dil, motor filtresi) |
+| Tabs | `.tabs > .tab[role=tab][aria-selected]` | Aynı bağlamda görünüm değişimi; alt çizgi `scaleX` ile kayar |
+| Badge | `.badge.b-crit                                                                             | b-error                                                                                                                     | b-warn | b-info | b-debug | b-trace | b-ok | b-ai` | Metin + nokta; asla yalnız renk |
+| Chip (filtre) | `button.chip[aria-pressed]` | Kapalıyken kesikli kenar + .55 opaklık |
+| Live dot | `.dot.dot-live` | Yalnızca **gerçekten canlı** veri varsa; bayatlarsa (>60 sn) gri + "son güncelleme" |
+| Progress / Confidence | `.progress > i` | Güven skoru; < eşik ise `--warn` |
+| Spectrum | `.spectrum > i` | Seviye dağılımı tek çubukta |
+| Table row | `.trow` (+ `.thead`) | Tüm satır `button`; seçili `aria-pressed` |
+| Skeleton | `.skel` | İçerik geç gelirse ≥300ms sonra göster; alan rezerve (CLS) |
+| Empty state | `.empty` | Başlık + açıklama + tek eylem |
+| Modal | `.scrim > .modal[role=dialog][aria-modal]` | Odak içeri taşınır, Esc kapatır, arkaplan scroll kilitli |
+| Toast | `.toast-dock > .toast[role=status]` | 4 sn; hata toast'u kalıcı + kapatma butonu |
+| Tooltip | `.tip > .tip-b` | Hover **ve** focus ile açılır; yalnız ek bilgi |
+| Menu / Command | `.menu > .menu-item` | Ok tuşlarıyla gezinme, `aria-selected` |
+| Stepper | `.stepper > i[style=--k]` | Sihirbaz ilerlemesi |
+| Nav item | `a.nav-item[aria-current=page]` + `.count` | Sol aktif çubuk; sayaç kırmızı |
+| Radar | `.radar > .radar-sweep + .blip` | İmza bileşen — bkz. 5 |
 
 ---
 
@@ -192,17 +192,17 @@ Her grafik: legend, `role="img"` + `aria-label` özeti, eksen/zaman etiketi.
 
 ## 10. Kod mimarisi desenleri (Next.js 16 · React 19)
 
-| Desen                          | Uygulama                                                                               |
+| Desen | Uygulama |
 | ------------------------------ | -------------------------------------------------------------------------------------- | ---- | -------- | ------------------- | ------------ | ---- | ---------- |
-| **Feature-sliced**             | `features/<alan>/{api,components,hooks,store,types}` — mevcut yapı korunur             |
-| **Provider**                   | `ThemeProvider` (`data-theme`, `data-motion`), `I18nProvider`, `QueryProvider`         |
-| **Variant (cva)**              | `Button({ variant: 'primary'                                                           | 'ai' | 'danger' | 'ghost', size: 'sm' | 'md'         | 'lg' | 'icon' })` |
-| **Compound component**         | `<Card><Card.Header/><Card.Body/></Card>`, `<Tabs><Tabs.List/><Tabs.Panel/></Tabs>`    |
-| **Headless + skin**            | Modal/Menu davranışı (odak, Esc, ok tuşları) hook'ta; görünüm `prism.css` sınıflarında |
-| **Container / Presentational** | `useLogsQuery` veri getirir, `LogTable` yalnız çizer                                   |
-| **Observer (stream)**          | `useLogStream` WebSocket → Zustand store → bileşenler seçici (selector) ile abone      |
-| **Strategy**                   | Kaynak sihirbazında tür başına form şeması (`KUBERNETES                                | SSH  | DOCKER   | CICD                | LOCAL_FILE`) |
-| **Optimistic mutation**        | TanStack Query `onMutate` / `onError` rollback                                         |
+| **Feature-sliced** | `features/<alan>/{api,components,hooks,store,types}` — mevcut yapı korunur |
+| **Provider** | `ThemeProvider` (`data-theme`, `data-motion`), `I18nProvider`, `QueryProvider` |
+| **Variant (cva)** | `Button({ variant: 'primary'                                                           | 'ai' | 'danger' | 'ghost', size: 'sm' | 'md'         | 'lg' | 'icon' })` |
+| **Compound component** | `<Card><Card.Header/><Card.Body/></Card>`, `<Tabs><Tabs.List/><Tabs.Panel/></Tabs>` |
+| **Headless + skin** | Modal/Menu davranışı (odak, Esc, ok tuşları) hook'ta; görünüm `prism.css` sınıflarında |
+| **Container / Presentational** | `useLogsQuery` veri getirir, `LogTable` yalnız çizer |
+| **Observer (stream)** | `useLogStream` WebSocket → Zustand store → bileşenler seçici (selector) ile abone |
+| **Strategy** | Kaynak sihirbazında tür başına form şeması (`KUBERNETES                                | SSH  | DOCKER   | CICD                | LOCAL_FILE`) |
+| **Optimistic mutation** | TanStack Query `onMutate` / `onError` rollback |
 
 ---
 

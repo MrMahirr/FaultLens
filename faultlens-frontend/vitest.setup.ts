@@ -17,7 +17,7 @@ for (const key of ["localStorage", "sessionStorage"] as const) {
 }
 
 // Any request without a handler fails the test instead of silently hitting the network.
-beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
+beforeAll(() => server.listen({ onUnhandledFrame: "error" }));
 afterEach(() => {
   server.resetHandlers();
   cleanup();

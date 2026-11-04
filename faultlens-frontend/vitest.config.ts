@@ -9,6 +9,9 @@ export default defineConfig({
   },
   test: {
     environment: "jsdom",
+    // Same origin as the API below: jsdom 30 enforces CORS like a browser (preflight OPTIONS
+    // for a cross-origin request with an Authorization header), which the tests do not cover.
+    environmentOptions: { jsdom: { url: "http://localhost:3500/" } },
     setupFiles: ["./vitest.setup.ts"],
     include: ["**/*.test.{ts,tsx}"],
     exclude: ["node_modules", ".next"],
