@@ -25,8 +25,10 @@ Proje, **Feature-Sliced Design (FSD)** mimarisinden esinlenerek modüler bir yap
 ### Bağımlılıkları Yükleme
 
 ```bash
-npm install
+pnpm install
 ```
+
+`pnpm install` ayrıca git pre-commit hook'unu kurar (husky): commit'lenen dosyalarda `eslint --fix` + `prettier --write` çalışır, ESLint hatası commit'i durdurur.
 
 ### Ortam Değişkenleri (Environment Variables)
 
@@ -40,10 +42,20 @@ NEXT_PUBLIC_WS_URL=ws://localhost:3500/ws
 ### Geliştirme Sunucusunu Başlatma
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 Uygulama **http://localhost:3000** adresinde çalışmaya başlayacaktır.
+
+### Test ve Kod Kalitesi
+
+| Komut                               | Ne yapar                                                |
+| ----------------------------------- | ------------------------------------------------------- |
+| `pnpm test`                         | Vitest testleri (jsdom, API çağrıları MSW ile)          |
+| `pnpm test:watch`                   | İzleme modunda test                                     |
+| `pnpm test:coverage`                | Kapsam raporu → `coverage/index.html`                   |
+| `pnpm lint` / `pnpm typecheck`      | ESLint / TypeScript                                     |
+| `pnpm format` / `pnpm format:check` | Prettier ile biçimlendir / kontrol et (CI kontrol eder) |
 
 ## 🎨 Tasarım Prensipleri
 

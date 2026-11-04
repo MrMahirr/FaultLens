@@ -1,0 +1,2 @@
+# Monorepo: git runs hooks from the repo root, the frontend tooling lives here.
+cd faultlens-frontend && pnpm exec lint-staged

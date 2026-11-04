@@ -63,7 +63,7 @@ jobs:
           path: faultlens-backend/api/target/failsafe-reports
 
   frontend:
-    name: Frontend (Next.js) — lint, typecheck, test & build
+    name: Frontend (Next.js) — lint, format, typecheck, test & build
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -90,6 +90,10 @@ jobs:
 
       - name: Lint
         run: pnpm lint
+
+      # The pre-commit hook formats staged files; this catches commits made with --no-verify.
+      - name: Format check
+        run: pnpm format:check
 
       - name: Typecheck
         run: pnpm typecheck
