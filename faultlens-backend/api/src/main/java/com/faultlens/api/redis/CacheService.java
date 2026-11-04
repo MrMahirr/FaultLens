@@ -1,7 +1,7 @@
 package com.faultlens.api.redis;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 import com.faultlens.api.ws.LogWebSocketHandler;
 import com.faultlens.common.dto.LogEntryDto;
 import java.time.Duration;

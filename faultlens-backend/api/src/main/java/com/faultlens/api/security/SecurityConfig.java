@@ -1,6 +1,6 @@
 package com.faultlens.api.security;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.faultlens.api.dto.ErrorEnvelope;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;

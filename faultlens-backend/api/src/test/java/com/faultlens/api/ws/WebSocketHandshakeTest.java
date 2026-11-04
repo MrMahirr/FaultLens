@@ -3,7 +3,7 @@ package com.faultlens.api.ws;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.faultlens.api.security.JwtService;
 import java.net.URI;
 import java.util.List;
@@ -13,9 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
-import org.springframework.boot.autoconfigure.web.servlet.DispatcherServletAutoConfiguration;
-import org.springframework.boot.autoconfigure.web.servlet.ServletWebServerFactoryAutoConfiguration;
-import org.springframework.boot.autoconfigure.websocket.servlet.WebSocketServletAutoConfiguration;
+import org.springframework.boot.tomcat.autoconfigure.servlet.TomcatServletWebServerAutoConfiguration;
+import org.springframework.boot.webmvc.autoconfigure.DispatcherServletAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Bean;
@@ -92,9 +91,9 @@ class WebSocketHandshakeTest {
 
     @SpringBootConfiguration
     @ImportAutoConfiguration({
-            ServletWebServerFactoryAutoConfiguration.class,
-            DispatcherServletAutoConfiguration.class,
-            WebSocketServletAutoConfiguration.class
+            // Boot 4: Tomcat's WebSocket support is part of its servlet web server auto-configuration.
+            TomcatServletWebServerAutoConfiguration.class,
+            DispatcherServletAutoConfiguration.class
     })
     @Import({WebSocketConfig.class, LogWebSocketHandler.class, JwtService.class})
     static class WebSocketSlice {

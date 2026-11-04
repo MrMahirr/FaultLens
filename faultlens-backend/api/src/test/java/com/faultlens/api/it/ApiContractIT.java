@@ -3,8 +3,8 @@ package com.faultlens.api.it;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import com.faultlens.collector.kafka.LogEventProducer;
 import com.faultlens.common.dto.LogEventDto;
 import com.faultlens.common.enums.Severity;
@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -183,8 +182,7 @@ class ApiContractIT extends AbstractIntegrationTest {
     }
 
     private static void assertKeys(JsonNode node, Set<String> expected) {
-        Iterable<String> names = node::fieldNames;
-        assertThat(StreamSupport.stream(names.spliterator(), false).toList())
+        assertThat(node.propertyNames())
                 .as("fields of %s", node)
                 .containsExactlyInAnyOrderElementsOf(expected);
     }

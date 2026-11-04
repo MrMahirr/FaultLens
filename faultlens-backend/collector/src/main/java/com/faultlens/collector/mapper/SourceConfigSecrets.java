@@ -1,9 +1,9 @@
 package com.faultlens.collector.mapper;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
@@ -112,7 +112,7 @@ public final class SourceConfigSecrets {
         try {
             JsonNode node = MAPPER.readTree(json);
             return node instanceof ObjectNode objectNode ? objectNode : null;
-        } catch (JsonProcessingException ex) {
+        } catch (JacksonException ex) {
             return null;
         }
     }
@@ -120,7 +120,7 @@ public final class SourceConfigSecrets {
     private static String write(JsonNode node) {
         try {
             return MAPPER.writeValueAsString(node);
-        } catch (JsonProcessingException ex) {
+        } catch (JacksonException ex) {
             throw new IllegalStateException("Could not serialize source config", ex);
         }
     }

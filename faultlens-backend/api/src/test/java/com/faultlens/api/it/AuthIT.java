@@ -3,7 +3,7 @@ package com.faultlens.api.it;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import com.faultlens.api.security.JwtService;
 import java.net.URI;
 import java.util.List;

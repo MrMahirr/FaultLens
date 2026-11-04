@@ -3,8 +3,8 @@
 FaultLens platformunun kalbi olan veri işleme, log toplama ve yapay zeka analiz süreçlerinin yönetildiği backend servisidir. Yüksek ölçeklenebilirlik için modüler bir mimariyle tasarlanmıştır.
 
 ## 🛠️ Teknolojiler
-- **Dil:** Java 21
-- **Framework:** Spring Boot 3.2.x
+- **Dil:** Java 25 (LTS)
+- **Framework:** Spring Boot 4.1.x
 - **Veritabanı:** PostgreSQL, Flyway (Veritabanı Göçleri / Migrations)
 - **Mesaj Kuyruğu (Message Broker):** Apache Kafka
 - **Build Aracı:** Maven

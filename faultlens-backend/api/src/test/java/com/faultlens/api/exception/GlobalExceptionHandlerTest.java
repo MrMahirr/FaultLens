@@ -33,7 +33,7 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void unknownUrlIs404NotServerError() {
-        var response = handler.handleUnexpected(new NoResourceFoundException(HttpMethod.GET, "api/alarms"));
+        var response = handler.handleUnexpected(new NoResourceFoundException(HttpMethod.GET, "/api/alarms", "api/alarms"));
 
         assertThat(response.getStatusCode().value()).isEqualTo(404);
         assertThat(response.getBody().getError().getCode()).isEqualTo("NOT_FOUND");

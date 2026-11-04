@@ -2,7 +2,7 @@ package com.faultlens.api.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -15,7 +15,7 @@ class JwtAuthFilterTest {
     private static final String SECRET = "faultlens-test-secret-needs-at-least-256-bits-value";
 
     private final JwtService jwtService = new JwtService(SECRET, 60_000);
-    private final JwtAuthFilter filter = new JwtAuthFilter(jwtService, new ObjectMapper().findAndRegisterModules());
+    private final JwtAuthFilter filter = new JwtAuthFilter(jwtService, new ObjectMapper());
 
     @AfterEach
     void clearContext() {

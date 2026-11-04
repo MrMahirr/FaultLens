@@ -12,7 +12,7 @@ FaultLens, yapay zeka destekli, modern ve yüksek performanslı bir log analizi 
 ## 🏗️ Mimari ve Teknolojiler
 Proje iki ana bileşenden oluşmaktadır:
 1. **Frontend (Kullanıcı Arayüzü):** Next.js, React, TailwindCSS ve TypeScript kullanılarak geliştirilmiştir.
-2. **Backend (Sunucu ve Veri İşleme):** Java 21, Spring Boot, Apache Kafka ve PostgreSQL kullanılarak yüksek veri hacimlerini işleyebilecek şekilde tasarlanmıştır.
+2. **Backend (Sunucu ve Veri İşleme):** Java 25, Spring Boot 4, Apache Kafka ve PostgreSQL kullanılarak yüksek veri hacimlerini işleyebilecek şekilde tasarlanmıştır.
 
 ## 🏃‍♂️ Kurulum ve Çalıştırma
 

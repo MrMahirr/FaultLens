@@ -1,7 +1,7 @@
 package com.faultlens.collector.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import com.faultlens.collector.adapter.LocalFilePathPolicy;
 import com.faultlens.collector.mapper.SourceConfigSecrets;
 import com.faultlens.collector.dto.LogSourceCreateRequest;

@@ -1,7 +1,7 @@
 package com.faultlens.collector.adapter;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 import com.faultlens.collector.config.CollectorProperties;
 import com.faultlens.collector.model.LogSource;
 import com.faultlens.common.dto.LogEventDto;
@@ -23,8 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
+import org.springframework.resilience.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -47,7 +46,8 @@ public class KubernetesAdapter implements LogSourceAdapter {
      * Polls Kubernetes pod logs and emits each line as a normalized event.
      */
     @Override
-    @Retryable(retryFor = CollectorException.class, backoff = @Backoff(delay = 5000, multiplier = 2.0))
+    // 3 attempts in total, as with spring-retry's default maxAttempts before the Framework 7 move.
+    @Retryable(includes = CollectorException.class, maxRetries = 2, delay = 5000, multiplier = 2.0)
     public void startStreaming(LogSource source, Consumer<LogEventDto> onEvent) {
         String sourceId = String.valueOf(source.getId());
         running.add(sourceId);

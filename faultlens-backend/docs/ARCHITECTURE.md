@@ -1,6 +1,6 @@
 # FaultLens Backend — System Architecture Document
 
-FaultLens is a real-time distributed log analysis, group indexing, and anomaly-correlation platform built with **Java 21**, **Spring Boot 3.3**, **Apache Kafka**, **Redis**, and **PostgreSQL**.
+FaultLens is a real-time distributed log analysis, group indexing, and anomaly-correlation platform built with **Java 25**, **Spring Boot 4.1**, **Apache Kafka**, **Redis**, and **PostgreSQL**.
 
 ---
 

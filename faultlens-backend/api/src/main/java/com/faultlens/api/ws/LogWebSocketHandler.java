@@ -1,6 +1,6 @@
 package com.faultlens.api.ws;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.faultlens.common.dto.LogEntryDto;
 import java.io.IOException;
 import java.nio.ByteBuffer;
