@@ -15,17 +15,14 @@ export function useLogs() {
 
   const [liveMode, setLiveMode] = useState(false);
 
-  const updateFilter = useCallback(
-    <K extends keyof LogFilters>(key: K, value: LogFilters[K]) => {
-      setFilters((prev) => ({
-        ...prev,
-        [key]: value,
-        // Reset page when filter changes
-        ...(key !== "page" ? { page: 0 } : {}),
-      }));
-    },
-    []
-  );
+  const updateFilter = useCallback(<K extends keyof LogFilters>(key: K, value: LogFilters[K]) => {
+    setFilters((prev) => ({
+      ...prev,
+      [key]: value,
+      // Reset page when filter changes
+      ...(key !== "page" ? { page: 0 } : {}),
+    }));
+  }, []);
 
   const resetFilters = useCallback(() => {
     setFilters({ page: 0, size: 20 });

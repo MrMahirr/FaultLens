@@ -81,20 +81,13 @@ export function SystemSettings() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-text-primary">
-            Sistem Tercihleri
-          </h2>
+          <h2 className="text-lg font-semibold text-text-primary">Sistem Tercihleri</h2>
           <p className="text-sm text-text-muted mt-1">
             Uygulamanın veri saklama, dil ve analiz motoru ayarlarını yapılandırın.
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={handleSave}
-            loading={isSaving}
-          >
+          <Button variant="primary" size="sm" onClick={handleSave} loading={isSaving}>
             Değişiklikleri Kaydet
           </Button>
         </div>

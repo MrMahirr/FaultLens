@@ -12,7 +12,7 @@ export const useTestConnectionMutation = () => {
       } catch (error) {
         throw new Error(getApiErrorMessage(error, "Bağlantı kurulamadı"));
       }
-    }
+    },
   });
 };
 
@@ -34,6 +34,6 @@ export const useTestConfigMutation = () => {
       } catch (error) {
         throw new Error(getApiErrorMessage(error, "Bağlantı kurulamadı"));
       }
-    }
+    },
   });
 };

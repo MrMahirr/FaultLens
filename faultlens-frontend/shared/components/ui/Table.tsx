@@ -64,24 +64,16 @@ function DataTable<TData>({
     (row: TData) => {
       onRowClick?.(row);
     },
-    [onRowClick]
+    [onRowClick],
   );
 
   return (
     <div
-      className={cn(
-        "w-full overflow-x-auto rounded-xl border border-border-default",
-        className
-      )}
+      className={cn("w-full overflow-x-auto rounded-xl border border-border-default", className)}
     >
       <table className="w-full text-sm">
         {/* ── Header ────────────────────────────────── */}
-        <thead
-          className={cn(
-            "bg-bg-tertiary/50",
-            stickyHeader && "sticky top-0 z-10"
-          )}
-        >
+        <thead className={cn("bg-bg-tertiary/50", stickyHeader && "sticky top-0 z-10")}>
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
@@ -94,21 +86,14 @@ function DataTable<TData>({
                     className={cn(
                       "px-4 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider",
                       "border-b border-border-default",
-                      canSort && "cursor-pointer select-none hover:text-text-secondary"
+                      canSort && "cursor-pointer select-none hover:text-text-secondary",
                     )}
-                    onClick={
-                      canSort
-                        ? header.column.getToggleSortingHandler()
-                        : undefined
-                    }
+                    onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
                   >
                     <div className="flex items-center gap-1.5">
                       {header.isPlaceholder
                         ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                        : flexRender(header.column.columnDef.header, header.getContext())}
                       {canSort && (
                         <span className="text-text-muted">
                           {sortDir === "asc" ? (
@@ -145,10 +130,7 @@ function DataTable<TData>({
             ))
           ) : table.getRowModel().rows.length === 0 ? (
             <tr>
-              <td
-                colSpan={columns.length}
-                className="px-4 py-12 text-center text-text-muted"
-              >
+              <td colSpan={columns.length} className="px-4 py-12 text-center text-text-muted">
                 {emptyMessage}
               </td>
             </tr>
@@ -159,16 +141,12 @@ function DataTable<TData>({
                 onClick={() => handleRowClick(row.original)}
                 className={cn(
                   "border-b border-border-default transition-colors duration-150",
-                  onRowClick &&
-                    "cursor-pointer hover:bg-bg-tertiary/50",
-                  row.getIsSelected() && "bg-accent/5"
+                  onRowClick && "cursor-pointer hover:bg-bg-tertiary/50",
+                  row.getIsSelected() && "bg-accent/5",
                 )}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <td 
-                    key={cell.id} 
-                    className={cn("px-4", compactMode ? "py-1" : "py-3")}
-                  >
+                  <td key={cell.id} className={cn("px-4", compactMode ? "py-1" : "py-3")}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}

@@ -15,8 +15,7 @@ import type { LogEntryDto } from "@/features/logs/types/log.types";
 
 export default function LogsPage() {
   const queryClient = useQueryClient();
-  const { filters, updateFilter, resetFilters, liveMode, toggleLiveMode } =
-    useLogsFilter();
+  const { filters, updateFilter, resetFilters, liveMode, toggleLiveMode } = useLogsFilter();
   const { data, isLoading } = useLogsQuery(filters);
   const [selectedLog, setSelectedLog] = useState<LogEntryDto | null>(null);
 
@@ -48,11 +47,7 @@ export default function LogsPage() {
       />
 
       {/* Table */}
-      <LogTable
-        data={data?.content ?? []}
-        loading={isLoading}
-        onRowClick={setSelectedLog}
-      />
+      <LogTable data={data?.content ?? []} loading={isLoading} onRowClick={setSelectedLog} />
 
       {/* Pagination */}
       {data && data.totalPages > 1 && (
@@ -76,14 +71,8 @@ export default function LogsPage() {
             className="fixed inset-0 z-40 flex justify-end"
           >
             {/* Backdrop */}
-            <div
-              className="absolute inset-0 bg-black/30"
-              onClick={() => setSelectedLog(null)}
-            />
-            <LogDetailPanel
-              log={selectedLog}
-              onClose={() => setSelectedLog(null)}
-            />
+            <div className="absolute inset-0 bg-black/30" onClick={() => setSelectedLog(null)} />
+            <LogDetailPanel log={selectedLog} onClose={() => setSelectedLog(null)} />
           </motion.div>
         )}
       </AnimatePresence>

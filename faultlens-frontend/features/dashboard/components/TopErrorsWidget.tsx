@@ -31,47 +31,45 @@ function TopErrorsWidget() {
 
       {!isLoading && topGroups.length > 0 && (
         <div>
-        {topGroups.map((group, index) => (
-          <motion.div
-            key={group.id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.08, duration: 0.3 }}
-          >
-            <Link
-              href={`/logs?group=${group.id}`}
-              className="flex items-start gap-3 px-5 py-3 border-b border-border-default hover:bg-bg-tertiary/50 transition-colors"
+          {topGroups.map((group, index) => (
+            <motion.div
+              key={group.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.08, duration: 0.3 }}
             >
-              <Badge
-                variant={
-                  group.severity === Severity.CRITICAL
-                    ? "critical"
-                    : group.severity === Severity.ERROR
-                      ? "error"
-                      : "warning"
-                }
-                size="sm"
+              <Link
+                href={`/logs?group=${group.id}`}
+                className="flex items-start gap-3 px-5 py-3 border-b border-border-default hover:bg-bg-tertiary/50 transition-colors"
               >
-                {formatNumber(group.count)}
-              </Badge>
+                <Badge
+                  variant={
+                    group.severity === Severity.CRITICAL
+                      ? "critical"
+                      : group.severity === Severity.ERROR
+                        ? "error"
+                        : "warning"
+                  }
+                  size="sm"
+                >
+                  {formatNumber(group.count)}
+                </Badge>
 
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-text-primary truncate">
-                  {group.firstMessage}
-                </p>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs text-text-muted font-mono truncate max-w-[120px]">
-                    {group.fingerprint}
-                  </span>
-                  <span className="text-xs text-text-muted">
-                    Son: {formatRelativeTime(group.lastSeenAt)}
-                  </span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-text-primary truncate">{group.firstMessage}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-xs text-text-muted font-mono truncate max-w-[120px]">
+                      {group.fingerprint}
+                    </span>
+                    <span className="text-xs text-text-muted">
+                      Son: {formatRelativeTime(group.lastSeenAt)}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </Link>
-          </motion.div>
-        ))}
-      </div>
+              </Link>
+            </motion.div>
+          ))}
+        </div>
       )}
 
       {!isLoading && topGroups.length === 0 && (

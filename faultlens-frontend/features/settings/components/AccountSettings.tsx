@@ -96,9 +96,7 @@ export function AccountSettings() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h2 className="text-lg font-semibold text-text-primary">
-          Hesap Ayarları
-        </h2>
+        <h2 className="text-lg font-semibold text-text-primary">Hesap Ayarları</h2>
         <p className="text-sm text-text-muted mt-1">
           Profil bilgilerinizi ve şifrenizi güncelleyin.
         </p>
@@ -184,9 +182,7 @@ export function AccountSettings() {
               onClick={handleSavePassword}
               loading={isPasswordSaving}
               disabled={
-                !currentPassword ||
-                newPassword.length < 8 ||
-                newPassword !== confirmPassword
+                !currentPassword || newPassword.length < 8 || newPassword !== confirmPassword
               }
             >
               Şifreyi Güncelle

@@ -66,11 +66,7 @@ function LoadingSpinner({
           strokeDasharray={circumference}
           initial={{ strokeDashoffset: circumference * 0.75 }}
           animate={{
-            strokeDashoffset: [
-              circumference * 0.75,
-              circumference * 0.25,
-              circumference * 0.75,
-            ],
+            strokeDashoffset: [circumference * 0.75, circumference * 0.25, circumference * 0.75],
           }}
           transition={{
             duration: 1.5,
@@ -80,9 +76,7 @@ function LoadingSpinner({
         />
       </motion.svg>
 
-      {label && (
-        <p className="text-sm text-text-secondary font-medium">{label}</p>
-      )}
+      {label && <p className="text-sm text-text-secondary font-medium">{label}</p>}
     </div>
   );
 

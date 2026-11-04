@@ -16,10 +16,7 @@ import Swal from "sweetalert2";
 
 interface LogFiltersBarProps {
   filters: LogFilters;
-  onFilterChange: <K extends keyof LogFilters>(
-    key: K,
-    value: LogFilters[K]
-  ) => void;
+  onFilterChange: <K extends keyof LogFilters>(key: K, value: LogFilters[K]) => void;
   onReset: () => void;
   liveMode: boolean;
   onToggleLive: () => void;
@@ -50,16 +47,16 @@ function LogFiltersBar({
 
   const handleClearLogs = async () => {
     if (!filters.source) return;
-    
+
     const result = await Swal.fire({
-      title: 'Emin misiniz?',
+      title: "Emin misiniz?",
       text: "Bu projeye ait tüm logları ve analizleri kalıcı olarak silmek istediğinize emin misiniz?",
-      icon: 'warning',
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#3b82f6',
-      confirmButtonText: 'Evet, Sil',
-      cancelButtonText: 'İptal'
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#3b82f6",
+      confirmButtonText: "Evet, Sil",
+      cancelButtonText: "İptal",
     });
 
     if (result.isConfirmed) {
@@ -81,9 +78,7 @@ function LogFiltersBar({
   };
 
   const hasActiveFilters =
-    (filters.severity && filters.severity.length > 0) ||
-    filters.search ||
-    filters.source;
+    (filters.severity && filters.severity.length > 0) || filters.search || filters.source;
 
   return (
     <div className="flex flex-col gap-3 p-4 bg-bg-secondary border border-border-default rounded-xl">
@@ -123,7 +118,7 @@ function LogFiltersBar({
                 "transition-all duration-200 border cursor-pointer",
                 isActive
                   ? `severity-${severity.toLowerCase()} border-current`
-                  : "text-text-muted border-border-default hover:border-border-hover"
+                  : "text-text-muted border-border-default hover:border-border-hover",
               )}
             >
               {severity}
@@ -132,12 +127,7 @@ function LogFiltersBar({
         })}
 
         {hasActiveFilters && (
-          <Button
-            variant="ghost"
-            size="sm"
-            icon={<X size={12} />}
-            onClick={onReset}
-          >
+          <Button variant="ghost" size="sm" icon={<X size={12} />} onClick={onReset}>
             Temizle
           </Button>
         )}

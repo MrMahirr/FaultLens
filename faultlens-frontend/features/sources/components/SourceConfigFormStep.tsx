@@ -24,14 +24,20 @@ interface SourceConfigFormStepProps {
 
 export function SourceConfigFormStep({
   selectedType,
-  name, setName,
-  host, setHost,
-  namespace, setNamespace,
-  username, setUsername,
-  password, setPassword,
-  logFilePath, setLogFilePath,
+  name,
+  setName,
+  host,
+  setHost,
+  namespace,
+  setNamespace,
+  username,
+  setUsername,
+  password,
+  setPassword,
+  logFilePath,
+  setLogFilePath,
   onBack,
-  onNext
+  onNext,
 }: SourceConfigFormStepProps) {
   return (
     <motion.div
@@ -65,22 +71,22 @@ export function SourceConfigFormStep({
             value={host}
             onChange={(e) => setHost(e.target.value)}
           />
-          <Input 
-            label="Username" 
-            placeholder="root" 
+          <Input
+            label="Username"
+            placeholder="root"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
-          <Input 
-            label="Password" 
-            type="password" 
-            placeholder="***" 
+          <Input
+            label="Password"
+            type="password"
+            placeholder="***"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <Input 
-            label="Log File Path" 
-            placeholder="/var/log/syslog" 
+          <Input
+            label="Log File Path"
+            placeholder="/var/log/syslog"
             value={logFilePath}
             onChange={(e) => setLogFilePath(e.target.value)}
           />
@@ -114,11 +120,7 @@ export function SourceConfigFormStep({
       )}
 
       <div className="flex gap-2 pt-2">
-        <Button
-          variant="secondary"
-          icon={<ArrowLeft size={14} />}
-          onClick={onBack}
-        >
+        <Button variant="secondary" icon={<ArrowLeft size={14} />} onClick={onBack}>
           Geri
         </Button>
         <Button

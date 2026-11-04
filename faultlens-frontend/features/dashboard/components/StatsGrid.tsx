@@ -21,15 +21,7 @@ interface StatCardProps {
 
 /* ── StatCard ──────────────────────────────────────────────── */
 
-function StatCard({
-  title,
-  value,
-  subtitle,
-  icon,
-  iconBg,
-  index,
-  change,
-}: StatCardProps) {
+function StatCard({ title, value, subtitle, icon, iconBg, index, change }: StatCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -39,20 +31,14 @@ function StatCard({
       <Card variant="default" hover>
         <div className="flex items-start justify-between">
           <div className="space-y-2">
-            <p className="text-xs font-medium text-text-muted uppercase tracking-wider">
-              {title}
-            </p>
+            <p className="text-xs font-medium text-text-muted uppercase tracking-wider">{title}</p>
             <p className="text-3xl font-bold font-display text-text-primary">
               {typeof value === "number" ? formatNumber(value) : value}
             </p>
             <div className="flex items-center gap-2">
               <p className="text-xs text-text-secondary">{subtitle}</p>
               {change !== undefined && (
-                <span
-                  className={`text-xs font-mono ${
-                    change > 0 ? "text-error" : "text-success"
-                  }`}
-                >
+                <span className={`text-xs font-mono ${change > 0 ? "text-error" : "text-success"}`}>
                   {change > 0 ? "↑" : "↓"} {Math.abs(change)}%
                 </span>
               )}

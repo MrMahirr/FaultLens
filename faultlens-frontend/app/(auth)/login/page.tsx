@@ -17,9 +17,7 @@ export default function LoginPage() {
           <h1 className="text-2xl font-bold font-display text-text-primary">
             Fault<span className="text-accent">Lens</span>
           </h1>
-          <p className="text-sm text-text-secondary mt-1">
-            Log analiz platformuna giriş yapın
-          </p>
+          <p className="text-sm text-text-secondary mt-1">Log analiz platformuna giriş yapın</p>
         </div>
       </div>
 

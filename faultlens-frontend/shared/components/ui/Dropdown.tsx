@@ -35,22 +35,13 @@ interface DropdownSelectProps {
 
 /* ── Dropdown Menu Component ───────────────────────────────── */
 
-function Dropdown({
-  trigger,
-  items,
-  onSelect,
-  align = "right",
-  className,
-}: DropdownProps) {
+function Dropdown({ trigger, items, onSelect, align = "right", className }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setIsOpen(false);
       }
     };
@@ -82,7 +73,7 @@ function Dropdown({
               "absolute z-50 mt-1.5 min-w-[160px]",
               "bg-bg-secondary border border-border-default rounded-xl shadow-lg",
               "py-1 overflow-hidden",
-              align === "right" ? "right-0" : "left-0"
+              align === "right" ? "right-0" : "left-0",
             )}
           >
             {items.map((item) => (
@@ -96,12 +87,10 @@ function Dropdown({
                   item.danger
                     ? "text-error hover:bg-error/10"
                     : "text-text-primary hover:bg-bg-tertiary",
-                  item.disabled && "opacity-40 cursor-not-allowed"
+                  item.disabled && "opacity-40 cursor-not-allowed",
                 )}
               >
-                {item.icon && (
-                  <span className="shrink-0 text-text-muted">{item.icon}</span>
-                )}
+                {item.icon && <span className="shrink-0 text-text-muted">{item.icon}</span>}
                 {item.label}
               </button>
             ))}
@@ -128,10 +117,7 @@ function DropdownSelect({
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (
-        selectRef.current &&
-        !selectRef.current.contains(e.target as Node)
-      ) {
+      if (selectRef.current && !selectRef.current.contains(e.target as Node)) {
         setIsOpen(false);
       }
     };
@@ -144,11 +130,7 @@ function DropdownSelect({
 
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
-      {label && (
-        <label className="text-sm font-medium text-text-secondary">
-          {label}
-        </label>
-      )}
+      {label && <label className="text-sm font-medium text-text-secondary">{label}</label>}
 
       <div ref={selectRef} className="relative">
         <button
@@ -161,17 +143,15 @@ function DropdownSelect({
             "focus:outline-none focus:border-border-active focus:ring-1 focus:ring-accent/30",
             isOpen && "border-border-active ring-1 ring-accent/30",
             error && "border-error",
-            selectedOption ? "text-text-primary" : "text-text-muted"
+            selectedOption ? "text-text-primary" : "text-text-muted",
           )}
         >
-          <span className="truncate">
-            {selectedOption ? selectedOption.label : placeholder}
-          </span>
+          <span className="truncate">{selectedOption ? selectedOption.label : placeholder}</span>
           <ChevronDown
             size={16}
             className={cn(
               "shrink-0 text-text-muted transition-transform duration-200",
-              isOpen && "rotate-180"
+              isOpen && "rotate-180",
             )}
           />
         </button>
@@ -200,7 +180,7 @@ function DropdownSelect({
                     option.value === value
                       ? "bg-accent/10 text-accent"
                       : "text-text-primary hover:bg-bg-tertiary",
-                    option.disabled && "opacity-40 cursor-not-allowed"
+                    option.disabled && "opacity-40 cursor-not-allowed",
                   )}
                 >
                   {option.icon && <span className="shrink-0">{option.icon}</span>}

@@ -39,9 +39,7 @@ function LogTable({ data, loading = false, onRowClick }: LogTableProps) {
       {
         accessorKey: "severity",
         header: "Severity",
-        cell: ({ getValue }) => (
-          <SeverityBadge severity={getValue() as LogEntryDto["severity"]} />
-        ),
+        cell: ({ getValue }) => <SeverityBadge severity={getValue() as LogEntryDto["severity"]} />,
         size: 90,
       },
       {
@@ -61,9 +59,7 @@ function LogTable({ data, loading = false, onRowClick }: LogTableProps) {
           const message = getValue() as string;
           return (
             <Tooltip content={message} position="bottom">
-              <span className="text-sm text-text-primary">
-                {truncate(message, 80)}
-              </span>
+              <span className="text-sm text-text-primary">{truncate(message, 80)}</span>
             </Tooltip>
           );
         },
@@ -92,7 +88,7 @@ function LogTable({ data, loading = false, onRowClick }: LogTableProps) {
         size: 70,
       },
     ],
-    []
+    [],
   );
 
   return (

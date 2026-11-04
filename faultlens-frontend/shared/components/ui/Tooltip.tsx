@@ -26,20 +26,16 @@ const positionStyles: Record<TooltipPosition, string> = {
 
 const arrowStyles: Record<TooltipPosition, string> = {
   top: "top-full left-1/2 -translate-x-1/2 border-t-bg-tertiary border-x-transparent border-b-transparent",
-  bottom: "bottom-full left-1/2 -translate-x-1/2 border-b-bg-tertiary border-x-transparent border-t-transparent",
+  bottom:
+    "bottom-full left-1/2 -translate-x-1/2 border-b-bg-tertiary border-x-transparent border-t-transparent",
   left: "left-full top-1/2 -translate-y-1/2 border-l-bg-tertiary border-y-transparent border-r-transparent",
-  right: "right-full top-1/2 -translate-y-1/2 border-r-bg-tertiary border-y-transparent border-l-transparent",
+  right:
+    "right-full top-1/2 -translate-y-1/2 border-r-bg-tertiary border-y-transparent border-l-transparent",
 };
 
 /* ── Component ─────────────────────────────────────────────── */
 
-function Tooltip({
-  content,
-  position = "top",
-  delay = 200,
-  children,
-  className,
-}: TooltipProps) {
+function Tooltip({ content, position = "top", delay = 200, children, className }: TooltipProps) {
   const [visible, setVisible] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -78,16 +74,11 @@ function Tooltip({
             "whitespace-nowrap pointer-events-none",
             "animate-fade-in",
             positionStyles[position],
-            className
+            className,
           )}
         >
           {content}
-          <span
-            className={cn(
-              "absolute w-0 h-0 border-4",
-              arrowStyles[position]
-            )}
-          />
+          <span className={cn("absolute w-0 h-0 border-4", arrowStyles[position])} />
         </div>
       )}
     </div>

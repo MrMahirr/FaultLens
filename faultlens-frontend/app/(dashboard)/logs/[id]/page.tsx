@@ -12,11 +12,7 @@ import { formatDate } from "@/shared/lib/utils";
 import { LoadingSpinner } from "@/shared/components/feedback/LoadingSpinner";
 import { cn } from "@/shared/lib/utils";
 
-export default function LogDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function LogDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const logId = parseInt(id, 10);
   const { data: detailData, isLoading, error } = useLogDetailQuery(logId);
@@ -56,16 +52,12 @@ export default function LogDetailPage({
       <div className="flex items-center gap-3">
         <SeverityBadge severity={log.severity} />
         <span className="text-sm font-mono text-text-muted">Log #{log.id}</span>
-        <span className="text-sm text-text-muted">
-          {formatDate(log.timestamp)}
-        </span>
+        <span className="text-sm text-text-muted">{formatDate(log.timestamp)}</span>
       </div>
 
       {/* Message */}
       <Card variant="default">
-        <h2 className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">
-          Mesaj
-        </h2>
+        <h2 className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">Mesaj</h2>
         <p className="text-text-primary leading-relaxed">{log.message}</p>
       </Card>
 
@@ -78,12 +70,8 @@ export default function LogDetailPage({
           { label: "Pod", value: log.podName ?? "—" },
         ].map((item) => (
           <Card key={item.label} variant="bordered" padding="sm">
-            <p className="text-[10px] text-text-muted uppercase tracking-wider">
-              {item.label}
-            </p>
-            <p className="text-sm font-mono text-text-primary mt-1">
-              {item.value}
-            </p>
+            <p className="text-[10px] text-text-muted uppercase tracking-wider">{item.label}</p>
+            <p className="text-sm font-mono text-text-primary mt-1">{item.value}</p>
           </Card>
         ))}
       </div>
@@ -105,7 +93,7 @@ export default function LogDetailPage({
                       ? "text-error font-medium"
                       : line.trim().startsWith("at")
                         ? "text-text-muted pl-4"
-                        : "text-text-secondary"
+                        : "text-text-secondary",
                   )}
                 >
                   {line}
@@ -126,7 +114,9 @@ export default function LogDetailPage({
             {detailData.analyses.map((analysis, i) => (
               <Card key={analysis.id || i} variant="default" className="border-l-4 border-l-accent">
                 <p className="text-sm font-semibold text-text-primary uppercase tracking-wider">
-                  {analysis.engineType === AnalysisType.RULE_BASED ? "Kural Tabanlı Analiz" : "AI Analizi"}
+                  {analysis.engineType === AnalysisType.RULE_BASED
+                    ? "Kural Tabanlı Analiz"
+                    : "AI Analizi"}
                 </p>
                 <p className="text-sm text-text-secondary mt-2">
                   <strong>Kök Neden:</strong> {analysis.rootCause}

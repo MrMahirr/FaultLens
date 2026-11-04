@@ -10,11 +10,7 @@ import { useUIStore } from "@/shared/store/ui.store";
 import { useAuthStore } from "@/features/auth/store/auth.store";
 import { GlobalNotificationListener } from "@/shared/components/layout/GlobalNotificationListener";
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const sidebarOpen = useUIStore((state) => state.sidebarOpen);
   const token = useAuthStore((state) => state.token);
   const mustChangePassword = useAuthStore((state) => state.user?.mustChangePassword ?? false);
@@ -50,7 +46,7 @@ export default function DashboardLayout({
         transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
       >
         <GlobalNotificationListener />
-        
+
         {/* Topbar */}
         <Topbar />
 

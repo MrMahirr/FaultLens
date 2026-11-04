@@ -10,7 +10,9 @@ export interface GetAnalysesParams {
 }
 
 export const AnalysisApi = {
-  getAnalyses: async (params?: GetAnalysesParams): Promise<{ content: AnalysisResultDto[], totalPages: number, totalElements?: number }> => {
+  getAnalyses: async (
+    params?: GetAnalysesParams,
+  ): Promise<{ content: AnalysisResultDto[]; totalPages: number; totalElements?: number }> => {
     const response = await apiClient({
       method: HttpMethod.GET,
       url: Endpoints.ANALYSES.LIST,

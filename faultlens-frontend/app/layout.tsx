@@ -59,7 +59,8 @@ export default function RootLayout({
             <Toaster
               position="bottom-right"
               toastOptions={{
-                className: "!bg-bg-tertiary !text-text-primary !border !border-border-default !rounded-xl !shadow-lg",
+                className:
+                  "!bg-bg-tertiary !text-text-primary !border !border-border-default !rounded-xl !shadow-lg",
                 success: {
                   iconTheme: {
                     primary: "var(--color-success)",

@@ -18,7 +18,9 @@ export const DashboardApi = {
     const groupsPage = groupsRes.data?.data || {};
     const analysesList = analysesRes.data?.data?.content || analysesRes.data?.data || [];
 
-    const activeSources = sourcesList.filter((s: LogSourceDto) => s.status === "CONNECTED" || s.enabled).length;
+    const activeSources = sourcesList.filter(
+      (s: LogSourceDto) => s.status === "CONNECTED" || s.enabled,
+    ).length;
     const totalSources = sourcesList.length;
 
     const criticalCount = Number(statsData["CRITICAL"] || 0);

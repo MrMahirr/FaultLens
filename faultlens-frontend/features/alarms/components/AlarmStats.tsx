@@ -45,13 +45,9 @@ export function AlarmStats() {
           key={stat.title}
           className={`flex items-center p-6 rounded-2xl border ${stat.bg} ${stat.border} backdrop-blur-md transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg`}
         >
-          <div className="p-4 rounded-xl bg-bg-primary/50 shadow-inner mr-5">
-            {stat.icon}
-          </div>
+          <div className="p-4 rounded-xl bg-bg-primary/50 shadow-inner mr-5">{stat.icon}</div>
           <div>
-            <p className="text-sm text-text-muted font-medium mb-1">
-              {stat.title}
-            </p>
+            <p className="text-sm text-text-muted font-medium mb-1">{stat.title}</p>
             <h3 className="text-3xl font-bold text-text-primary tracking-tight">
               {stat.value ?? "–"}
             </h3>

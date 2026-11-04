@@ -26,10 +26,10 @@ export const useLoginMutation = () => {
       const payload = decodeJwt(data.token);
       let username = "admin";
       let role = "ADMIN";
-      
+
       if (payload) {
         username = payload.sub;
-        role = payload.roles?.[0]?.replace('ROLE_', '') || "ADMIN";
+        role = payload.roles?.[0]?.replace("ROLE_", "") || "ADMIN";
       }
 
       loginStore(data.token, {

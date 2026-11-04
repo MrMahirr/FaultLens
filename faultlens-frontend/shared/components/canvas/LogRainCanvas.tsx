@@ -114,13 +114,7 @@ function LogRainCanvas({ className, reducedOpacity = false }: LogRainCanvasProps
     };
   }, [isDark, reducedOpacity]);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      className={className}
-      style={{ width: "100%", height: "100%" }}
-    />
-  );
+  return <canvas ref={canvasRef} className={className} style={{ width: "100%", height: "100%" }} />;
 }
 
 export { LogRainCanvas, type LogRainCanvasProps };

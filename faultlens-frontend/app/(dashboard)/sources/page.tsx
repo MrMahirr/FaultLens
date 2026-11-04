@@ -20,11 +20,7 @@ export default function SourcesPage() {
         title="Kaynaklar"
         description="Log kaynaklarını yönetin ve izleyin"
         action={
-          <Button
-            variant="primary"
-            icon={<Plus size={16} />}
-            onClick={() => setShowModal(true)}
-          >
+          <Button variant="primary" icon={<Plus size={16} />} onClick={() => setShowModal(true)}>
             Yeni Kaynak Ekle
           </Button>
         }
@@ -53,10 +49,7 @@ export default function SourcesPage() {
         />
       )}
 
-      <AddSourceModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-      />
+      <AddSourceModal isOpen={showModal} onClose={() => setShowModal(false)} />
     </div>
   );
 }

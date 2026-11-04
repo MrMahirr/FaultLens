@@ -51,18 +51,12 @@ export function SourceTypeSelectionStep({ selectedType, onSelect }: SourceTypeSe
           className={cn(
             "flex flex-col items-center gap-3 p-6 rounded-xl border-2 transition-all duration-200 cursor-pointer",
             "hover:border-accent/40 hover:bg-accent/5",
-            selectedType === item.type
-              ? "border-accent bg-accent/10"
-              : "border-border-default"
+            selectedType === item.type ? "border-accent bg-accent/10" : "border-border-default",
           )}
         >
           <div className="text-accent">{item.icon}</div>
-          <span className="text-sm font-medium text-text-primary">
-            {item.label}
-          </span>
-          <span className="text-xs text-text-muted text-center">
-            {item.description}
-          </span>
+          <span className="text-sm font-medium text-text-primary">{item.label}</span>
+          <span className="text-xs text-text-muted text-center">{item.description}</span>
         </button>
       ))}
     </motion.div>

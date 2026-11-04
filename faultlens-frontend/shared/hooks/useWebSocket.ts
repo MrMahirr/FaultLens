@@ -87,9 +87,7 @@ export function useWebSocket({
     setStatus("connecting");
 
     try {
-      const ws = token
-        ? new WebSocket(url, [BEARER_PROTOCOL, token])
-        : new WebSocket(url);
+      const ws = token ? new WebSocket(url, [BEARER_PROTOCOL, token]) : new WebSocket(url);
       wsRef.current = ws;
 
       ws.onopen = () => {
@@ -124,15 +122,8 @@ export function useWebSocket({
         if (event.code === TOKEN_EXPIRED_CLOSE_CODE) return;
 
         // Auto-reconnect with exponential backoff
-        if (
-          enabledRef.current &&
-          retryCountRef.current < maxRetries &&
-          mountedRef.current
-        ) {
-          const delay = Math.min(
-            baseDelay * Math.pow(2, retryCountRef.current),
-            maxDelay,
-          );
+        if (enabledRef.current && retryCountRef.current < maxRetries && mountedRef.current) {
+          const delay = Math.min(baseDelay * Math.pow(2, retryCountRef.current), maxDelay);
           retryCountRef.current += 1;
           retryTimerRef.current = setTimeout(() => connectRef.current(), delay);
         }

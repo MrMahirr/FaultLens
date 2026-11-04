@@ -64,9 +64,7 @@ function SettingsContent() {
   return (
     <div className="flex flex-col gap-6 w-full max-w-5xl mx-auto p-4 md:p-8 animate-fade-in">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-text-primary">
-          Ayarlar
-        </h1>
+        <h1 className="text-3xl font-bold tracking-tight text-text-primary">Ayarlar</h1>
         <p className="text-text-muted mt-1">
           Kişisel tercihlerinizi ve sistem yapılandırmasını yönetin.
         </p>
@@ -88,9 +86,7 @@ function SettingsContent() {
                       : "text-text-secondary hover:bg-bg-tertiary hover:text-text-primary"
                   }`}
                 >
-                  <span className={isActive ? "text-accent" : "text-text-muted"}>
-                    {tab.icon}
-                  </span>
+                  <span className={isActive ? "text-accent" : "text-text-muted"}>{tab.icon}</span>
                   {tab.label}
                 </button>
               );

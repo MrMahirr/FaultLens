@@ -1,7 +1,12 @@
 import { apiClient } from "@/shared/api/client";
 import { Endpoints } from "@/shared/api/endpoints";
 import { HttpMethod } from "@/shared/api/methods";
-import type { LogEntryDto, LogFilters, LogGroupDto, LogDetailDto } from "@/features/logs/types/log.types";
+import type {
+  LogEntryDto,
+  LogFilters,
+  LogGroupDto,
+  LogDetailDto,
+} from "@/features/logs/types/log.types";
 import type { PagedResponse } from "@/shared/types/api.types";
 
 export const LogApi = {

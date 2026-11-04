@@ -4,7 +4,11 @@ import { decodeJwt } from "./jwt";
 /** Builds an unsigned JWT with a base64url-encoded payload (signature is not checked client-side). */
 function token(payload: object): string {
   const encode = (value: object) =>
-    Buffer.from(JSON.stringify(value)).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    Buffer.from(JSON.stringify(value))
+      .toString("base64")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/, "");
   return `${encode({ alg: "HS256" })}.${encode(payload)}.signature`;
 }
 

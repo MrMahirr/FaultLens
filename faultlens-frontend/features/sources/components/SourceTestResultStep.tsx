@@ -16,9 +16,14 @@ interface SourceTestResultStepProps {
 }
 
 export function SourceTestResultStep({
-  name, selectedType,
-  testResult, isTesting, isSaving,
-  onTest, onBack, onSave
+  name,
+  selectedType,
+  testResult,
+  isTesting,
+  isSaving,
+  onTest,
+  onBack,
+  onSave,
 }: SourceTestResultStepProps) {
   return (
     <motion.div
@@ -31,9 +36,7 @@ export function SourceTestResultStep({
       <Card variant="bordered" padding="md">
         <p className="text-sm text-text-secondary mb-1">Kaynak:</p>
         <p className="font-mono text-text-primary">{name}</p>
-        <p className="text-xs text-text-muted mt-1">
-          Tür: {selectedType}
-        </p>
+        <p className="text-xs text-text-muted mt-1">Tür: {selectedType}</p>
       </Card>
 
       <div className="flex flex-col items-center gap-4 py-4">
@@ -57,9 +60,7 @@ export function SourceTestResultStep({
             className="flex flex-col items-center gap-2"
           >
             <CheckCircle2 size={48} className="text-success" />
-            <p className="text-sm text-success font-medium">
-              Bağlantı başarılı!
-            </p>
+            <p className="text-sm text-success font-medium">Bağlantı başarılı!</p>
           </motion.div>
         )}
 
@@ -70,19 +71,13 @@ export function SourceTestResultStep({
             className="flex flex-col items-center gap-2"
           >
             <XCircle size={48} className="text-error" />
-            <p className="text-sm text-error font-medium">
-              Bağlantı başarısız
-            </p>
+            <p className="text-sm text-error font-medium">Bağlantı başarısız</p>
           </motion.div>
         )}
       </div>
 
       <div className="flex gap-2">
-        <Button
-          variant="secondary"
-          icon={<ArrowLeft size={14} />}
-          onClick={onBack}
-        >
+        <Button variant="secondary" icon={<ArrowLeft size={14} />} onClick={onBack}>
           Geri
         </Button>
         <Button

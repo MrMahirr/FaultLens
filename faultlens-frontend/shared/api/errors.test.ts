@@ -10,14 +10,16 @@ describe("getApiErrorMessage", () => {
   });
 
   it("reads the ApiResponse.message shape", () => {
-    expect(getApiErrorMessage(axiosError({ success: false, message: "Kaynak bulunamadı" }), "fallback")).toBe(
-      "Kaynak bulunamadı",
-    );
+    expect(
+      getApiErrorMessage(axiosError({ success: false, message: "Kaynak bulunamadı" }), "fallback"),
+    ).toBe("Kaynak bulunamadı");
   });
 
   it("falls back for network errors, blank or non-string messages", () => {
     expect(getApiErrorMessage(new Error("Network Error"), "fallback")).toBe("fallback");
-    expect(getApiErrorMessage(axiosError({ error: { message: "   " } }), "fallback")).toBe("fallback");
+    expect(getApiErrorMessage(axiosError({ error: { message: "   " } }), "fallback")).toBe(
+      "fallback",
+    );
     expect(getApiErrorMessage(axiosError({ message: 42 }), "fallback")).toBe("fallback");
     expect(getApiErrorMessage(undefined, "fallback")).toBe("fallback");
   });

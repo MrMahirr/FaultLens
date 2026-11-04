@@ -56,9 +56,7 @@ export const useAlarmStore = create<AlarmState>((set) => ({
     })),
   toggleRule: (id) =>
     set((state) => ({
-      rules: state.rules.map((r) =>
-        r.id === id ? { ...r, isActive: !r.isActive } : r
-      ),
+      rules: state.rules.map((r) => (r.id === id ? { ...r, isActive: !r.isActive } : r)),
     })),
   deleteRule: (id) =>
     set((state) => ({

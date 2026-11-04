@@ -62,7 +62,7 @@ function Badge({
         variantStyles[variant],
         sizeStyles[size],
         pulse && "animate-glow-pulse",
-        className
+        className,
       )}
     >
       {icon && <span className="shrink-0">{icon}</span>}

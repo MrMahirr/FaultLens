@@ -5,11 +5,7 @@ import { useIsClient } from "@/shared/hooks/useIsClient";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/features/auth/store/auth.store";
 
-export default function AuthLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AuthLayout({ children }: { children: React.ReactNode }) {
   const token = useAuthStore((state) => state.token);
   const mustChangePassword = useAuthStore((state) => state.user?.mustChangePassword ?? false);
   const router = useRouter();

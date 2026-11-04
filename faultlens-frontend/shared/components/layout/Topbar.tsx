@@ -33,12 +33,12 @@ function Topbar() {
 
   // Build breadcrumb from pathname
   const breadcrumb = pathname
-    ? ROUTE_LABELS[pathname] ??
+    ? (ROUTE_LABELS[pathname] ??
       pathname
         .split("/")
         .filter(Boolean)
         .map((seg) => seg.charAt(0).toUpperCase() + seg.slice(1))
-        .join(" / ")
+        .join(" / "))
     : "Panel";
 
   const userMenuItems: DropdownItem[] = [
@@ -69,7 +69,7 @@ function Topbar() {
         "bg-bg-primary/80 backdrop-blur-lg",
         "border-b border-border-default",
         "flex items-center justify-between px-4 gap-4",
-        "transition-theme"
+        "transition-theme",
       )}
     >
       {/* Left: Hamburger + Breadcrumb */}
@@ -116,9 +116,7 @@ function Topbar() {
                 <span className="text-xs font-bold text-accent">A</span>
               </div>
               {sidebarOpen && (
-                <span className="text-sm text-text-secondary hidden md:block">
-                  Admin
-                </span>
+                <span className="text-sm text-text-secondary hidden md:block">Admin</span>
               )}
             </button>
           }

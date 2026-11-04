@@ -63,7 +63,9 @@ export function useNotificationSettings() {
     };
   }, []);
 
-  const toggleOption = async (field: "emailEnabled" | "slackEnabled" | "pushEnabled" | "mobileEnabled") => {
+  const toggleOption = async (
+    field: "emailEnabled" | "slackEnabled" | "pushEnabled" | "mobileEnabled",
+  ) => {
     const previousSettings = { ...settings };
     const newSettings = {
       ...settings,
@@ -72,10 +74,7 @@ export function useNotificationSettings() {
     setSettings(newSettings);
 
     try {
-      const response = await apiClient.put(
-        Endpoints.SETTINGS.NOTIFICATIONS,
-        newSettings
-      );
+      const response = await apiClient.put(Endpoints.SETTINGS.NOTIFICATIONS, newSettings);
       const data = response.data?.data;
       if (data) {
         setSettings({
@@ -99,10 +98,7 @@ export function useNotificationSettings() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const response = await apiClient.put(
-        Endpoints.SETTINGS.NOTIFICATIONS,
-        settings
-      );
+      const response = await apiClient.put(Endpoints.SETTINGS.NOTIFICATIONS, settings);
       const data = response.data?.data;
       if (data) {
         setSettings({

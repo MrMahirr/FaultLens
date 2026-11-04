@@ -25,7 +25,7 @@ export function GlobalNotificationListener() {
         window.AudioContext ||
         (window as Window & { webkitAudioContext?: typeof window.AudioContext }).webkitAudioContext;
       if (!AudioContext) return;
-      
+
       const audioCtx = new AudioContext();
       const oscillator = audioCtx.createOscillator();
       const gainNode = audioCtx.createGain();
@@ -33,7 +33,7 @@ export function GlobalNotificationListener() {
       oscillator.type = "sine";
       oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5 note
       oscillator.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.1); // Drop to A4
-      
+
       gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
       gainNode.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 0.05); // Fade in quickly
       gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5); // Fade out smoothly
@@ -84,7 +84,7 @@ export function GlobalNotificationListener() {
             </div>
           </div>
         ),
-        { duration: 8000, position: "top-right" }
+        { duration: 8000, position: "top-right" },
       );
     }
   };

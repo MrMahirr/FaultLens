@@ -23,7 +23,10 @@ const PAGE_SIZE = 20;
 
 const STATUS_OPTIONS = [
   { label: "Tüm durumlar", value: "" },
-  ...Object.values(AlarmStatus).map((status) => ({ label: ALARM_STATUS_LABELS[status], value: status })),
+  ...Object.values(AlarmStatus).map((status) => ({
+    label: ALARM_STATUS_LABELS[status],
+    value: status,
+  })),
 ];
 
 const SEVERITY_OPTIONS = [
@@ -50,7 +53,8 @@ export function AlarmsList() {
   const deleteMutation = useDeleteAlarmMutation();
 
   const alarms = data?.content ?? [];
-  const isMutating = acknowledgeMutation.isPending || resolveMutation.isPending || deleteMutation.isPending;
+  const isMutating =
+    acknowledgeMutation.isPending || resolveMutation.isPending || deleteMutation.isPending;
 
   // Changing a filter always goes back to the first page.
   const updateFilter = (key: "status" | "severity", value: string) =>

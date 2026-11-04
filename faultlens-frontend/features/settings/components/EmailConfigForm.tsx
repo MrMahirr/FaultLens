@@ -8,10 +8,18 @@ interface EmailConfigFormProps {
   serviceId: string | null;
   templateId: string | null;
   publicKey: string | null;
-  onChange: (field: "emailjsServiceId" | "emailjsTemplateId" | "emailjsPublicKey", value: string) => void;
+  onChange: (
+    field: "emailjsServiceId" | "emailjsTemplateId" | "emailjsPublicKey",
+    value: string,
+  ) => void;
 }
 
-export function EmailConfigForm({ serviceId, templateId, publicKey, onChange }: EmailConfigFormProps) {
+export function EmailConfigForm({
+  serviceId,
+  templateId,
+  publicKey,
+  onChange,
+}: EmailConfigFormProps) {
   const handleTest = async () => {
     const emailInput = document.getElementById("test-email-input") as HTMLInputElement;
     const testEmail = emailInput?.value;
@@ -30,7 +38,8 @@ export function EmailConfigForm({ serviceId, templateId, publicKey, onChange }: 
   return (
     <>
       <p className="text-xs text-text-muted mt-2 border-l-2 border-accent pl-2">
-        E-posta gönderimleri <b>Email.js</b> kullanılarak yapılmaktadır. Gerekli API anahtarlarını aşağıya girin.
+        E-posta gönderimleri <b>Email.js</b> kullanılarak yapılmaktadır. Gerekli API anahtarlarını
+        aşağıya girin.
       </p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="flex flex-col gap-1">
@@ -64,7 +73,7 @@ export function EmailConfigForm({ serviceId, templateId, publicKey, onChange }: 
           />
         </div>
       </div>
-      
+
       <hr className="border-border-default" />
 
       <div className="flex flex-col gap-1">

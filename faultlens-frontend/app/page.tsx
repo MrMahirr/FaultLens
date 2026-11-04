@@ -80,22 +80,12 @@ function FeatureCard({
       viewport={{ once: true }}
       transition={{ delay: index * 0.15, duration: 0.5 }}
     >
-      <Card
-        variant="glass"
-        hover
-        glow
-        className="h-full text-center"
-        padding="lg"
-      >
+      <Card variant="glass" hover glow className="h-full text-center" padding="lg">
         <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-4">
           {icon}
         </div>
-        <h3 className="text-lg font-semibold font-display text-text-primary mb-2">
-          {title}
-        </h3>
-        <p className="text-sm text-text-secondary leading-relaxed">
-          {description}
-        </p>
+        <h3 className="text-lg font-semibold font-display text-text-primary mb-2">{title}</h3>
+        <p className="text-sm text-text-secondary leading-relaxed">{description}</p>
       </Card>
     </motion.div>
   );
@@ -125,20 +115,14 @@ function StepCard({
       className="flex items-start gap-4"
     >
       <div className="shrink-0 w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center">
-        <span className="text-lg font-bold font-display text-accent">
-          {number}
-        </span>
+        <span className="text-lg font-bold font-display text-accent">{number}</span>
       </div>
       <div>
         <div className="flex items-center gap-2 mb-1">
           {icon}
-          <h3 className="font-semibold font-display text-text-primary">
-            {title}
-          </h3>
+          <h3 className="font-semibold font-display text-text-primary">{title}</h3>
         </div>
-        <p className="text-sm text-text-secondary leading-relaxed">
-          {description}
-        </p>
+        <p className="text-sm text-text-secondary leading-relaxed">{description}</p>
       </div>
     </motion.div>
   );
@@ -190,8 +174,7 @@ export default function LandingPage() {
             transition={{ delay: 0.2, duration: 0.6 }}
             className="text-4xl sm:text-5xl lg:text-6xl font-bold font-display text-text-primary leading-tight mb-6"
           >
-            Your logs. Analyzed.{" "}
-            <span className="text-accent">Instantly.</span>
+            Your logs. Analyzed. <span className="text-accent">Instantly.</span>
           </motion.h1>
 
           {/* Subtitle */}
@@ -201,8 +184,8 @@ export default function LandingPage() {
             transition={{ delay: 0.4, duration: 0.6 }}
             className="text-lg text-text-secondary max-w-2xl mx-auto mb-10 leading-relaxed"
           >
-            Kubernetes, SSH ve Docker ortamlarınızdaki hataları gerçek zamanlı
-            izleyin, kök nedenlerini saniyeler içinde bulun.
+            Kubernetes, SSH ve Docker ortamlarınızdaki hataları gerçek zamanlı izleyin, kök
+            nedenlerini saniyeler içinde bulun.
           </motion.p>
 
           {/* CTAs */}
@@ -222,11 +205,7 @@ export default function LandingPage() {
                 Hemen Başla
               </Button>
             </Link>
-            <Button
-              variant="secondary"
-              size="lg"
-              onClick={scrollToFeatures}
-            >
+            <Button variant="secondary" size="lg" onClick={scrollToFeatures}>
               Nasıl Çalışır?
             </Button>
           </motion.div>
@@ -259,9 +238,7 @@ export default function LandingPage() {
             </div>
             <div>
               <AnimatedCounter end={6} />
-              <p className="text-sm text-text-secondary mt-2">
-                Hata Kuralı Tanımlı
-              </p>
+              <p className="text-sm text-text-secondary mt-2">Hata Kuralı Tanımlı</p>
             </div>
             <div>
               <AnimatedCounter end={3} />
@@ -363,9 +340,7 @@ export default function LandingPage() {
               Fault<span className="text-accent">Lens</span>
             </span>
           </div>
-          <p className="text-xs text-text-muted">
-            Built with Spring Boot & Next.js
-          </p>
+          <p className="text-xs text-text-muted">Built with Spring Boot & Next.js</p>
           <a
             href="https://github.com"
             target="_blank"

@@ -12,7 +12,9 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
 
 /** Unsigned JWT whose payload carries the given subject and roles. */
 function jwt(sub: string, roles: string[]) {
-  const payload = Buffer.from(JSON.stringify({ sub, roles, exp: 9_999_999_999 })).toString("base64url");
+  const payload = Buffer.from(JSON.stringify({ sub, roles, exp: 9_999_999_999 })).toString(
+    "base64url",
+  );
   return `e30.${payload}.sig`;
 }
 
@@ -45,7 +47,11 @@ describe("LoginForm", () => {
       http.post(`${API}/auth/login`, async ({ request }) => {
         sentBody = await request.json();
         return HttpResponse.json(
-          ok({ token: jwt("mahir", ["ROLE_ADMIN"]), expires_at: "2026-11-05T10:00:00Z", must_change_password: false }),
+          ok({
+            token: jwt("mahir", ["ROLE_ADMIN"]),
+            expires_at: "2026-11-05T10:00:00Z",
+            must_change_password: false,
+          }),
         );
       }),
     );
@@ -55,14 +61,20 @@ describe("LoginForm", () => {
 
     await waitFor(() => expect(push).toHaveBeenCalledWith("/dashboard"));
     expect(sentBody).toEqual({ username: "mahir", password: "secret-pass" });
-    expect(useAuthStore.getState().user).toEqual({ username: "mahir", role: "ADMIN", mustChangePassword: false });
+    expect(useAuthStore.getState().user).toEqual({
+      username: "mahir",
+      role: "ADMIN",
+      mustChangePassword: false,
+    });
     expect(useAuthStore.getState().token).toBe(jwt("mahir", ["ROLE_ADMIN"]));
   });
 
   it("sends a user with a bootstrap password to /change-password", async () => {
     server.use(
       http.post(`${API}/auth/login`, () =>
-        HttpResponse.json(ok({ token: jwt("admin", ["ADMIN"]), expires_at: "x", must_change_password: true })),
+        HttpResponse.json(
+          ok({ token: jwt("admin", ["ADMIN"]), expires_at: "x", must_change_password: true }),
+        ),
       ),
     );
     renderWithQuery(<LoginForm />);
@@ -76,7 +88,9 @@ describe("LoginForm", () => {
   it("shows the backend message on bad credentials and stays on the page", async () => {
     server.use(
       http.post(`${API}/auth/login`, () =>
-        HttpResponse.json(fail("INVALID_CREDENTIALS", "Invalid username or password"), { status: 401 }),
+        HttpResponse.json(fail("INVALID_CREDENTIALS", "Invalid username or password"), {
+          status: 401,
+        }),
       ),
     );
     renderWithQuery(<LoginForm />);

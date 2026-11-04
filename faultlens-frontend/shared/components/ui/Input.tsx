@@ -18,37 +18,22 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
   (
-    {
-      label,
-      error,
-      hint,
-      icon,
-      iconPosition = "left",
-      fullWidth = true,
-      className,
-      id,
-      ...props
-    },
-    ref
+    { label, error, hint, icon, iconPosition = "left", fullWidth = true, className, id, ...props },
+    ref,
   ) => {
     const inputId = id ?? label?.toLowerCase().replace(/\s+/g, "-");
 
     return (
       <div className={cn("flex flex-col gap-1.5", fullWidth && "w-full")}>
         {label && (
-          <label
-            htmlFor={inputId}
-            className="text-sm font-medium text-text-secondary"
-          >
+          <label htmlFor={inputId} className="text-sm font-medium text-text-secondary">
             {label}
           </label>
         )}
 
         <div className="relative">
           {icon && iconPosition === "left" && (
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted">
-              {icon}
-            </span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted">{icon}</span>
           )}
 
           <input
@@ -65,7 +50,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               icon && iconPosition === "left" && "pl-10",
               icon && iconPosition === "right" && "pr-10",
               error && "border-error focus:border-error focus:ring-error/30",
-              className
+              className,
             )}
             {...props}
           />
@@ -84,12 +69,10 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           </p>
         )}
 
-        {hint && !error && (
-          <p className="text-xs text-text-muted">{hint}</p>
-        )}
+        {hint && !error && <p className="text-xs text-text-muted">{hint}</p>}
       </div>
     );
-  }
+  },
 );
 
 Input.displayName = "Input";

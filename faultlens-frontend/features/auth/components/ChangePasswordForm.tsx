@@ -38,8 +38,9 @@ interface ChangePasswordFormProps {
 }
 
 function errorMessage(error: unknown): string {
-  const apiMessage = (error as { response?: { data?: { error?: { code?: string; message?: string } } } })
-    ?.response?.data?.error;
+  const apiMessage = (
+    error as { response?: { data?: { error?: { code?: string; message?: string } } } }
+  )?.response?.data?.error;
   if (apiMessage?.code === "INVALID_CURRENT_PASSWORD") return "Mevcut şifre hatalı.";
   if (apiMessage?.code === "PASSWORD_REUSED") return "Yeni şifre mevcut şifreden farklı olmalıdır.";
   return apiMessage?.message ?? "Şifre değiştirilemedi. Lütfen tekrar deneyin.";

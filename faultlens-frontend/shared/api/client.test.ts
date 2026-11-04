@@ -43,21 +43,36 @@ describe("apiClient interceptors", () => {
     server.use(
       http.post(`${API}/deployments`, async ({ request }) => {
         body = await request.json();
-        return HttpResponse.json(ok({ id: 1, service_name: "orders", deployed_at: "2026-11-04T10:00:00Z" }));
+        return HttpResponse.json(
+          ok({ id: 1, service_name: "orders", deployed_at: "2026-11-04T10:00:00Z" }),
+        );
       }),
     );
 
-    const response = await apiClient.post(`${API}/deployments`, { serviceName: "orders", deployedBy: "ci" });
+    const response = await apiClient.post(`${API}/deployments`, {
+      serviceName: "orders",
+      deployedBy: "ci",
+    });
 
     expect(body).toEqual({ service_name: "orders", deployed_by: "ci" });
-    expect(response.data.data).toEqual({ id: 1, serviceName: "orders", deployedAt: "2026-11-04T10:00:00Z" });
+    expect(response.data.data).toEqual({
+      id: 1,
+      serviceName: "orders",
+      deployedAt: "2026-11-04T10:00:00Z",
+    });
   });
 
   it("logs out on 401", async () => {
     useAuthStore.setState({ token: "expired", user: { username: "admin", role: "ADMIN" } });
-    server.use(http.get(`${API}/alarms`, () => HttpResponse.json(fail("UNAUTHORIZED", "x"), { status: 401 })));
+    server.use(
+      http.get(`${API}/alarms`, () =>
+        HttpResponse.json(fail("UNAUTHORIZED", "x"), { status: 401 }),
+      ),
+    );
 
-    await expect(apiClient.get(`${API}/alarms`)).rejects.toMatchObject({ response: { status: 401 } });
+    await expect(apiClient.get(`${API}/alarms`)).rejects.toMatchObject({
+      response: { status: 401 },
+    });
 
     expect(useAuthStore.getState().token).toBeNull();
     expect(useAuthStore.getState().user).toBeNull();
@@ -67,11 +82,15 @@ describe("apiClient interceptors", () => {
     useAuthStore.setState({ token: "restricted", user: { username: "admin", role: "ADMIN" } });
     server.use(
       http.get(`${API}/alarms`, () =>
-        HttpResponse.json(fail("PASSWORD_CHANGE_REQUIRED", "Password must be changed"), { status: 403 }),
+        HttpResponse.json(fail("PASSWORD_CHANGE_REQUIRED", "Password must be changed"), {
+          status: 403,
+        }),
       ),
     );
 
-    await expect(apiClient.get(`${API}/alarms`)).rejects.toMatchObject({ response: { status: 403 } });
+    await expect(apiClient.get(`${API}/alarms`)).rejects.toMatchObject({
+      response: { status: 403 },
+    });
 
     expect(useAuthStore.getState().token).toBe("restricted");
     expect(useAuthStore.getState().user?.mustChangePassword).toBe(true);
@@ -79,7 +98,9 @@ describe("apiClient interceptors", () => {
 
   it("does not flag the user on other 403s", async () => {
     useAuthStore.setState({ token: "t", user: { username: "viewer", role: "VIEWER" } });
-    server.use(http.get(`${API}/alarms`, () => HttpResponse.json(fail("FORBIDDEN", "no"), { status: 403 })));
+    server.use(
+      http.get(`${API}/alarms`, () => HttpResponse.json(fail("FORBIDDEN", "no"), { status: 403 })),
+    );
 
     await expect(apiClient.get(`${API}/alarms`)).rejects.toBeTruthy();
 

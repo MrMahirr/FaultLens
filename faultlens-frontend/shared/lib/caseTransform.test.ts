@@ -42,8 +42,16 @@ describe("snakeToCamel", () => {
 describe("camelToSnake", () => {
   it("converts request bodies deeply", () => {
     expect(
-      camelToSnake({ currentPassword: "a", newPassword: "b", nested: [{ logFilePath: "/var/log" }] }),
-    ).toEqual({ current_password: "a", new_password: "b", nested: [{ log_file_path: "/var/log" }] });
+      camelToSnake({
+        currentPassword: "a",
+        newPassword: "b",
+        nested: [{ logFilePath: "/var/log" }],
+      }),
+    ).toEqual({
+      current_password: "a",
+      new_password: "b",
+      nested: [{ log_file_path: "/var/log" }],
+    });
   });
 
   it("round-trips with snakeToCamel", () => {

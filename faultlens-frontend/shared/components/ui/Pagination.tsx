@@ -19,7 +19,7 @@ interface PaginationProps {
 function generatePageNumbers(
   current: number,
   total: number,
-  siblings: number
+  siblings: number,
 ): (number | "dots")[] {
   const totalNumbers = siblings * 2 + 3; // siblings + current + first + last
   const totalBlocks = totalNumbers + 2; // + 2 dots
@@ -44,14 +44,14 @@ function generatePageNumbers(
     const rightItemCount = 3 + 2 * siblings;
     const rightRange = Array.from(
       { length: rightItemCount },
-      (_, i) => total - rightItemCount + i + 1
+      (_, i) => total - rightItemCount + i + 1,
     );
     return [1, "dots", ...rightRange];
   }
 
   const middleRange = Array.from(
     { length: rightSiblingIndex - leftSiblingIndex + 1 },
-    (_, i) => leftSiblingIndex + i
+    (_, i) => leftSiblingIndex + i,
   );
   return [1, "dots", ...middleRange, "dots", total];
 }
@@ -67,7 +67,7 @@ function Pagination({
 }: PaginationProps) {
   const pages = useMemo(
     () => generatePageNumbers(currentPage, totalPages, siblingCount),
-    [currentPage, totalPages, siblingCount]
+    [currentPage, totalPages, siblingCount],
   );
 
   const handlePrev = useCallback(() => {
@@ -98,10 +98,7 @@ function Pagination({
       {pages.map((page, idx) => {
         if (page === "dots") {
           return (
-            <span
-              key={`dots-${idx}`}
-              className="px-2 py-1 text-text-muted text-sm"
-            >
+            <span key={`dots-${idx}`} className="px-2 py-1 text-text-muted text-sm">
               …
             </span>
           );
@@ -115,7 +112,7 @@ function Pagination({
               "min-w-[32px] h-8 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer",
               page === currentPage
                 ? "bg-accent text-white shadow-glow"
-                : "text-text-secondary hover:text-text-primary hover:bg-bg-tertiary"
+                : "text-text-secondary hover:text-text-primary hover:bg-bg-tertiary",
             )}
             aria-current={page === currentPage ? "page" : undefined}
           >

@@ -18,11 +18,7 @@ export function AlarmRulesList() {
       {
         accessorKey: "name",
         header: "Kural Adı",
-        cell: ({ row }) => (
-          <div className="font-medium text-text-primary">
-            {row.original.name}
-          </div>
-        ),
+        cell: ({ row }) => <div className="font-medium text-text-primary">{row.original.name}</div>,
       },
       {
         accessorKey: "condition",
@@ -53,9 +49,7 @@ export function AlarmRulesList() {
         cell: ({ row }) => {
           const isActive = row.original.isActive;
           return (
-            <Badge variant={isActive ? "success" : "default"}>
-              {isActive ? "Aktif" : "Pasif"}
-            </Badge>
+            <Badge variant={isActive ? "success" : "default"}>{isActive ? "Aktif" : "Pasif"}</Badge>
           );
         },
       },
@@ -97,7 +91,7 @@ export function AlarmRulesList() {
         },
       },
     ],
-    [toggleRule, deleteRule]
+    [toggleRule, deleteRule],
   );
 
   return (

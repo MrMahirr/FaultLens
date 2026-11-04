@@ -61,7 +61,7 @@ function Sidebar() {
         "fixed left-0 top-0 h-screen z-40",
         "bg-bg-secondary border-r border-border-default",
         "flex flex-col transition-theme",
-        "overflow-hidden"
+        "overflow-hidden",
       )}
       animate={{ width: sidebarOpen ? 240 : 64 }}
       transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
@@ -96,7 +96,7 @@ function Sidebar() {
               "transition-all duration-200 group relative",
               active
                 ? "bg-accent/10 text-accent"
-                : "text-text-secondary hover:text-text-primary hover:bg-bg-tertiary"
+                : "text-text-secondary hover:text-text-primary hover:bg-bg-tertiary",
             ),
           };
 
@@ -128,11 +128,12 @@ function Sidebar() {
 
           // "/" is the standalone landing page (outside the dashboard layout),
           // so it gets a full page load instead of client-side navigation.
-          const linkContent = item.href === "/" ? (
-            <a {...linkProps}>{linkInner}</a>
-          ) : (
-            <Link {...linkProps}>{linkInner}</Link>
-          );
+          const linkContent =
+            item.href === "/" ? (
+              <a {...linkProps}>{linkInner}</a>
+            ) : (
+              <Link {...linkProps}>{linkInner}</Link>
+            );
 
           // Show tooltip when sidebar is collapsed
           if (!sidebarOpen) {

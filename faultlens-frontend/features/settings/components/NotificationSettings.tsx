@@ -12,26 +12,20 @@ import { SlackConfigForm } from "./SlackConfigForm";
 import { getApiErrorMessage } from "@/shared/api/errors";
 
 export function NotificationSettings() {
-  const { settings, setSettings, isLoading, isSaving, toggleOption, handleSave } = useNotificationSettings();
+  const { settings, setSettings, isLoading, isSaving, toggleOption, handleSave } =
+    useNotificationSettings();
 
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-text-primary">
-            Bildirim Tercihleri
-          </h2>
+          <h2 className="text-lg font-semibold text-text-primary">Bildirim Tercihleri</h2>
           <p className="text-sm text-text-muted mt-1">
             Alarmları ve uyarıları hangi kanallardan alacağınızı seçin.
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={handleSave}
-            loading={isSaving}
-          >
+          <Button variant="primary" size="sm" onClick={handleSave} loading={isSaving}>
             Değişiklikleri Kaydet
           </Button>
         </div>
@@ -86,10 +80,12 @@ export function NotificationSettings() {
               onToggle={() => toggleOption("pushEnabled")}
             >
               <div className="flex items-center justify-between">
-                <p className="text-sm text-text-secondary">Uygulama içi anlık bildirimleri test edin.</p>
-                <Button 
-                  variant="secondary" 
-                  size="sm" 
+                <p className="text-sm text-text-secondary">
+                  Uygulama içi anlık bildirimleri test edin.
+                </p>
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={async () => {
                     try {
                       await apiClient.post(Endpoints.SETTINGS.TEST.PUSH);

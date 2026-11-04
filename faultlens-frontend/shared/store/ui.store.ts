@@ -26,8 +26,7 @@ export const useUIStore = create<UIStore>()(
       theme: "dark",
       compactMode: false,
 
-      toggleSidebar: () =>
-        set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+      toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
 
       setSidebarOpen: (open) => set({ sidebarOpen: open }),
 
@@ -38,9 +37,8 @@ export const useUIStore = create<UIStore>()(
           theme: state.theme === "dark" ? "light" : "dark",
         })),
 
-      toggleCompactMode: () => 
-        set((state) => ({ compactMode: !state.compactMode })),
-        
+      toggleCompactMode: () => set((state) => ({ compactMode: !state.compactMode })),
+
       setCompactMode: (compact) => set({ compactMode: compact }),
     }),
     {

@@ -73,22 +73,15 @@ function RealtimeFeed() {
           <h3 className="text-sm font-semibold font-display text-text-primary">
             Gerçek Zamanlı Feed
           </h3>
-          <p className="text-xs text-text-muted mt-0.5">
-            Son ERROR / CRITICAL loglar
-          </p>
+          <p className="text-xs text-text-muted mt-0.5">Son ERROR / CRITICAL loglar</p>
         </div>
         <div className="flex items-center gap-1.5">
           <Radio
             size={12}
-            className={cn(
-              isConnected ? "text-success animate-pulse" : "text-text-muted"
-            )}
+            className={cn(isConnected ? "text-success animate-pulse" : "text-text-muted")}
           />
           <span
-            className={cn(
-              "text-xs font-medium",
-              isConnected ? "text-success" : "text-text-muted"
-            )}
+            className={cn("text-xs font-medium", isConnected ? "text-success" : "text-text-muted")}
           >
             {isConnected ? "Canlı" : "Bağlantı Yok"}
           </span>
@@ -108,8 +101,7 @@ function RealtimeFeed() {
                 "flex items-start gap-3 px-5 py-3",
                 "border-b border-border-default",
                 "hover:bg-bg-tertiary/50 transition-colors cursor-pointer",
-                log.severity === Severity.CRITICAL &&
-                  "border-l-2 border-l-critical"
+                log.severity === Severity.CRITICAL && "border-l-2 border-l-critical",
               )}
             >
               <Badge
@@ -121,9 +113,7 @@ function RealtimeFeed() {
               </Badge>
 
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-text-primary truncate">
-                  {truncate(log.message, 60)}
-                </p>
+                <p className="text-sm text-text-primary truncate">{truncate(log.message, 60)}</p>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-xs text-text-muted font-mono">
                     {log.podName ?? log.serviceName ?? `Source #${log.sourceId}`}
@@ -136,9 +126,7 @@ function RealtimeFeed() {
             </motion.div>
           ))}
           {logs.length === 0 && (
-            <div className="py-8 text-center text-sm text-text-muted">
-              Henüz log kaydı yok
-            </div>
+            <div className="py-8 text-center text-sm text-text-muted">Henüz log kaydı yok</div>
           )}
         </AnimatePresence>
       </div>

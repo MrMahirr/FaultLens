@@ -25,7 +25,7 @@ export function AddSourceModal({ isOpen, onClose }: AddSourceModalProps) {
     >
       <AnimatePresence mode="wait">
         {wizard.step === 1 && (
-          <SourceTypeSelectionStep 
+          <SourceTypeSelectionStep
             selectedType={wizard.selectedType}
             onSelect={wizard.handleTypeSelect}
           />
@@ -34,12 +34,18 @@ export function AddSourceModal({ isOpen, onClose }: AddSourceModalProps) {
         {wizard.step === 2 && (
           <SourceConfigFormStep
             selectedType={wizard.selectedType}
-            name={wizard.name} setName={wizard.setName}
-            host={wizard.host} setHost={wizard.setHost}
-            namespace={wizard.namespace} setNamespace={wizard.setNamespace}
-            username={wizard.username} setUsername={wizard.setUsername}
-            password={wizard.password} setPassword={wizard.setPassword}
-            logFilePath={wizard.logFilePath} setLogFilePath={wizard.setLogFilePath}
+            name={wizard.name}
+            setName={wizard.setName}
+            host={wizard.host}
+            setHost={wizard.setHost}
+            namespace={wizard.namespace}
+            setNamespace={wizard.setNamespace}
+            username={wizard.username}
+            setUsername={wizard.setUsername}
+            password={wizard.password}
+            setPassword={wizard.setPassword}
+            logFilePath={wizard.logFilePath}
+            setLogFilePath={wizard.setLogFilePath}
             onBack={() => wizard.setStep(1)}
             onNext={() => wizard.setStep(3)}
           />
