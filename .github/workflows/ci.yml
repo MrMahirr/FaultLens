@@ -32,8 +32,35 @@ jobs:
           cache: maven
 
       # Uses the Maven Wrapper so CI builds with the same Maven version as developers.
-      - name: Build and test
-        run: ./mvnw -B -ntp verify
+      - name: Build and unit tests
+        run: ./mvnw -B -ntp verify -DskipITs
+
+  backend-it:
+    name: Backend — integration tests (Testcontainers)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: faultlens-backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: temurin
+          cache: maven
+
+      # *IT classes (failsafe) against real Postgres, Kafka and Redis; the runner provides Docker.
+      - name: Integration tests
+        run: ./mvnw -B -ntp verify -DskipUTs -pl api -am
+
+      - name: Upload failsafe reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failsafe-reports
+          path: faultlens-backend/api/target/failsafe-reports
 
   frontend:
     name: Frontend (Next.js) — lint, typecheck & build

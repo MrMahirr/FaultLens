@@ -1,0 +1,27 @@
+# Profile for *IT classes. Datasource, Kafka and Redis addresses come from Testcontainers
+# (see AbstractIntegrationTest#containerProperties); everything here is fixed test config.
+spring:
+  kafka:
+    consumer:
+      # Each IT JVM gets fresh containers, so "earliest" never replays stale data.
+      auto-offset-reset: earliest
+
+faultlens:
+  jwt:
+    secret: faultlens-integration-test-secret-at-least-32-bytes-long
+  security:
+    admin-initial-password: it-initial-pass-1
+  analyzer:
+    ai:
+      enabled: false
+  collector:
+    file:
+      allowed-dirs: ${java.io.tmpdir}
+  cors:
+    allowed-origins: http://localhost:3000
+
+logging:
+  level:
+    root: WARN
+    com.faultlens: INFO
+    org.testcontainers: INFO
