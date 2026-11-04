@@ -63,7 +63,7 @@ jobs:
           path: faultlens-backend/api/target/failsafe-reports
 
   frontend:
-    name: Frontend (Next.js) — lint, typecheck & build
+    name: Frontend (Next.js) — lint, typecheck, test & build
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -93,6 +93,9 @@ jobs:
 
       - name: Typecheck
         run: pnpm typecheck
+
+      - name: Unit tests
+        run: pnpm test
 
       - name: Build
         run: pnpm build
