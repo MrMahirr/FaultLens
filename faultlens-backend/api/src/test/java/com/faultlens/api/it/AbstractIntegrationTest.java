@@ -25,7 +25,8 @@ import org.testcontainers.utility.DockerImageName;
 
 /**
  * Base class for *IT tests: the whole application (collector, processor, analyzer, api) on a
- * random port, against real PostgreSQL, Kafka (KRaft) and Redis containers.
+ * random port, against real PostgreSQL, Kafka (KRaft) and Redis containers — the same images as
+ * docker-compose.yml.
  *
  * <p>Containers are started once per JVM and shared by every IT class (the Spring context is
  * cached too), so tests must not assume an empty database: scope assertions to the data a test
@@ -40,9 +41,9 @@ public abstract class AbstractIntegrationTest {
     /** Password set by {@link #adminToken()} after the forced first-login change. */
     protected static final String ADMIN_PASSWORD = "it-admin-pass-2";
 
-    static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16-alpine");
-    static final KafkaContainer KAFKA = new KafkaContainer(DockerImageName.parse("apache/kafka:4.0.0"));
-    static final GenericContainer<?> REDIS = new GenericContainer<>("redis:7-alpine").withExposedPorts(6379);
+    static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:18-alpine");
+    static final KafkaContainer KAFKA = new KafkaContainer(DockerImageName.parse("apache/kafka:4.3.2"));
+    static final GenericContainer<?> REDIS = new GenericContainer<>("redis:8.8-alpine").withExposedPorts(6379);
 
     private static String adminToken;
 

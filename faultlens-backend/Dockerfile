@@ -18,4 +18,6 @@ COPY --from=builder /app/api/target/*.jar app.jar
 EXPOSE 3500
 
 # Run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Netty loads its native transport via System.loadLibrary; Java 24+ warns (and will later
+# block) unless native access is granted explicitly.
+ENTRYPOINT ["java", "--enable-native-access=ALL-UNNAMED", "-jar", "app.jar"]

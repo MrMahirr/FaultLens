@@ -20,9 +20,9 @@ Projeyi lokal ortamınızda çalıştırmak için aşağıdaki adımları izleye
 
 ### 1. Altyapıyı Ayağa Kaldırma (Docker)
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
-Bu komut PostgreSQL veritabanını, Apache Kafka'yı ve Zookeeper'ı başlatacaktır.
+Bu komut PostgreSQL 18, Apache Kafka 4 (KRaft — Zookeeper yok), Redis 8 ve Kafka UI'ı (http://localhost:8090) başlatır; backend ve frontend imajlarını da derleyip çalıştırır. Postgres 16'dan gelen eski bir yerel veritabanınız varsa: [deploy/POSTGRES_UPGRADE.md](./deploy/POSTGRES_UPGRADE.md).
 
 ### 2. Backend'i Başlatma
 Detaylı bilgi için [Backend README](./faultlens-backend/README.md) dosyasına göz atın.
