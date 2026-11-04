@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect } from "react";
-import { useIsClient } from "@/shared/hooks/useIsClient";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Sidebar } from "@/shared/components/layout/Sidebar";
 import { Topbar } from "@/shared/components/layout/Topbar";
 import { useUIStore } from "@/shared/store/ui.store";
 import { useAuthStore } from "@/features/auth/store/auth.store";
+import { useAuthHydrated } from "@/features/auth/hooks/useAuthHydrated";
 import { GlobalNotificationListener } from "@/shared/components/layout/GlobalNotificationListener";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -15,18 +15,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const token = useAuthStore((state) => state.token);
   const mustChangePassword = useAuthStore((state) => state.user?.mustChangePassword ?? false);
   const router = useRouter();
-  const mounted = useIsClient();
+  const hydrated = useAuthHydrated();
 
   useEffect(() => {
+    // Before hydration the store still holds its initial state (no token) — do not redirect yet.
+    if (!hydrated) return;
     if (!token) {
       router.replace("/login");
     } else if (mustChangePassword) {
       router.replace("/change-password");
     }
-  }, [token, mustChangePassword, router]);
+  }, [hydrated, token, mustChangePassword, router]);
 
   // Prevent flash of content during initial SSR or before redirect
-  if (!mounted || !token || mustChangePassword) {
+  if (!hydrated || !token || mustChangePassword) {
     return (
       <div className="min-h-screen bg-bg-primary flex items-center justify-center">
         <div className="w-10 h-10 border-2 border-accent border-t-transparent rounded-full animate-spin" />

@@ -1,19 +1,11 @@
 "use client";
 
-import { useEffect, useSyncExternalStore } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ShieldAlert } from "lucide-react";
 import { useAuthStore } from "@/features/auth/store/auth.store";
 import { ChangePasswordForm } from "@/features/auth/components/ChangePasswordForm";
-
-/** True once the persisted auth state has been read from localStorage. */
-function useAuthHydrated() {
-  return useSyncExternalStore(
-    (onChange) => useAuthStore.persist.onFinishHydration(onChange),
-    () => useAuthStore.persist.hasHydrated(),
-    () => false,
-  );
-}
+import { useAuthHydrated } from "@/features/auth/hooks/useAuthHydrated";
 
 /**
  * Standalone (no sidebar) page. Users created by bootstrap, or whose password

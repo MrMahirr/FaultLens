@@ -1,15 +1,15 @@
 "use client";
 
 import { useEffect } from "react";
-import { useIsClient } from "@/shared/hooks/useIsClient";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/features/auth/store/auth.store";
+import { useAuthHydrated } from "@/features/auth/hooks/useAuthHydrated";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   const token = useAuthStore((state) => state.token);
   const mustChangePassword = useAuthStore((state) => state.user?.mustChangePassword ?? false);
   const router = useRouter();
-  const mounted = useIsClient();
+  const hydrated = useAuthHydrated();
 
   useEffect(() => {
     if (token) {
@@ -19,7 +19,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     }
   }, [token, mustChangePassword, router]);
 
-  if (!mounted) return null;
+  if (!hydrated) return null;
 
   // If already authenticated, show empty loader during transition
   if (token) {
