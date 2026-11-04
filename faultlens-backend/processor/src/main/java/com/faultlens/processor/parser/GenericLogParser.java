@@ -4,6 +4,7 @@ import com.faultlens.common.dto.LogEventDto;
 import com.faultlens.common.enums.Severity;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Pattern;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -23,12 +24,17 @@ public class GenericLogParser implements LogParser {
     public ParsedLog parse(LogEventDto event) {
         String text = event.getRawLine() != null ? event.getRawLine() : event.getMessage();
         String upper = text == null ? "" : text.toUpperCase(Locale.ROOT);
-        Severity severity = upper.contains("CRITICAL") || upper.contains("FATAL") ? Severity.CRITICAL
-                : upper.contains("ERROR") ? Severity.ERROR
-                : upper.contains("WARN") ? Severity.WARN
-                : upper.contains("DEBUG") ? Severity.DEBUG
+        // Whole words only: "errorCount=0" or "warning-free" must not raise the level.
+        Severity severity = hasWord(upper, "CRITICAL|FATAL") ? Severity.CRITICAL
+                : hasWord(upper, "ERROR") ? Severity.ERROR
+                : hasWord(upper, "WARN|WARNING") ? Severity.WARN
+                : hasWord(upper, "DEBUG") ? Severity.DEBUG
                 : Severity.INFO;
         return new ParsedLog(text, null, severity, Map.of("format", "generic"));
+    }
+
+    private static boolean hasWord(String upper, String alternatives) {
+        return Pattern.compile("(?<![A-Z0-9_])(?:" + alternatives + ")(?![A-Z0-9_])").matcher(upper).find();
     }
 
     /**

@@ -91,6 +91,15 @@ public class CollectorOrchestrator {
     }
 
     /**
+     * True while the source's adapter is actually running. An enabled source whose adapter
+     * returned (e.g. a LOCAL_FILE path outside the allow-list) or failed is not streaming.
+     */
+    public boolean isStreaming(Long sourceId) {
+        Future<?> future = sourceId == null ? null : runningTasks.get(sourceId);
+        return future != null && !future.isDone();
+    }
+
+    /**
      * Tests a source through its adapter.
      */
     public boolean testSource(LogSource source) {

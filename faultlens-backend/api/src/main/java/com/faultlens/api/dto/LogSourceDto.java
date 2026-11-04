@@ -22,4 +22,6 @@ public class LogSourceDto {
     private boolean enabled;
     private Instant createdAt;
     private Instant lastSeenAt;
+    /** Live state from the collector; set by SourceController. */
+    private SourceStatus status;
 }
