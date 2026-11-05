@@ -113,13 +113,7 @@ class AlarmServiceTest {
 
     @Test
     void dispatcherStoresSourceIdNotLogGroupId() {
-        AlarmDispatcherService dispatcher = new AlarmDispatcherService(
-                repository,
-                mock(com.faultlens.api.repository.NotificationSettingsRepository.class),
-                mock(com.faultlens.api.repository.UserAccountRepository.class),
-                mock(SlackNotificationService.class),
-                mock(EmailNotificationService.class),
-                mock(InAppNotificationService.class));
+        AlarmDispatcherService dispatcher = new AlarmDispatcherService(repository, mock(AlarmNotifier.class));
         AnalysisResultDto analysis = new AnalysisResultDto();
         analysis.setId(5L);
         analysis.setLogGroupId(77L);
