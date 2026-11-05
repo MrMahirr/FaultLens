@@ -3,120 +3,155 @@ package com.faultlens.api.service;
 import com.faultlens.api.model.AlarmChannel;
 import com.faultlens.api.model.NotificationSettings;
 import com.faultlens.api.model.UserAccount;
+import com.faultlens.api.notification.Notification;
+import com.faultlens.api.notification.NotificationChannel;
+import com.faultlens.api.notification.Recipient;
 import com.faultlens.api.repository.NotificationSettingsRepository;
 import com.faultlens.api.repository.UserAccountRepository;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.Optional;
 import java.util.function.BooleanSupplier;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 /**
- * Sends a raised alarm to every channel (in-app, Slack, e-mail).
+ * Announces a raised alarm on the requested {@link NotificationChannel channels} (P07).
  *
- * <p>{@link #notifyAll} is {@code @Async}: these are outgoing HTTP calls (Slack, EmailJS) that
- * used to run on the Kafka listener thread, so a slow or failing provider held up alarm
- * processing. Slack and e-mail are retried a few times; one channel failing never stops the others.
+ * <p>{@code @Async}: these are outgoing network calls (Slack, SMTP, webhooks) that must not hold
+ * up alarm processing. Broadcast channels are sent once; personal channels go to every user who
+ * opted in. Each delivery is retried a few times; one channel or recipient failing never stops
+ * the others.
  */
 @Slf4j
 @Service
 public class AlarmNotifier {
     private final NotificationSettingsRepository settingsRepository;
     private final UserAccountRepository userRepository;
-    private final SlackNotificationService slackNotificationService;
-    private final EmailNotificationService emailNotificationService;
-    private final InAppNotificationService inAppNotificationService;
+    private final List<NotificationChannel> channels;
     private final int attempts;
     private final long backoffMs;
 
     public AlarmNotifier(
             NotificationSettingsRepository settingsRepository,
             UserAccountRepository userRepository,
-            SlackNotificationService slackNotificationService,
-            EmailNotificationService emailNotificationService,
-            InAppNotificationService inAppNotificationService,
+            List<NotificationChannel> channels,
             @Value("${faultlens.alarms.notify-attempts:3}") int attempts,
             @Value("${faultlens.alarms.notify-backoff-ms:2000}") long backoffMs) {
         this.settingsRepository = settingsRepository;
         this.userRepository = userRepository;
-        this.slackNotificationService = slackNotificationService;
-        this.emailNotificationService = emailNotificationService;
-        this.inAppNotificationService = inAppNotificationService;
+        this.channels = List.copyOf(channels);
         this.attempts = Math.max(1, attempts);
         this.backoffMs = Math.max(0, backoffMs);
     }
 
-    /**
-     * Notifies all channels; runs on the async executor.
-     */
+    /** Notifies every channel (analysis alarms); runs on the async executor. */
     @Async
     public void notifyAll(String title, String message) {
-        send(title, message, EnumSet.allOf(AlarmChannel.class));
+        send(Notification.of(title, message), EnumSet.allOf(AlarmChannel.class));
     }
 
-    /**
-     * Notifies only the given channels (an alarm rule's choice); runs on the async executor.
-     */
+    /** Notifies only the given channels (an alarm rule's choice); runs on the async executor. */
     @Async
-    public void notifyAll(String title, String message, Set<AlarmChannel> channels) {
-        send(title, message, channels);
+    public void notifyAll(String title, String message, Set<AlarmChannel> requested) {
+        send(Notification.of(title, message), requested);
     }
 
-    private void send(String title, String message, Set<AlarmChannel> channels) {
-        if (channels.contains(AlarmChannel.IN_APP)) {
-            try {
-                inAppNotificationService.broadcastAlarm(title, message);
-            } catch (Exception e) {
-                log.error("In-App alarm broadcast failed", e);
+    /** As above, with the alarm's severity shown in e-mails and webhook payloads. */
+    @Async
+    public void notifyAll(String title, String message, String severity, Set<AlarmChannel> requested) {
+        send(new Notification(title, message, severity, Instant.now()), requested);
+    }
+
+    void send(Notification notification, Set<AlarmChannel> requested) {
+        List<NotificationChannel> selected = channels.stream()
+                .filter(channel -> requested.contains(channel.type()))
+                .filter(this::available)
+                .toList();
+
+        List<NotificationChannel> personal = new ArrayList<>();
+        for (NotificationChannel channel : selected) {
+            if (channel.isBroadcast()) {
+                deliver(channel, notification, null);
+            } else {
+                personal.add(channel);
             }
         }
-        if (!channels.contains(AlarmChannel.SLACK) && !channels.contains(AlarmChannel.EMAIL)) {
+        if (personal.isEmpty()) {
             return;
         }
-
-        List<NotificationSettings> allSettings = settingsRepository.findAll();
-        for (NotificationSettings settings : allSettings) {
-            if (channels.contains(AlarmChannel.SLACK) && settings.isSlackEnabled() && settings.getSlackWebhook() != null) {
-                withRetry("Slack", () -> slackNotificationService.sendNotification(
-                        settings.getSlackWebhook(), title + "\n" + message));
-            }
-            if (channels.contains(AlarmChannel.EMAIL) && settings.isEmailEnabled() && settings.getEmailjsServiceId() != null) {
-                Optional<UserAccount> user = findUser(settings.getUserId());
-                if (user.isPresent() && user.get().getEmail() != null) {
-                    String to = user.get().getEmail();
-                    withRetry("Email", () -> emailNotificationService.sendEmail(to, title, message,
-                            settings.getEmailjsServiceId(), settings.getEmailjsTemplateId(),
-                            settings.getEmailjsPublicKey()));
+        for (Recipient recipient : recipients()) {
+            for (NotificationChannel channel : personal) {
+                boolean accepted;
+                try {
+                    accepted = channel.accepts(recipient);
+                } catch (Exception e) {
+                    log.error("{} could not evaluate recipient {}", channel.type(), recipient.username(), e);
+                    continue;
+                }
+                if (accepted) {
+                    deliver(channel, notification, recipient);
                 }
             }
         }
     }
 
-    private Optional<UserAccount> findUser(Long userId) {
+    private boolean available(NotificationChannel channel) {
         try {
-            return userRepository.findById(userId);
+            return channel.isAvailable();
         } catch (Exception e) {
-            log.error("Could not load user {} for e-mail notification", userId, e);
-            return Optional.empty();
+            log.error("{} availability check failed", channel.type(), e);
+            return false;
         }
     }
 
-    /** Tries up to {@code attempts} times (send returned false or threw), backing off linearly. */
-    private void withRetry(String channel, BooleanSupplier send) {
-        for (int attempt = 1; attempt <= attempts; attempt++) {
+    private List<Recipient> recipients() {
+        try {
+            List<NotificationSettings> allSettings = settingsRepository.findAll();
+            Map<Long, UserAccount> users = userRepository.findAllById(
+                            allSettings.stream().map(NotificationSettings::getUserId).toList())
+                    .stream()
+                    .collect(Collectors.toMap(UserAccount::getId, Function.identity()));
+            List<Recipient> recipients = new ArrayList<>();
+            for (NotificationSettings settings : allSettings) {
+                UserAccount user = users.get(settings.getUserId());
+                if (user != null) {
+                    recipients.add(new Recipient(user.getUsername(), user.getEmail(), settings));
+                }
+            }
+            return recipients;
+        } catch (Exception e) {
+            log.error("Could not load notification recipients", e);
+            return List.of();
+        }
+    }
+
+    private void deliver(NotificationChannel channel, Notification notification, Recipient recipient) {
+        String label = channel.type() + (recipient == null ? "" : " → " + recipient.username());
+        // Broadcasts (in-app) are local and not worth retrying.
+        int tries = channel.isBroadcast() ? 1 : attempts;
+        withRetry(label, tries, () -> channel.send(notification, recipient));
+    }
+
+    /** Tries up to {@code tries} times (send returned false or threw), backing off linearly. */
+    private void withRetry(String label, int tries, BooleanSupplier send) {
+        for (int attempt = 1; attempt <= tries; attempt++) {
             try {
                 if (send.getAsBoolean()) {
                     return;
                 }
-                log.warn("{} alarm notification failed (attempt {}/{})", channel, attempt, attempts);
+                log.warn("{} alarm notification failed (attempt {}/{})", label, attempt, tries);
             } catch (Exception e) {
-                log.warn("{} alarm notification failed (attempt {}/{})", channel, attempt, attempts, e);
+                log.warn("{} alarm notification failed (attempt {}/{})", label, attempt, tries, e);
             }
-            if (attempt < attempts && backoffMs > 0) {
+            if (attempt < tries && backoffMs > 0) {
                 try {
                     Thread.sleep(backoffMs * attempt);
                 } catch (InterruptedException ex) {
@@ -125,6 +160,6 @@ public class AlarmNotifier {
                 }
             }
         }
-        log.error("{} alarm notification gave up after {} attempts", channel, attempts);
+        log.error("{} alarm notification gave up after {} attempts", label, tries);
     }
 }

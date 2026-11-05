@@ -80,6 +80,7 @@ export const Endpoints = {
       SLACK: `${BASE}/settings/notifications/test/slack`,
       EMAIL: `${BASE}/settings/notifications/test/email`,
       PUSH: `${BASE}/settings/notifications/test/push`,
+      WEBHOOK: `${BASE}/settings/notifications/test/webhook`,
     },
   },
 

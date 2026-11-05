@@ -4,6 +4,8 @@ import com.faultlens.api.dto.SettingsDtos.NotificationSettingsResponse;
 import com.faultlens.api.dto.SettingsDtos.UpdateNotificationRequest;
 import com.faultlens.api.model.NotificationSettings;
 import com.faultlens.api.model.UserAccount;
+import com.faultlens.api.notification.EmailChannel;
+import com.faultlens.api.notification.WebhookChannel;
 import com.faultlens.api.repository.NotificationSettingsRepository;
 import com.faultlens.api.repository.UserAccountRepository;
 import com.faultlens.common.exception.FaultLensException;
@@ -20,6 +22,8 @@ public class NotificationSettingsService {
 
     private final NotificationSettingsRepository settingsRepository;
     private final UserAccountRepository userRepository;
+    private final EmailChannel emailChannel;
+    private final WebhookChannel webhookChannel;
 
     /**
      * Returns notification preferences for the given user.
@@ -30,7 +34,7 @@ public class NotificationSettingsService {
         UserAccount user = findUser(username);
         NotificationSettings settings = settingsRepository.findByUserId(user.getId())
                 .orElseGet(() -> createDefault(user.getId()));
-        return toResponse(settings);
+        return toResponse(settings, user);
     }
 
     /**
@@ -47,19 +51,23 @@ public class NotificationSettingsService {
             throw new FaultLensException(
                     "Slack webhook must be an https://hooks.slack.com/... URL", "INVALID_SLACK_WEBHOOK");
         }
+        String webhookUrl = blankToNull(request.webhookUrl());
+        if (webhookUrl != null && !webhookChannel.isAllowed(webhookUrl)) {
+            throw new FaultLensException(
+                    "Webhook must be an https URL on a public host", "INVALID_WEBHOOK_URL");
+        }
 
         settings.setEmailEnabled(request.emailEnabled());
         settings.setSlackEnabled(request.slackEnabled());
         settings.setSlackWebhook(request.slackWebhook());
         settings.setPushEnabled(request.pushEnabled());
         settings.setMobileEnabled(request.mobileEnabled());
-        settings.setEmailjsServiceId(request.emailjsServiceId());
-        settings.setEmailjsTemplateId(request.emailjsTemplateId());
-        settings.setEmailjsPublicKey(request.emailjsPublicKey());
+        settings.setWebhookEnabled(request.webhookEnabled());
+        settings.setWebhookUrl(webhookUrl);
         settings.setUpdatedAt(Instant.now());
 
         NotificationSettings saved = settingsRepository.save(settings);
-        return toResponse(saved);
+        return toResponse(saved, user);
     }
 
     private UserAccount findUser(String username) {
@@ -79,16 +87,21 @@ public class NotificationSettingsService {
         return settingsRepository.save(defaults);
     }
 
-    private NotificationSettingsResponse toResponse(NotificationSettings settings) {
+    private static String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    private NotificationSettingsResponse toResponse(NotificationSettings settings, UserAccount user) {
         return new NotificationSettingsResponse(
                 settings.isEmailEnabled(),
                 settings.isSlackEnabled(),
                 settings.getSlackWebhook(),
+                settings.isWebhookEnabled(),
+                settings.getWebhookUrl(),
                 settings.isPushEnabled(),
                 settings.isMobileEnabled(),
-                settings.getEmailjsServiceId(),
-                settings.getEmailjsTemplateId(),
-                settings.getEmailjsPublicKey()
+                user.getEmail(),
+                emailChannel.isAvailable()
         );
     }
 }

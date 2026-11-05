@@ -23,12 +23,14 @@ export enum AlarmChannel {
   IN_APP = "IN_APP",
   SLACK = "SLACK",
   EMAIL = "EMAIL",
+  WEBHOOK = "WEBHOOK",
 }
 
 export const ALARM_CHANNEL_LABELS: Record<AlarmChannel, string> = {
   [AlarmChannel.IN_APP]: "Uygulama içi",
   [AlarmChannel.SLACK]: "Slack",
   [AlarmChannel.EMAIL]: "E-posta",
+  [AlarmChannel.WEBHOOK]: "Webhook",
 };
 
 /** Backend AlarmRuleResponse (camelCase via the axios interceptor). */

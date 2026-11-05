@@ -26,6 +26,15 @@ services:
       # Refresh cookie is Secure (HTTPS; browsers also accept it on http://localhost).
       # Set false only for plain-HTTP access through another host name or IP.
       - REFRESH_COOKIE_SECURE=${REFRESH_COOKIE_SECURE:-true}
+      # Alarm e-mails over SMTP; SMTP_HOST empty -> the e-mail channel is off.
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USERNAME=${SMTP_USERNAME:-}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-}
+      - SMTP_STARTTLS=${SMTP_STARTTLS:-true}
+      - SMTP_FROM=${SMTP_FROM:-FaultLens <faultlens@localhost>}
+      - APP_URL=${APP_URL:-http://localhost:3000}
+      - WEBHOOK_ALLOW_PRIVATE_HOSTS=${WEBHOOK_ALLOW_PRIVATE_HOSTS:-false}
       - ADMIN_INITIAL_PASSWORD=${ADMIN_INITIAL_PASSWORD:-}
       - COLLECTOR_FILE_ALLOWED_DIRS=${COLLECTOR_FILE_ALLOWED_DIRS:-/var/log}
       - AI_ENABLED=${AI_ENABLED:-false}

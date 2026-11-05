@@ -1,13 +1,16 @@
 package com.faultlens.api.controller;
 
-import com.faultlens.api.dto.SettingsDtos.UpdateNotificationRequest;
-import com.faultlens.api.service.EmailNotificationService;
+import com.faultlens.api.notification.EmailChannel;
+import com.faultlens.api.notification.Notification;
+import com.faultlens.api.notification.WebhookChannel;
 import com.faultlens.api.service.InAppNotificationService;
 import com.faultlens.api.service.NotificationSettingsService;
 import com.faultlens.api.service.SlackNotificationService;
 import com.faultlens.api.service.SlackWebhookUrls;
 import com.faultlens.common.dto.ApiResponse;
 import java.security.Principal;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.annotation.JsonNaming;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,12 +24,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class NotificationTestController {
 
     private final SlackNotificationService slackNotificationService;
-    private final EmailNotificationService emailNotificationService;
+    private final EmailChannel emailChannel;
+    private final WebhookChannel webhookChannel;
     private final InAppNotificationService inAppNotificationService;
     private final NotificationSettingsService notificationSettingsService;
 
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public record SlackTestRequest(String webhookUrl) {}
-    public record EmailTestRequest(String emailAddress) {}
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public record WebhookTestRequest(String webhookUrl) {}
 
     @PostMapping("/slack")
     public ResponseEntity<ApiResponse<String>> testSlack(
@@ -51,38 +57,45 @@ public class NotificationTestController {
         }
     }
 
+    /**
+     * Sends a test e-mail to the caller's own profile address. Arbitrary recipients are not
+     * accepted: that would let any user send mail through the server's SMTP account.
+     */
     @PostMapping("/email")
-    public ResponseEntity<ApiResponse<String>> testEmail(
-            Principal principal,
-            @RequestBody EmailTestRequest request) {
-        
-        if (request.emailAddress() == null || request.emailAddress().isBlank()) {
-            return ResponseEntity.badRequest().body(ApiResponse.error("E-posta adresi boş olamaz.", 400));
-        }
-
+    public ResponseEntity<ApiResponse<String>> testEmail(Principal principal) {
         var settings = notificationSettingsService.getByUsername(principal.getName());
-        
-        if (settings.emailjsServiceId() == null || settings.emailjsTemplateId() == null || settings.emailjsPublicKey() == null) {
-            return ResponseEntity.badRequest().body(ApiResponse.error("Lütfen önce EmailJS ayarlarını (Service ID, Template ID, Public Key) kaydedin.", 400));
+        if (!settings.emailAvailable()) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(
+                    "Sunucuda SMTP yapılandırılmamış (SMTP_HOST). Yöneticinize başvurun.", 400));
         }
-
-        String subject = "FaultLens - Test E-postası";
-        String body = "Merhaba,\n\n" + principal.getName() + " kullanıcısı FaultLens e-posta entegrasyonunu test ediyor.\nEğer bu maili aldıysanız Email.js yapılandırmanız doğru çalışıyor demektir!\n\nİyi çalışmalar,\nFaultLens Sistemi";
-
-        boolean success = emailNotificationService.sendEmail(
-            request.emailAddress(), 
-            subject, 
-            body,
-            settings.emailjsServiceId(),
-            settings.emailjsTemplateId(),
-            settings.emailjsPublicKey()
-        );
-
+        if (settings.email() == null || settings.email().isBlank()) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(
+                    "Profilinizde e-posta adresi yok. Ayarlar → Hesap bölümünden ekleyin.", 400));
+        }
+        boolean success = emailChannel.sendTo(settings.email(), Notification.of(
+                "Test e-postası",
+                principal.getName() + " kullanıcısı FaultLens e-posta bildirimlerini test ediyor. "
+                        + "Bu e-postayı aldıysanız SMTP yapılandırması çalışıyor."));
         if (success) {
-            return ResponseEntity.ok(ApiResponse.ok("Test e-postası başarıyla gönderildi. Gelen kutunuzu kontrol edin."));
-        } else {
-            return ResponseEntity.badRequest().body(ApiResponse.error("E-posta gönderilemedi. Email.js ayarlarını kontrol edin.", 400));
+            return ResponseEntity.ok(ApiResponse.ok("Test e-postası " + settings.email() + " adresine gönderildi."));
         }
+        return ResponseEntity.badRequest().body(ApiResponse.error(
+                "E-posta gönderilemedi. Sunucu SMTP ayarlarını kontrol edin.", 400));
+    }
+
+    @PostMapping("/webhook")
+    public ResponseEntity<ApiResponse<String>> testWebhook(Principal principal, @RequestBody WebhookTestRequest request) {
+        if (request.webhookUrl() == null || !webhookChannel.isAllowed(request.webhookUrl())) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(
+                    "Webhook URL'si herkese açık bir sunucuda https:// adresi olmalı.", 400));
+        }
+        boolean success = webhookChannel.post(request.webhookUrl(), Notification.of(
+                "Test bildirimi", principal.getName() + " kullanıcısı FaultLens webhook entegrasyonunu test ediyor."));
+        if (success) {
+            return ResponseEntity.ok(ApiResponse.ok("Webhook test isteği başarıyla gönderildi."));
+        }
+        return ResponseEntity.badRequest().body(ApiResponse.error(
+                "Webhook isteği başarısız oldu (2xx yanıt alınamadı).", 400));
     }
 
     @PostMapping("/push")

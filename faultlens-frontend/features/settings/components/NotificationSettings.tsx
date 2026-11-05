@@ -1,6 +1,6 @@
 "use client";
 
-import { Mail, Hash, BellRing, Smartphone } from "lucide-react";
+import { Mail, Hash, BellRing, Smartphone, Webhook } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { apiClient } from "@/shared/api/client";
 import { Endpoints } from "@/shared/api/endpoints";
@@ -9,10 +9,11 @@ import { useNotificationSettings } from "../hooks/useNotificationSettings";
 import { NotificationToggleCard } from "./NotificationToggleCard";
 import { EmailConfigForm } from "./EmailConfigForm";
 import { SlackConfigForm } from "./SlackConfigForm";
+import { WebhookConfigForm } from "./WebhookConfigForm";
 import { getApiErrorMessage } from "@/shared/api/errors";
 
 export function NotificationSettings() {
-  const { settings, setSettings, isLoading, isSaving, toggleOption, handleSave } =
+  const { settings, setSettings, emailStatus, isLoading, isSaving, toggleOption, handleSave } =
     useNotificationSettings();
 
   return (
@@ -44,17 +45,12 @@ export function NotificationSettings() {
             <NotificationToggleCard
               id="email"
               title="E-posta Bildirimleri"
-              description="Kritik alarmları ve özet raporları e-posta adresinize gönderir."
+              description="Alarmları sunucunun SMTP hesabıyla profil e-posta adresinize gönderir."
               icon={<Mail size={20} className="text-blue-500" />}
               enabled={settings.emailEnabled}
               onToggle={() => toggleOption("emailEnabled")}
             >
-              <EmailConfigForm
-                serviceId={settings.emailjsServiceId ?? null}
-                templateId={settings.emailjsTemplateId ?? null}
-                publicKey={settings.emailjsPublicKey ?? null}
-                onChange={(field, value) => setSettings({ ...settings, [field]: value })}
-              />
+              <EmailConfigForm {...emailStatus} />
             </NotificationToggleCard>
 
             <NotificationToggleCard
@@ -68,6 +64,20 @@ export function NotificationSettings() {
               <SlackConfigForm
                 webhookUrl={settings.slackWebhook}
                 onChange={(value) => setSettings({ ...settings, slackWebhook: value })}
+              />
+            </NotificationToggleCard>
+
+            <NotificationToggleCard
+              id="webhook"
+              title="Webhook"
+              description="Alarmları JSON olarak kendi sisteminize (https) POST eder."
+              icon={<Webhook size={20} className="text-orange-500" />}
+              enabled={settings.webhookEnabled}
+              onToggle={() => toggleOption("webhookEnabled")}
+            >
+              <WebhookConfigForm
+                webhookUrl={settings.webhookUrl}
+                onChange={(value) => setSettings({ ...settings, webhookUrl: value })}
               />
             </NotificationToggleCard>
 

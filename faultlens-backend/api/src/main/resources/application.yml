@@ -1,4 +1,16 @@
 spring:
+  # Alarm e-mails (P07). SMTP_HOST empty -> the e-mail channel is off (Slack/in-app still work).
+  mail:
+    host: ${SMTP_HOST:}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail.smtp.auth: ${SMTP_AUTH:true}
+      mail.smtp.starttls.enable: ${SMTP_STARTTLS:true}
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 10000
+      mail.smtp.writetimeout: 10000
   lifecycle:
     timeout-per-shutdown-phase: 30s
   application:
@@ -41,17 +53,6 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
-  mail:
-    host: ${SMTP_HOST:localhost}
-    port: ${SMTP_PORT:1025}
-    username: ${SMTP_USER:}
-    password: ${SMTP_PASS:}
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
 
 server:
   port: ${PORT:3500}
@@ -62,6 +63,10 @@ management:
     web:
       exposure:
         include: health,info,metrics
+  health:
+    # An unreachable or unset SMTP server must not mark the API DOWN (e-mail is one optional channel).
+    mail:
+      enabled: false
 
 faultlens:
   jwt:
@@ -92,6 +97,13 @@ faultlens:
       model: gpt-4o-mini
   cors:
     allowed-origins: ${CORS_ORIGINS:http://localhost:3000}
+  notifications:
+    mail-from: ${SMTP_FROM:FaultLens <faultlens@localhost>}
+    # Link to the dashboard in e-mails / webhook payloads.
+    app-url: ${APP_URL:http://localhost:3000}
+    webhook:
+      # Generic webhooks may only reach public addresses (SSRF guard). true for on-prem receivers.
+      allow-private-hosts: ${WEBHOOK_ALLOW_PRIVATE_HOSTS:false}
   security:
     # Initial password for the 'admin' account (min 8 chars). Empty -> a random one is generated
     # and logged once at startup. Either way it must be changed at first login.

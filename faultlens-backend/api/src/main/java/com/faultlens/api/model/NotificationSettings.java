@@ -37,14 +37,13 @@ public class NotificationSettings {
     @Column(name = "slack_webhook")
     private String slackWebhook;
 
-    @Column(name = "emailjs_service_id")
-    private String emailjsServiceId;
+    /** Generic webhook (P07): JSON POST to a public https URL. */
+    @Builder.Default
+    @Column(name = "webhook_enabled")
+    private boolean webhookEnabled = false;
 
-    @Column(name = "emailjs_template_id")
-    private String emailjsTemplateId;
-
-    @Column(name = "emailjs_public_key")
-    private String emailjsPublicKey;
+    @Column(name = "webhook_url")
+    private String webhookUrl;
 
     @Builder.Default
     @Column(name = "push_enabled")

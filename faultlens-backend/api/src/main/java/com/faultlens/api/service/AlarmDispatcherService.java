@@ -72,7 +72,7 @@ public class AlarmDispatcherService {
                 .message(message)
                 .triggeredAt(Instant.now())
                 .build());
-        notifier.notifyAll("Alarm: " + rule.getName(), message, java.util.EnumSet.copyOf(
+        notifier.notifyAll("Alarm: " + rule.getName(), message, alarm.getSeverity().name(), java.util.EnumSet.copyOf(
                 rule.getChannels().isEmpty() ? java.util.List.of(AlarmChannel.IN_APP) : rule.getChannels()));
         return alarm;
     }

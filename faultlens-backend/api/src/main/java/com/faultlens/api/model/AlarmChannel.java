@@ -4,5 +4,6 @@ package com.faultlens.api.model;
 public enum AlarmChannel {
     IN_APP,
     SLACK,
-    EMAIL
+    EMAIL,
+    WEBHOOK
 }
