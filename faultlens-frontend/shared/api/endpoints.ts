@@ -43,6 +43,10 @@ export const Endpoints = {
     ACK: (id: number) => `${BASE}/alarms/${id}/ack`,
     RESOLVE: (id: number) => `${BASE}/alarms/${id}/resolve`,
     DELETE: (id: number) => `${BASE}/alarms/${id}`,
+    RULES: `${BASE}/alarms/rules`,
+    RULE: (id: number) => `${BASE}/alarms/rules/${id}`,
+    RULE_ENABLE: (id: number) => `${BASE}/alarms/rules/${id}/enable`,
+    RULE_DISABLE: (id: number) => `${BASE}/alarms/rules/${id}/disable`,
   },
 
   // ── Analyses ──────────────────────────────────────────────
