@@ -9,6 +9,8 @@ import { useUIStore } from "@/shared/store/ui.store";
 import { useAuthStore } from "@/features/auth/store/auth.store";
 import { useAuthHydrated } from "@/features/auth/hooks/useAuthHydrated";
 import { GlobalNotificationListener } from "@/shared/components/layout/GlobalNotificationListener";
+import { refreshSession } from "@/shared/api/session";
+import { decodeJwt } from "@/shared/lib/jwt";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const sidebarOpen = useUIStore((state) => state.sidebarOpen);
@@ -21,9 +23,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     // Before hydration the store still holds its initial state (no token) — do not redirect yet.
     if (!hydrated) return;
     if (!token) {
+      // Also clears the session cookies, so proxy.ts does not bounce /login back here.
+      useAuthStore.getState().logout();
       router.replace("/login");
     } else if (mustChangePassword) {
       router.replace("/change-password");
+    } else {
+      // Back after the 15-minute access token expired: renew before the WebSocket and queries
+      // use it (a failed renewal ends at /login via the API client).
+      const exp = decodeJwt(token)?.exp;
+      if (exp && exp * 1000 <= Date.now()) void refreshSession();
     }
   }, [hydrated, token, mustChangePassword, router]);
 

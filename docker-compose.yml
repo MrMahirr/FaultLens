@@ -89,6 +89,9 @@ services:
       # Empty JWT_SECRET -> random key per start (you are logged out on every backend restart).
       - JWT_SECRET=${JWT_SECRET:-}
       - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
+      # Refresh cookie is Secure (HTTPS; browsers also accept it on http://localhost).
+      # Set false only for plain-HTTP access through another host name or IP.
+      - REFRESH_COOKIE_SECURE=${REFRESH_COOKIE_SECURE:-true}
       - AI_ENABLED=${AI_ENABLED:-false}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       # Empty -> generated and printed once in the backend log; must be changed at first login

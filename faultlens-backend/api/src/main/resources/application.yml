@@ -67,7 +67,15 @@ faultlens:
   jwt:
     # >= 32 bytes. Unset -> random per-process key (sessions end on restart). Generate: openssl rand -base64 48
     secret: ${JWT_SECRET:}
-    expiration-ms: 86400000
+    # Access tokens are short-lived (15 min); the SPA renews them with the refresh cookie.
+    expiration-ms: ${JWT_EXPIRATION_MS:900000}
+  auth:
+    # Single-use refresh token (HttpOnly cookie, rotated in Redis on every refresh).
+    refresh-ttl: ${REFRESH_TOKEN_TTL:P7D}
+    # Keep true in production (HTTPS). Browsers accept Secure cookies on http://localhost.
+    refresh-cookie-secure: ${REFRESH_COOKIE_SECURE:true}
+    login-max-failures: 5
+    login-lock-duration: PT15M
   collector:
     file:
       # Comma-separated directories LOCAL_FILE sources may read; anything else is rejected.

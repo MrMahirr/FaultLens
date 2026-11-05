@@ -25,7 +25,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     static final Set<String> PASSWORD_CHANGE_ALLOWED = Set.of(
             "PUT /api/v1/auth/password",
             "GET /api/v1/auth/profile",
-            "POST /api/v1/auth/refresh");
+            "POST /api/v1/auth/refresh",
+            "POST /api/v1/auth/logout");
 
     private final JwtService jwtService;
     private final ObjectMapper objectMapper;

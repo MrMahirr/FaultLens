@@ -4,6 +4,7 @@ import com.faultlens.api.dto.UserDtos.CreateUserRequest;
 import com.faultlens.api.dto.UserDtos.UserResponse;
 import com.faultlens.api.model.UserAccount;
 import com.faultlens.api.repository.UserAccountRepository;
+import com.faultlens.api.security.RefreshTokenStore;
 import com.faultlens.api.security.Roles;
 import com.faultlens.common.exception.ConflictException;
 import com.faultlens.common.exception.FaultLensException;
@@ -21,7 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * <p>Guards against locking everyone out: an admin cannot delete or re-role themselves, and the
  * last admin can be neither demoted nor deleted. Accounts created or reset here must change their
- * password at the next login.
+ * password at the next login; a reset or deletion also ends the user's sessions (refresh tokens).
+ * A role change takes effect at the user's next token refresh (within 15 minutes).
  */
 @Service
 @RequiredArgsConstructor
@@ -29,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
     private final UserAccountRepository repository;
     private final PasswordEncoder passwordEncoder;
+    private final RefreshTokenStore refreshTokens;
 
     public List<UserResponse> list() {
         return repository.findAllByOrderByUsernameAsc().stream().map(UserService::toResponse).toList();
@@ -75,7 +78,9 @@ public class UserService {
         UserAccount user = find(id);
         user.setPassword(passwordEncoder.encode(password));
         user.setMustChangePassword(true);
-        return toResponse(repository.save(user));
+        UserAccount saved = repository.save(user);
+        refreshTokens.revokeAll(saved.getId());
+        return toResponse(saved);
     }
 
     @Transactional
@@ -88,6 +93,7 @@ public class UserService {
             requireAnotherAdmin();
         }
         repository.delete(user);
+        refreshTokens.revokeAll(user.getId());
     }
 
     private void requireAnotherAdmin() {

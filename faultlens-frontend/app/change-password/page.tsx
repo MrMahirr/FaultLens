@@ -1,5 +1,6 @@
 "use client";
 
+import { revokeSession } from "@/shared/api/session";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ShieldAlert } from "lucide-react";
@@ -26,6 +27,7 @@ export default function ChangePasswordPage() {
   if (!hydrated || !token) return null;
 
   const handleLogout = () => {
+    revokeSession();
     logout();
     router.replace("/login");
   };

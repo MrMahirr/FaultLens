@@ -15,10 +15,6 @@ public final class AuthDtos {
     }
 
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    public record RefreshRequest(@NotBlank String token) {
-    }
-
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public record TokenResponse(String token, Instant expiresAt, boolean mustChangePassword) {
         public TokenResponse(String token, Instant expiresAt) {
             this(token, expiresAt, false);

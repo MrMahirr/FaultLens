@@ -23,6 +23,9 @@ services:
       # Security & CORS
       - JWT_SECRET=${JWT_SECRET}
       - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
+      # Refresh cookie is Secure (HTTPS; browsers also accept it on http://localhost).
+      # Set false only for plain-HTTP access through another host name or IP.
+      - REFRESH_COOKIE_SECURE=${REFRESH_COOKIE_SECURE:-true}
       - ADMIN_INITIAL_PASSWORD=${ADMIN_INITIAL_PASSWORD:-}
       - COLLECTOR_FILE_ALLOWED_DIRS=${COLLECTOR_FILE_ALLOWED_DIRS:-/var/log}
       - AI_ENABLED=${AI_ENABLED:-false}

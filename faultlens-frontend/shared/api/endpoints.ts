@@ -12,6 +12,7 @@ export const Endpoints = {
   AUTH: {
     LOGIN: `${BASE}/auth/login`,
     REFRESH: `${BASE}/auth/refresh`,
+    LOGOUT: `${BASE}/auth/logout`,
     PROFILE: `${BASE}/auth/profile`,
     CHANGE_PASSWORD: `${BASE}/auth/password`,
   },

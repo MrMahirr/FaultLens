@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useCallback, useState } from "react";
+import { refreshSession } from "@/shared/api/session";
 
 /* ── Types ─────────────────────────────────────────────────── */
 
@@ -117,9 +118,12 @@ export function useWebSocket({
         setStatus("disconnected");
         onCloseRef.current?.();
 
-        // An expired token will not become valid by retrying; a new token
-        // (after re-login) changes `token` and triggers a fresh connect.
-        if (event.code === TOKEN_EXPIRED_CLOSE_CODE) return;
+        // An expired token will not become valid by retrying: renew the session instead.
+        // The new token changes `token` and triggers a fresh connect.
+        if (event.code === TOKEN_EXPIRED_CLOSE_CODE) {
+          if (token) void refreshSession();
+          return;
+        }
 
         // Auto-reconnect with exponential backoff
         if (enabledRef.current && retryCountRef.current < maxRetries && mountedRef.current) {

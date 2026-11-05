@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import com.faultlens.api.dto.UserDtos.CreateUserRequest;
 import com.faultlens.api.model.UserAccount;
 import com.faultlens.api.repository.UserAccountRepository;
+import com.faultlens.api.security.RefreshTokenStore;
 import com.faultlens.common.exception.ConflictException;
 import com.faultlens.common.exception.FaultLensException;
 import java.util.Optional;
@@ -21,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 class UserServiceTest {
     private UserAccountRepository repository;
     private UserService service;
+    private RefreshTokenStore refreshTokens;
 
     @BeforeEach
     void setUp() {
@@ -33,7 +35,8 @@ class UserServiceTest {
             user.setId(9L);
             return user;
         });
-        service = new UserService(repository, encoder);
+        refreshTokens = mock(RefreshTokenStore.class);
+        service = new UserService(repository, encoder, refreshTokens);
     }
 
     private static UserAccount user(long id, String username, String role) {
@@ -99,5 +102,6 @@ class UserServiceTest {
 
         assertThat(service.resetPassword(3L, "temporary-1").mustChangePassword()).isTrue();
         assertThat(stored.getPassword()).isEqualTo("hashed:temporary-1");
+        verify(refreshTokens).revokeAll(3L);
     }
 }

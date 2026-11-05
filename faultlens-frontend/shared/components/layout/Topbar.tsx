@@ -1,5 +1,6 @@
 "use client";
 
+import { revokeSession } from "@/shared/api/session";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Menu, Sun, Moon, LogOut, User } from "lucide-react";
@@ -52,6 +53,7 @@ function Topbar() {
         router.push("/settings?tab=account");
         break;
       case "logout":
+        revokeSession();
         useAuthStore.getState().logout();
         if (typeof window !== "undefined") {
           window.location.href = "/login";

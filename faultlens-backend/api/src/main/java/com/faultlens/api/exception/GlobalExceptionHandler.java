@@ -38,6 +38,16 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles a username locked after too many failed logins (429 + Retry-After).
+     */
+    @ExceptionHandler(com.faultlens.api.security.LoginLockedException.class)
+    public ResponseEntity<ErrorEnvelope> handleLoginLocked(com.faultlens.api.security.LoginLockedException ex) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .header("Retry-After", Long.toString(ex.getRetryAfter().toSeconds()))
+                .body(ErrorEnvelope.of(ex.getErrorCode(), ex.getMessage()));
+    }
+
+    /**
      * Handles domain exceptions.
      */
     @ExceptionHandler(FaultLensException.class)
