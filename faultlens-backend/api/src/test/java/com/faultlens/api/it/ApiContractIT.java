@@ -57,7 +57,7 @@ class ApiContractIT extends AbstractIntegrationTest {
             "last_seen_at");
     private static final Set<String> NOTIFICATION_SETTINGS = Set.of("email_enabled", "slack_enabled", "slack_webhook",
             "push_enabled", "mobile_enabled", "emailjs_service_id", "emailjs_template_id", "emailjs_public_key");
-    private static final Set<String> SYSTEM_SETTINGS = Set.of("log_retention_days", "default_engine", "language");
+    private static final Set<String> SYSTEM_SETTINGS = Set.of("log_retention_days", "default_engine", "language", "ai_available");
     private static final Set<String> PROFILE = Set.of("username", "email", "role");
     private static final Set<String> TOKEN = Set.of("token", "expires_at", "must_change_password");
     private static final Set<String> PROFILE_UPDATE = Set.of("username", "email", "role", "token", "expires_at");

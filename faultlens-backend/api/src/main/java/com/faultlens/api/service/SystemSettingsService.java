@@ -1,32 +1,38 @@
 package com.faultlens.api.service;
 
+import com.faultlens.analyzer.engine.AiAnalysisEngine;
+import com.faultlens.analyzer.engine.EnginePreference;
 import com.faultlens.api.dto.SettingsDtos.SystemSettingsResponse;
 import com.faultlens.api.dto.SettingsDtos.UpdateSystemSettingsRequest;
 import com.faultlens.api.model.SystemSettings;
 import com.faultlens.api.repository.SystemSettingsRepository;
 import java.time.Instant;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * The singleton system settings row. Also the analyzer's {@link EnginePreference}: the default
+ * engine chosen in Settings decides at analysis time whether the AI engine is used.
+ */
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class SystemSettingsService {
+public class SystemSettingsService implements EnginePreference {
+    static final String ENGINE_AI = "ai";
 
     private final SystemSettingsRepository systemSettingsRepository;
+    private final AiAnalysisEngine aiAnalysisEngine;
+
+    public SystemSettingsService(SystemSettingsRepository systemSettingsRepository, AiAnalysisEngine aiAnalysisEngine) {
+        this.systemSettingsRepository = systemSettingsRepository;
+        this.aiAnalysisEngine = aiAnalysisEngine;
+    }
 
     /**
      * Returns the global system settings.
      * Assumes a single record is created via Flyway migration.
      */
     public SystemSettingsResponse getSettings() {
-        SystemSettings settings = getSingletonRecord();
-        return new SystemSettingsResponse(
-                settings.getLogRetentionDays(),
-                settings.getDefaultEngine(),
-                settings.getLanguage()
-        );
+        return toResponse(getSingletonRecord());
     }
 
     /**
@@ -35,18 +41,11 @@ public class SystemSettingsService {
     @Transactional
     public SystemSettingsResponse updateSettings(UpdateSystemSettingsRequest request) {
         SystemSettings settings = getSingletonRecord();
-        
         settings.setLogRetentionDays(request.logRetentionDays());
         settings.setDefaultEngine(request.defaultEngine());
         settings.setLanguage(request.language());
         settings.setUpdatedAt(Instant.now());
-        
-        SystemSettings saved = systemSettingsRepository.save(settings);
-        return new SystemSettingsResponse(
-                saved.getLogRetentionDays(),
-                saved.getDefaultEngine(),
-                saved.getLanguage()
-        );
+        return toResponse(systemSettingsRepository.save(settings));
     }
 
     /**
@@ -54,6 +53,23 @@ public class SystemSettingsService {
      */
     public int getLogRetentionDays() {
         return getSingletonRecord().getLogRetentionDays();
+    }
+
+    /**
+     * True when the operator chose the AI engine. Read per analysis (analyses are throttled to
+     * one per group per hour), so a change in Settings applies without a restart.
+     */
+    @Override
+    public boolean preferAi() {
+        return ENGINE_AI.equalsIgnoreCase(getSingletonRecord().getDefaultEngine());
+    }
+
+    private SystemSettingsResponse toResponse(SystemSettings settings) {
+        return new SystemSettingsResponse(
+                settings.getLogRetentionDays(),
+                settings.getDefaultEngine(),
+                settings.getLanguage(),
+                aiAnalysisEngine.isAvailable());
     }
 
     private SystemSettings getSingletonRecord() {

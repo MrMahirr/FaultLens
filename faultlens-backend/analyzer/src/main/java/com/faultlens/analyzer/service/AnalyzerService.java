@@ -4,6 +4,7 @@ import com.faultlens.analyzer.correlation.DeploymentCorrelator;
 import com.faultlens.analyzer.correlation.DeploymentCorrelator.DeploymentCorrelation;
 import com.faultlens.analyzer.engine.AiAnalysisEngine;
 import com.faultlens.analyzer.engine.AnalysisResult;
+import com.faultlens.analyzer.engine.EnginePreference;
 import com.faultlens.analyzer.engine.RuleBasedEngine;
 import com.faultlens.analyzer.model.Analysis;
 import com.faultlens.analyzer.repository.AnalysisRepository;
@@ -25,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AnalyzerService {
     private final RuleBasedEngine ruleBasedEngine;
     private final Optional<AiAnalysisEngine> aiAnalysisEngine;
+    private final Optional<EnginePreference> enginePreference;
     private final DeploymentCorrelator deploymentCorrelator;
     private final AnalysisRepository analysisRepository;
     private final LogGroupRepository logGroupRepository;
@@ -40,6 +42,7 @@ public class AnalyzerService {
                 ruleBasedEngine.analyze(entry, group),
                 aiAnalysisEngine
                         .filter(AiAnalysisEngine::isAvailable)
+                        .filter(engine -> enginePreference.map(EnginePreference::preferAi).orElse(true))
                         .map(engine -> engine.analyze(entry, group))
                         .orElse(null));
         result = applyDeploymentCorrelation(entry, result);

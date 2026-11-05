@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Database, BrainCircuit, Globe, HardDrive } from "lucide-react";
+import { Database, BrainCircuit, HardDrive } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { apiClient } from "@/shared/api/client";
 import { Endpoints } from "@/shared/api/endpoints";
@@ -12,6 +12,8 @@ export function SystemSettings() {
   const [retention, setRetention] = useState("30");
   const [engine, setEngine] = useState("ai");
   const [language, setLanguage] = useState("tr");
+  // Whether the backend can run AI analysis at all (AI_ENABLED + API key).
+  const [aiAvailable, setAiAvailable] = useState(false);
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -27,6 +29,7 @@ export function SystemSettings() {
           setRetention(String(data.logRetentionDays ?? 30));
           setEngine(data.defaultEngine ?? "ai");
           setLanguage(data.language ?? "tr");
+          setAiAvailable(Boolean(data.aiAvailable));
         }
       })
       .catch(() => {
@@ -53,6 +56,7 @@ export function SystemSettings() {
         setRetention(String(data.logRetentionDays));
         setEngine(data.defaultEngine);
         setLanguage(data.language);
+        setAiAvailable(Boolean(data.aiAvailable));
       }
       toast.success("Sistem tercihleri başarıyla kaydedildi!");
     } catch (err) {
@@ -83,7 +87,7 @@ export function SystemSettings() {
         <div>
           <h2 className="text-lg font-semibold text-text-primary">Sistem Tercihleri</h2>
           <p className="text-sm text-text-muted mt-1">
-            Uygulamanın veri saklama, dil ve analiz motoru ayarlarını yapılandırın.
+            Uygulamanın veri saklama ve analiz motoru ayarlarını yapılandırın.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -131,26 +135,19 @@ export function SystemSettings() {
             onChange={(e) => setEngine(e.target.value)}
           >
             <option value="rule">Rule-Based (Kural Tabanlı)</option>
-            <option value="ai">AI Analysis (Yapay Zeka Destekli)</option>
+            <option value="ai" disabled={!aiAvailable && engine !== "ai"}>
+              AI Analysis (Yapay Zeka Destekli){aiAvailable ? "" : " — devre dışı"}
+            </option>
           </select>
+          {!aiAvailable && (
+            <p className="text-xs text-warning">
+              Yapay zeka analizi bu sunucuda kapalı (AI_ENABLED / OPENAI_API_KEY tanımlı değil).
+              {engine === "ai" && " Seçim “AI” olsa da analizler kural tabanlı motorla yapılıyor."}
+            </p>
+          )}
         </div>
 
-        {/* Language */}
-        <div className="bg-bg-tertiary/30 p-6 rounded-2xl border border-border-default space-y-4 md:col-span-2 lg:col-span-1">
-          <div className="flex items-center gap-3 border-b border-border-default pb-3">
-            <Globe size={18} className="text-text-secondary" />
-            <h3 className="font-medium text-text-primary">Arayüz Dili</h3>
-          </div>
-          <p className="text-sm text-text-muted">Sistem dilini değiştirin.</p>
-          <select
-            className="w-full bg-bg-primary text-text-primary rounded-lg border border-border-default px-3 py-2.5 text-sm focus:outline-none focus:border-accent cursor-pointer"
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-          >
-            <option value="tr">Türkçe</option>
-            <option value="en">English (Yakında)</option>
-          </select>
-        </div>
+        {/* Language: hidden until the UI is translated (P09 i18n); the stored value is kept. */}
       </div>
     </div>
   );

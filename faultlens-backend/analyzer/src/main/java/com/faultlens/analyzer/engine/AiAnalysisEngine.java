@@ -13,22 +13,24 @@ import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-@ConditionalOnProperty(prefix = "faultlens.analyzer.ai", name = "enabled", havingValue = "true")
 public class AiAnalysisEngine implements AnalysisEngine {
+    /** Deployment-level switch (AI_ENABLED); the per-system choice is EnginePreference. */
+    private final boolean enabled;
     private final String apiKey;
     private final String model;
     private final ObjectMapper objectMapper;
     private final HttpClient httpClient;
 
     public AiAnalysisEngine(
+            @Value("${faultlens.analyzer.ai.enabled:false}") boolean enabled,
             @Value("${faultlens.analyzer.ai.openai-api-key:}") String apiKey,
             @Value("${faultlens.analyzer.ai.model:gpt-4o-mini}") String model,
             ObjectMapper objectMapper) {
+        this.enabled = enabled;
         this.apiKey = apiKey;
         this.model = model;
         this.objectMapper = objectMapper;
@@ -75,7 +77,7 @@ public class AiAnalysisEngine implements AnalysisEngine {
      */
     @Override
     public boolean isAvailable() {
-        return apiKey != null && !apiKey.isBlank();
+        return enabled && apiKey != null && !apiKey.isBlank();
     }
 
     private AnalysisResult parseResponse(String responseBody) throws Exception {
