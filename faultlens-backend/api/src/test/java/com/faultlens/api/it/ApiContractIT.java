@@ -60,6 +60,7 @@ class ApiContractIT extends AbstractIntegrationTest {
     private static final Set<String> SYSTEM_SETTINGS = Set.of("log_retention_days", "default_engine", "language");
     private static final Set<String> PROFILE = Set.of("username", "email", "role");
     private static final Set<String> TOKEN = Set.of("token", "expires_at", "must_change_password");
+    private static final Set<String> PROFILE_UPDATE = Set.of("username", "email", "role", "token", "expires_at");
 
     @Autowired
     private LogEventProducer producer;
@@ -146,6 +147,10 @@ class ApiContractIT extends AbstractIntegrationTest {
         assertObject(get("/api/v1/settings/system", token), SYSTEM_SETTINGS);
         assertObject(get("/api/v1/auth/profile", token), PROFILE);
         assertObject(login("admin", ADMIN_PASSWORD), TOKEN);
+        // Same username (other ITs share the admin token); a rename is covered by AuthServiceTest.
+        String email = get("/api/v1/auth/profile", token).getBody().at("/data/email").asText();
+        assertObject(exchange(HttpMethod.PUT, "/api/v1/auth/profile", token,
+                Map.of("username", "admin", "email", email)), PROFILE_UPDATE);
     }
 
     @Test

@@ -3,15 +3,18 @@ package com.faultlens.api.service;
 import com.faultlens.api.dto.AuthDtos.ChangePasswordRequest;
 import com.faultlens.api.dto.AuthDtos.LoginRequest;
 import com.faultlens.api.dto.AuthDtos.ProfileResponse;
+import com.faultlens.api.dto.AuthDtos.ProfileUpdateResponse;
 import com.faultlens.api.dto.AuthDtos.RefreshRequest;
 import com.faultlens.api.dto.AuthDtos.TokenResponse;
 import com.faultlens.api.dto.AuthDtos.UpdateProfileRequest;
 import com.faultlens.api.model.UserAccount;
 import com.faultlens.api.repository.UserAccountRepository;
 import com.faultlens.api.security.JwtService;
+import com.faultlens.common.exception.ConflictException;
 import com.faultlens.common.exception.FaultLensException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -62,12 +65,25 @@ public class AuthService {
      * Updates the profile (username, email) of the authenticated user.
      */
     @Transactional
-    public ProfileResponse updateProfile(String currentUsername, UpdateProfileRequest request) {
+    public ProfileUpdateResponse updateProfile(String currentUsername, UpdateProfileRequest request) {
         UserAccount user = findUserByUsername(currentUsername);
-        user.setUsername(request.username());
+        String newUsername = request.username().trim();
+        if (!newUsername.equals(user.getUsername()) && userRepository.findByUsername(newUsername).isPresent()) {
+            throw new ConflictException("Username is already taken", "USERNAME_TAKEN");
+        }
+        user.setUsername(newUsername);
         user.setEmail(request.email());
-        UserAccount saved = userRepository.save(user);
-        return new ProfileResponse(saved.getUsername(), saved.getEmail(), saved.getRole());
+        UserAccount saved;
+        try {
+            saved = userRepository.saveAndFlush(user);
+        } catch (DataIntegrityViolationException ex) {
+            // taken concurrently between the check and the insert (unique constraint)
+            throw new ConflictException("Username is already taken", "USERNAME_TAKEN");
+        }
+        // The JWT subject is the username: after a rename the caller's token points at nobody.
+        TokenResponse token = tokenFor(saved);
+        return new ProfileUpdateResponse(saved.getUsername(), saved.getEmail(), saved.getRole(),
+                token.token(), token.expiresAt());
     }
 
     /**

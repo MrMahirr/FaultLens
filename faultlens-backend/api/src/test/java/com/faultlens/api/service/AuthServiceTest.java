@@ -8,12 +8,15 @@ import static org.mockito.Mockito.when;
 
 import com.faultlens.api.dto.AuthDtos.ChangePasswordRequest;
 import com.faultlens.api.dto.AuthDtos.LoginRequest;
+import com.faultlens.api.dto.AuthDtos.UpdateProfileRequest;
 import com.faultlens.api.model.UserAccount;
 import com.faultlens.api.repository.UserAccountRepository;
 import com.faultlens.api.security.JwtService;
+import com.faultlens.common.exception.ConflictException;
 import com.faultlens.common.exception.FaultLensException;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -137,5 +140,68 @@ class AuthServiceTest {
         assertThatThrownBy(() -> service.changePassword("admin", new ChangePasswordRequest("Initial-Pass-1", "Initial-Pass-1")))
                 .isInstanceOf(FaultLensException.class)
                 .hasFieldOrPropertyWithValue("errorCode", "PASSWORD_REUSED");
+    }
+
+    // ── Profile update (P06): a rename must not leave the caller with a token for a missing user ──
+
+    @Test
+    void renameReturnsATokenForTheNewUsername() {
+        UserAccountRepository repository = mock(UserAccountRepository.class);
+        JwtService jwtService = new JwtService(SECRET, 60_000);
+        UserAccount user = UserAccount.builder().username("admin").password("hash").role("ADMIN").build();
+        when(repository.findByUsername("admin")).thenReturn(Optional.of(user));
+        when(repository.findByUsername("mahir")).thenReturn(Optional.empty());
+        when(repository.saveAndFlush(any(UserAccount.class))).thenAnswer(inv -> inv.getArgument(0));
+        AuthService service = new AuthService(repository, mock(PasswordEncoder.class), jwtService);
+
+        var response = service.updateProfile("admin", new UpdateProfileRequest("  mahir ", "m@example.com"));
+
+        assertThat(response.username()).isEqualTo("mahir");
+        assertThat(response.email()).isEqualTo("m@example.com");
+        assertThat(jwtService.extractUsername(response.token())).isEqualTo("mahir");
+        assertThat(response.expiresAt()).isNotNull();
+    }
+
+    @Test
+    void renamingToATakenUsernameIsAConflict() {
+        UserAccountRepository repository = mock(UserAccountRepository.class);
+        UserAccount user = UserAccount.builder().username("admin").password("hash").role("ADMIN").build();
+        UserAccount other = UserAccount.builder().username("ops").password("hash").role("ADMIN").build();
+        when(repository.findByUsername("admin")).thenReturn(Optional.of(user));
+        when(repository.findByUsername("ops")).thenReturn(Optional.of(other));
+        AuthService service = new AuthService(repository, mock(PasswordEncoder.class), new JwtService(SECRET, 60_000));
+
+        assertThatThrownBy(() -> service.updateProfile("admin", new UpdateProfileRequest("ops", null)))
+                .isInstanceOf(ConflictException.class)
+                .hasFieldOrPropertyWithValue("errorCode", "USERNAME_TAKEN");
+    }
+
+    @Test
+    void concurrentlyTakenUsernameIsAConflictToo() {
+        UserAccountRepository repository = mock(UserAccountRepository.class);
+        UserAccount user = UserAccount.builder().username("admin").password("hash").role("ADMIN").build();
+        when(repository.findByUsername("admin")).thenReturn(Optional.of(user));
+        when(repository.findByUsername("ops")).thenReturn(Optional.empty());
+        when(repository.saveAndFlush(any(UserAccount.class)))
+                .thenThrow(new DataIntegrityViolationException("users_username_key"));
+        AuthService service = new AuthService(repository, mock(PasswordEncoder.class), new JwtService(SECRET, 60_000));
+
+        assertThatThrownBy(() -> service.updateProfile("admin", new UpdateProfileRequest("ops", null)))
+                .isInstanceOf(ConflictException.class);
+    }
+
+    @Test
+    void keepingTheUsernameStillReturnsAWorkingToken() {
+        UserAccountRepository repository = mock(UserAccountRepository.class);
+        JwtService jwtService = new JwtService(SECRET, 60_000);
+        UserAccount user = UserAccount.builder().username("admin").password("hash").role("ADMIN").build();
+        when(repository.findByUsername("admin")).thenReturn(Optional.of(user));
+        when(repository.saveAndFlush(any(UserAccount.class))).thenAnswer(inv -> inv.getArgument(0));
+        AuthService service = new AuthService(repository, mock(PasswordEncoder.class), jwtService);
+
+        var response = service.updateProfile("admin", new UpdateProfileRequest("admin", "new@example.com"));
+
+        assertThat(jwtService.extractUsername(response.token())).isEqualTo("admin");
+        assertThat(response.email()).isEqualTo("new@example.com");
     }
 }

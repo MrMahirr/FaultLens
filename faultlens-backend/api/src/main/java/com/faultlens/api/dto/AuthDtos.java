@@ -29,6 +29,14 @@ public final class AuthDtos {
     public record ProfileResponse(String username, String email, String role) {
     }
 
+    /**
+     * Result of a profile update. Carries a fresh token because the JWT subject is the username:
+     * after a rename the old token no longer identifies the user.
+     */
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public record ProfileUpdateResponse(String username, String email, String role, String token, Instant expiresAt) {
+    }
+
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public record UpdateProfileRequest(@NotBlank String username, String email) {
     }

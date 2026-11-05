@@ -3,6 +3,7 @@ package com.faultlens.api.controller;
 import com.faultlens.api.dto.AuthDtos.ChangePasswordRequest;
 import com.faultlens.api.dto.AuthDtos.LoginRequest;
 import com.faultlens.api.dto.AuthDtos.ProfileResponse;
+import com.faultlens.api.dto.AuthDtos.ProfileUpdateResponse;
 import com.faultlens.api.dto.AuthDtos.RefreshRequest;
 import com.faultlens.api.dto.AuthDtos.TokenResponse;
 import com.faultlens.api.dto.AuthDtos.UpdateProfileRequest;
@@ -53,7 +54,7 @@ public class AuthController {
      * Updates the profile of the authenticated user.
      */
     @PutMapping("/profile")
-    public ResponseEntity<ApiResponse<ProfileResponse>> updateProfile(
+    public ResponseEntity<ApiResponse<ProfileUpdateResponse>> updateProfile(
             Principal principal,
             @Valid @RequestBody UpdateProfileRequest request) {
         return ResponseEntity.ok(ApiResponse.ok(authService.updateProfile(principal.getName(), request)));

@@ -30,6 +30,14 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles conflicts with existing state (409).
+     */
+    @ExceptionHandler(com.faultlens.common.exception.ConflictException.class)
+    public ResponseEntity<ErrorEnvelope> handleConflict(com.faultlens.common.exception.ConflictException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ErrorEnvelope.of(ex.getErrorCode(), ex.getMessage()));
+    }
+
+    /**
      * Handles domain exceptions.
      */
     @ExceptionHandler(FaultLensException.class)

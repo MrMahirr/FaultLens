@@ -58,7 +58,11 @@ export function AccountSettings() {
         email,
       });
       const profile = response.data?.data;
-      if (profile) {
+      const { user: currentUser, login } = useAuthStore.getState();
+      if (profile?.token && currentUser) {
+        // The token's subject is the username: after a rename only the fresh token is valid.
+        login(profile.token, { ...currentUser, username: profile.username, email: profile.email });
+      } else if (profile) {
         updateUser({ username: profile.username, email: profile.email });
       }
       toast.success("Profil bilgileri başarıyla kaydedildi!");
