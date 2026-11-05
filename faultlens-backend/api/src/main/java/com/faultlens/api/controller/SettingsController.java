@@ -9,7 +9,9 @@ import com.faultlens.api.service.SystemSettingsService;
 import com.faultlens.common.dto.ApiResponse;
 import jakarta.validation.Valid;
 import java.security.Principal;
+import com.faultlens.api.security.Roles;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -54,6 +56,7 @@ public class SettingsController {
     /**
      * Updates the global system settings.
      */
+    @PreAuthorize(Roles.ADMIN_ONLY)
     @PutMapping("/system")
     public ResponseEntity<ApiResponse<SystemSettingsResponse>> updateSystemSettings(
             @Valid @RequestBody UpdateSystemSettingsRequest request) {

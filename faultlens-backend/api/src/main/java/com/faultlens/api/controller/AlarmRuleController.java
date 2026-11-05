@@ -7,7 +7,9 @@ import com.faultlens.common.dto.ApiResponse;
 import jakarta.validation.Valid;
 import java.security.Principal;
 import java.util.List;
+import com.faultlens.api.security.Roles;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -38,6 +40,7 @@ public class AlarmRuleController {
         return ResponseEntity.ok(ApiResponse.ok(service.get(id)));
     }
 
+    @PreAuthorize(Roles.CAN_EDIT)
     @PostMapping
     public ResponseEntity<ApiResponse<AlarmRuleResponse>> create(@Valid @RequestBody AlarmRuleRequest request,
                                                                  Principal principal) {
@@ -45,22 +48,26 @@ public class AlarmRuleController {
                 .body(ApiResponse.ok(service.create(request, principal == null ? null : principal.getName())));
     }
 
+    @PreAuthorize(Roles.CAN_EDIT)
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<AlarmRuleResponse>> update(@PathVariable Long id,
                                                                  @Valid @RequestBody AlarmRuleRequest request) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, request)));
     }
 
+    @PreAuthorize(Roles.CAN_EDIT)
     @PostMapping("/{id}/enable")
     public ResponseEntity<ApiResponse<AlarmRuleResponse>> enable(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(service.setEnabled(id, true)));
     }
 
+    @PreAuthorize(Roles.CAN_EDIT)
     @PostMapping("/{id}/disable")
     public ResponseEntity<ApiResponse<AlarmRuleResponse>> disable(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(service.setEnabled(id, false)));
     }
 
+    @PreAuthorize(Roles.CAN_EDIT)
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);

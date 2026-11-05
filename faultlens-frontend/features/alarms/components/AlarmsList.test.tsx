@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { API, ok, server } from "@/test/msw/server";
-import { renderWithQuery } from "@/test/utils";
+import { renderWithQuery, signInAs } from "@/test/utils";
 import { AlarmsList } from "./AlarmsList";
 
 vi.mock("sweetalert2", () => ({ default: { fire: vi.fn() } }));
@@ -26,6 +26,7 @@ describe("AlarmsList delete", () => {
   let deleted: number;
 
   beforeEach(() => {
+    signInAs("ADMIN");
     deleted = 0;
     vi.mocked(Swal.fire).mockReset();
     vi.spyOn(toast, "success").mockImplementation(() => "");

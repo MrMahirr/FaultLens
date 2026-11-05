@@ -1,5 +1,6 @@
 "use client";
 
+import { useCan } from "@/features/auth/hooks/useCan";
 import { Search, Filter, Radio, X, Trash2 } from "lucide-react";
 import { Input } from "@/shared/components/ui/Input";
 import { Button } from "@/shared/components/ui/Button";
@@ -44,6 +45,7 @@ function LogFiltersBar({
 }: LogFiltersBarProps) {
   const { data: sources } = useSourcesQuery();
   const clearLogs = useClearLogsMutation();
+  const canDelete = useCan("delete");
 
   const handleClearLogs = async () => {
     if (!filters.source) return;
@@ -146,7 +148,7 @@ function LogFiltersBar({
             ))}
           </select>
 
-          {filters.source && (
+          {filters.source && canDelete && (
             <Button
               variant="danger"
               size="sm"

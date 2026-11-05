@@ -1,5 +1,6 @@
 "use client";
 
+import { useCan } from "@/features/auth/hooks/useCan";
 import { useState } from "react";
 import { PageHeader } from "@/shared/components/layout/PageHeader";
 import { EmptyState } from "@/shared/components/feedback/EmptyState";
@@ -27,6 +28,7 @@ export default function AnalysesPage() {
     size,
   });
   const deleteHistory = useDeleteAnalysisHistory();
+  const canDelete = useCan("delete");
 
   const analyses = analysisData?.content || [];
   const totalPages = analysisData?.totalPages || 1;
@@ -84,15 +86,17 @@ export default function AnalysesPage() {
             </select>
           </div>
 
-          <Button
-            variant="danger"
-            onClick={handleClearHistory}
-            disabled={deleteHistory.isPending || analyses.length === 0}
-            className="flex items-center gap-2"
-          >
-            <Trash2 className="w-4 h-4" />
-            <span className="hidden sm:inline">Geçmişi Temizle</span>
-          </Button>
+          {canDelete && (
+            <Button
+              variant="danger"
+              onClick={handleClearHistory}
+              disabled={deleteHistory.isPending || analyses.length === 0}
+              className="flex items-center gap-2"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span className="hidden sm:inline">Geçmişi Temizle</span>
+            </Button>
+          )}
         </div>
       </div>
 

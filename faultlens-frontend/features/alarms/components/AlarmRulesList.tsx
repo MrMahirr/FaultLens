@@ -1,5 +1,6 @@
 "use client";
 
+import { useCan } from "@/features/auth/hooks/useCan";
 import { useCallback, useMemo } from "react";
 import Swal from "sweetalert2";
 import { Power, PowerOff, Trash2 } from "lucide-react";
@@ -25,6 +26,7 @@ export function AlarmRulesList() {
   const { data: rules, isLoading } = useAlarmRulesQuery();
   const toggleRule = useToggleAlarmRuleMutation();
   const deleteRule = useDeleteAlarmRuleMutation();
+  const canEdit = useCan("edit");
   const { mutate: toggle } = toggleRule;
   const { mutate: remove } = deleteRule;
   const isMutating = toggleRule.isPending || deleteRule.isPending;
@@ -94,6 +96,7 @@ export function AlarmRulesList() {
         header: "Aksiyon",
         cell: ({ row }) => {
           const rule = row.original;
+          if (!canEdit) return null;
           return (
             <div className="flex items-center gap-1 whitespace-nowrap">
               <Button
@@ -127,7 +130,7 @@ export function AlarmRulesList() {
         },
       },
     ],
-    [toggle, confirmDelete, isMutating],
+    [toggle, confirmDelete, isMutating, canEdit],
   );
 
   return (

@@ -49,6 +49,14 @@ export const Endpoints = {
     RULE_DISABLE: (id: number) => `${BASE}/alarms/rules/${id}/disable`,
   },
 
+  // ── Users (ADMIN) ─────────────────────────────────────────
+  USERS: {
+    LIST: `${BASE}/users`,
+    DETAIL: (id: number) => `${BASE}/users/${id}`,
+    ROLE: (id: number) => `${BASE}/users/${id}/role`,
+    RESET_PASSWORD: (id: number) => `${BASE}/users/${id}/reset-password`,
+  },
+
   // ── Analyses ──────────────────────────────────────────────
   ANALYSES: {
     LIST: `${BASE}/analyses`,

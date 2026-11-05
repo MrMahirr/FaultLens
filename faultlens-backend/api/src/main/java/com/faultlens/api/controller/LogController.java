@@ -5,7 +5,9 @@ import com.faultlens.common.dto.ApiResponse;
 import com.faultlens.common.enums.Severity;
 import java.time.Instant;
 import java.util.Map;
+import com.faultlens.api.security.Roles;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -80,6 +82,7 @@ public class LogController {
     /**
      * Clears logs for a specific source.
      */
+    @PreAuthorize(Roles.ADMIN_ONLY)
     @org.springframework.web.bind.annotation.DeleteMapping("/clear")
     public ResponseEntity<ApiResponse<?>> clearLogs(@RequestParam Long sourceId) {
         service.clearLogsBySource(sourceId);

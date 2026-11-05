@@ -1,5 +1,6 @@
 "use client";
 
+import { useCan } from "@/features/auth/hooks/useCan";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { Brain, RefreshCw, AlertTriangle, Lightbulb, ArrowRight } from "lucide-react";
@@ -24,6 +25,7 @@ interface AnalysisCardProps {
 
 function AnalysisCard({ analysis, index, sourceName }: AnalysisCardProps) {
   const triggerAnalysis = useTriggerAnalysisMutation();
+  const canEdit = useCan("edit");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
@@ -101,14 +103,16 @@ function AnalysisCard({ analysis, index, sourceName }: AnalysisCardProps) {
             )}
 
             <div className="flex gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                icon={<RefreshCw size={14} />}
-                loading={triggerAnalysis.isPending}
-                onClick={() => triggerAnalysis.mutate(analysis.logGroupId ?? 0)}
-                title="Yeniden Analiz Et"
-              />
+              {canEdit && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  icon={<RefreshCw size={14} />}
+                  loading={triggerAnalysis.isPending}
+                  onClick={() => triggerAnalysis.mutate(analysis.logGroupId ?? 0)}
+                  title="Yeniden Analiz Et"
+                />
+              )}
               <Button
                 variant="secondary"
                 size="sm"

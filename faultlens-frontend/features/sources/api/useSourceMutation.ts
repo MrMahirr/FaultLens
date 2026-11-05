@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import { SourceApi } from "./sourceApi";
 import { sourceKeys } from "./useSourceQuery";
 import type { LogSourceDto } from "@/features/sources/types/source.types";
@@ -35,5 +36,30 @@ export const useTestConfigMutation = () => {
         throw new Error(getApiErrorMessage(error, "Bağlantı kurulamadı"));
       }
     },
+  });
+};
+
+export const useToggleSourceMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, enabled }: { id: number; enabled: boolean }) =>
+      SourceApi.setEnabled(id, enabled),
+    onSuccess: (_data, { enabled }) => {
+      queryClient.invalidateQueries({ queryKey: sourceKeys.list() });
+      toast.success(enabled ? "Kaynak etkinleştirildi." : "Kaynak devre dışı bırakıldı.");
+    },
+    onError: (error) => toast.error(getApiErrorMessage(error, "Kaynak güncellenemedi.")),
+  });
+};
+
+export const useDeleteSourceMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => SourceApi.deleteSource(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: sourceKeys.list() });
+      toast.success("Kaynak silindi.");
+    },
+    onError: (error) => toast.error(getApiErrorMessage(error, "Kaynak silinemedi.")),
   });
 };

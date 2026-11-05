@@ -1,5 +1,7 @@
 "use client";
 
+import { useCan } from "@/features/auth/hooks/useCan";
+
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { PageHeader } from "@/shared/components/layout/PageHeader";
@@ -13,6 +15,7 @@ import { AddSourceModal } from "@/features/sources/components/AddSourceModal";
 export default function SourcesPage() {
   const { data: sources, isLoading, error } = useSourcesQuery();
   const [showModal, setShowModal] = useState(false);
+  const canEdit = useCan("edit");
 
   return (
     <div className="space-y-6">
@@ -20,9 +23,11 @@ export default function SourcesPage() {
         title="Kaynaklar"
         description="Log kaynaklarını yönetin ve izleyin"
         action={
-          <Button variant="primary" icon={<Plus size={16} />} onClick={() => setShowModal(true)}>
-            Yeni Kaynak Ekle
-          </Button>
+          canEdit ? (
+            <Button variant="primary" icon={<Plus size={16} />} onClick={() => setShowModal(true)}>
+              Yeni Kaynak Ekle
+            </Button>
+          ) : undefined
         }
       />
 
@@ -42,10 +47,9 @@ export default function SourcesPage() {
         <EmptyState
           title="Henüz kaynak yok"
           description="Log kaynaklarınızı ekleyerek izlemeye başlayın"
-          action={{
-            label: "İlk Kaynağı Ekle",
-            onClick: () => setShowModal(true),
-          }}
+          action={
+            canEdit ? { label: "İlk Kaynağı Ekle", onClick: () => setShowModal(true) } : undefined
+          }
         />
       )}
 

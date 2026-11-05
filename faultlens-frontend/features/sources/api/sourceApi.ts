@@ -43,4 +43,16 @@ export const SourceApi = {
     });
     return response.data.data;
   },
+
+  setEnabled: async (id: number, enabled: boolean): Promise<LogSourceDto> => {
+    const response = await apiClient({
+      method: HttpMethod.POST,
+      url: enabled ? Endpoints.SOURCES.ENABLE(id) : Endpoints.SOURCES.DISABLE(id),
+    });
+    return response.data.data;
+  },
+
+  deleteSource: async (id: number): Promise<void> => {
+    await apiClient({ method: HttpMethod.DELETE, url: Endpoints.SOURCES.DETAIL(id) });
+  },
 };

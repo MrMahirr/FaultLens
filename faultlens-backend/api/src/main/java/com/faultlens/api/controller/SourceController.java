@@ -11,7 +11,9 @@ import com.faultlens.collector.service.LogSourceService;
 import com.faultlens.common.dto.ApiResponse;
 import java.util.Map;
 import jakarta.validation.Valid;
+import com.faultlens.api.security.Roles;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -44,6 +46,7 @@ public class SourceController {
     /**
      * Creates a source.
      */
+    @PreAuthorize(Roles.CAN_EDIT)
     @PostMapping
     public ResponseEntity<ApiResponse<?>> create(@Valid @RequestBody LogSourceCreateRequest source) {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(toDto(service.create(source))));
@@ -52,6 +55,7 @@ public class SourceController {
     /**
      * Updates a source.
      */
+    @PreAuthorize(Roles.CAN_EDIT)
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<?>> update(@PathVariable Long id, @Valid @RequestBody LogSourceUpdateRequest source) {
         return ResponseEntity.ok(ApiResponse.ok(toDto(service.update(id, source))));
@@ -60,6 +64,7 @@ public class SourceController {
     /**
      * Deletes a source.
      */
+    @PreAuthorize(Roles.ADMIN_ONLY)
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
@@ -69,6 +74,7 @@ public class SourceController {
     /**
      * Tests source connectivity for an existing source.
      */
+    @PreAuthorize(Roles.CAN_EDIT)
     @PostMapping("/{id}/test")
     public ResponseEntity<ApiResponse<?>> test(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(Map.of("connected", service.testConnection(id))));
@@ -77,6 +83,7 @@ public class SourceController {
     /**
      * Tests source connectivity before saving.
      */
+    @PreAuthorize(Roles.CAN_EDIT)
     @PostMapping("/test-config")
     public ResponseEntity<ApiResponse<?>> testConfig(@Valid @RequestBody LogSourceCreateRequest request) {
         return ResponseEntity.ok(ApiResponse.ok(Map.of("connected", service.testConnection(request))));
@@ -85,6 +92,7 @@ public class SourceController {
     /**
      * Enables a source.
      */
+    @PreAuthorize(Roles.CAN_EDIT)
     @PostMapping("/{id}/enable")
     public ResponseEntity<ApiResponse<?>> enable(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(toDto(service.enable(id))));
@@ -93,6 +101,7 @@ public class SourceController {
     /**
      * Disables a source.
      */
+    @PreAuthorize(Roles.CAN_EDIT)
     @PostMapping("/{id}/disable")
     public ResponseEntity<ApiResponse<?>> disable(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(toDto(service.disable(id))));

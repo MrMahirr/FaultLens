@@ -1,5 +1,6 @@
 "use client";
 
+import { useCan } from "@/features/auth/hooks/useCan";
 import { useState } from "react";
 import { AlarmStats } from "@/features/alarms/components/AlarmStats";
 import { AlarmsList } from "@/features/alarms/components/AlarmsList";
@@ -13,6 +14,7 @@ type Tab = "alarms" | "rules";
 export default function AlarmsPage() {
   const [activeTab, setActiveTab] = useState<Tab>("alarms");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const canEdit = useCan("edit");
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-7xl mx-auto p-4 md:p-8 animate-fade-in">
@@ -25,9 +27,11 @@ export default function AlarmsPage() {
             Sistem durumunu, alarmları ve tetikleyici kuralları yönetin.
           </p>
         </div>
-        <Button variant="primary" icon={<Plus size={16} />} onClick={() => setIsModalOpen(true)}>
-          Yeni Kural Ekle
-        </Button>
+        {canEdit && (
+          <Button variant="primary" icon={<Plus size={16} />} onClick={() => setIsModalOpen(true)}>
+            Yeni Kural Ekle
+          </Button>
+        )}
       </div>
 
       <AlarmStats />

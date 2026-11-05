@@ -1,5 +1,6 @@
 "use client";
 
+import { useCan } from "@/features/auth/hooks/useCan";
 import { useCallback, useMemo, useState } from "react";
 import Swal from "sweetalert2";
 import { DataTable, type DataTableColumnDef } from "@/shared/components/ui/Table";
@@ -51,6 +52,8 @@ export function AlarmsList() {
   const acknowledgeMutation = useAcknowledgeAlarmMutation();
   const resolveMutation = useResolveAlarmMutation();
   const deleteMutation = useDeleteAlarmMutation();
+  const canEdit = useCan("edit");
+  const canDelete = useCan("delete");
 
   const alarms = data?.content ?? [];
   const isMutating =
@@ -149,7 +152,7 @@ export function AlarmsList() {
           const alarm = row.original;
           return (
             <div className="flex items-center gap-1 whitespace-nowrap">
-              {alarm.status === AlarmStatus.ACTIVE && (
+              {canEdit && alarm.status === AlarmStatus.ACTIVE && (
                 <Button
                   variant="secondary"
                   size="sm"
@@ -163,7 +166,7 @@ export function AlarmsList() {
                   aria-label="Üstlen"
                 />
               )}
-              {alarm.status !== AlarmStatus.RESOLVED && (
+              {canEdit && alarm.status !== AlarmStatus.RESOLVED && (
                 <Button
                   variant="secondary"
                   size="sm"
@@ -177,25 +180,27 @@ export function AlarmsList() {
                   aria-label="Çöz"
                 />
               )}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-error hover:bg-error/10 hover:text-error"
-                icon={<Trash2 size={14} />}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  void confirmDelete(alarm.id);
-                }}
-                disabled={isMutating}
-                title="Sil"
-                aria-label="Sil"
-              />
+              {canDelete && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-error hover:bg-error/10 hover:text-error"
+                  icon={<Trash2 size={14} />}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    void confirmDelete(alarm.id);
+                  }}
+                  disabled={isMutating}
+                  title="Sil"
+                  aria-label="Sil"
+                />
+              )}
             </div>
           );
         },
       },
     ],
-    [acknowledgeMutation, resolveMutation, isMutating, confirmDelete],
+    [acknowledgeMutation, resolveMutation, isMutating, confirmDelete, canEdit, canDelete],
   );
 
   return (

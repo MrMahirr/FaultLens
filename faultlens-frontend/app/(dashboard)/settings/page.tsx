@@ -2,13 +2,15 @@
 
 import { Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Palette, User, Bell, Settings2 } from "lucide-react";
+import { Palette, User, Bell, Settings2, Users } from "lucide-react";
 import { AppearanceSettings } from "@/features/settings/components/AppearanceSettings";
 import { AccountSettings } from "@/features/settings/components/AccountSettings";
 import { NotificationSettings } from "@/features/settings/components/NotificationSettings";
 import { SystemSettings } from "@/features/settings/components/SystemSettings";
+import { UserManagement } from "@/features/settings/components/UserManagement";
+import { useCan } from "@/features/auth/hooks/useCan";
 
-const TAB_IDS = ["appearance", "account", "notifications", "system"] as const;
+const TAB_IDS = ["appearance", "account", "notifications", "system", "users"] as const;
 type TabId = (typeof TAB_IDS)[number];
 
 function isTabId(value: string | null): value is TabId {
@@ -20,21 +22,21 @@ interface TabDefinition {
   label: string;
   icon: React.ReactNode;
   component: React.ReactNode;
+  /** Hidden from non-admins (the API rejects them anyway). */
+  adminOnly?: boolean;
 }
 
 function SettingsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const tabQuery = searchParams.get("tab");
-
-  // The URL is the single source of truth for the selected tab.
-  const activeTab: TabId = isTabId(tabQuery) ? tabQuery : "appearance";
+  const isAdmin = useCan("manageUsers");
 
   const handleTabChange = (tabId: TabId) => {
     router.replace(`/settings?tab=${tabId}`);
   };
 
-  const TABS: TabDefinition[] = [
+  const ALL_TABS: TabDefinition[] = [
     {
       id: "appearance",
       label: "Görünüm",
@@ -58,8 +60,21 @@ function SettingsContent() {
       label: "Sistem",
       icon: <Settings2 size={18} />,
       component: <SystemSettings />,
+      adminOnly: true,
+    },
+    {
+      id: "users",
+      label: "Kullanıcılar",
+      icon: <Users size={18} />,
+      component: <UserManagement />,
+      adminOnly: true,
     },
   ];
+  const TABS = ALL_TABS.filter((tab) => isAdmin || !tab.adminOnly);
+
+  // The URL is the single source of truth for the selected tab.
+  const activeTab: TabId =
+    isTabId(tabQuery) && TABS.some((tab) => tab.id === tabQuery) ? tabQuery : "appearance";
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-5xl mx-auto p-4 md:p-8 animate-fade-in">

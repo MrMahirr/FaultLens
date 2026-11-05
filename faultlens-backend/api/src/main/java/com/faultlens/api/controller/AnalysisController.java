@@ -2,7 +2,9 @@ package com.faultlens.api.controller;
 
 import com.faultlens.api.service.AnalysisQueryService;
 import com.faultlens.common.dto.ApiResponse;
+import com.faultlens.api.security.Roles;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,6 +33,7 @@ public class AnalysisController {
     /**
      * Clears history.
      */
+    @PreAuthorize(Roles.ADMIN_ONLY)
     @org.springframework.web.bind.annotation.DeleteMapping
     public ResponseEntity<ApiResponse<?>> deleteHistory(@RequestParam(required = false) Long sourceId) {
         service.deleteHistory(sourceId);
@@ -48,6 +51,7 @@ public class AnalysisController {
     /**
      * Triggers manual analysis for a group.
      */
+    @PreAuthorize(Roles.CAN_EDIT)
     @PostMapping("/trigger/{groupId}")
     public ResponseEntity<ApiResponse<?>> trigger(@PathVariable Long groupId) {
         return ResponseEntity.ok(ApiResponse.ok(service.trigger(groupId)));

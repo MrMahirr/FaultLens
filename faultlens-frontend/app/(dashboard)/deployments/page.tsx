@@ -1,5 +1,6 @@
 "use client";
 
+import { useCan } from "@/features/auth/hooks/useCan";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Plus, Rocket, AlertCircle, Search, Terminal, ExternalLink } from "lucide-react";
@@ -74,6 +75,7 @@ function getEnvLabel(env: DeploymentEnvironment) {
 export default function DeploymentsPage() {
   const { data: deployments, isLoading, error } = useDeploymentsQuery();
   const createDeployment = useCreateDeploymentMutation();
+  const canEdit = useCan("edit");
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
     serviceName: "",
@@ -116,9 +118,11 @@ export default function DeploymentsPage() {
         title="Dağıtımlar"
         description="Deployment geçmişi ve hata korelasyonları"
         action={
-          <Button variant="primary" icon={<Plus size={16} />} onClick={() => setShowModal(true)}>
-            Yeni Deployment
-          </Button>
+          canEdit ? (
+            <Button variant="primary" icon={<Plus size={16} />} onClick={() => setShowModal(true)}>
+              Yeni Deployment
+            </Button>
+          ) : undefined
         }
       />
 
@@ -264,10 +268,9 @@ export default function DeploymentsPage() {
           icon={<Rocket size={28} />}
           title="Henüz deployment yok"
           description="İlk deployment kaydını oluşturun"
-          action={{
-            label: "Deployment Ekle",
-            onClick: () => setShowModal(true),
-          }}
+          action={
+            canEdit ? { label: "Deployment Ekle", onClick: () => setShowModal(true) } : undefined
+          }
         />
       )}
 

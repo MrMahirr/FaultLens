@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { API, ok, server } from "@/test/msw/server";
-import { renderWithQuery } from "@/test/utils";
+import { renderWithQuery, signInAs } from "@/test/utils";
 import { AlarmRulesList } from "./AlarmRulesList";
 import { CreateRuleModal } from "./CreateRuleModal";
 
@@ -29,6 +29,7 @@ const storedRule = {
 };
 
 beforeEach(() => {
+  signInAs("EDITOR");
   vi.mocked(Swal.fire).mockReset();
   vi.spyOn(toast, "success").mockImplementation(() => "");
   vi.spyOn(toast, "error").mockImplementation(() => "");
