@@ -116,6 +116,7 @@ export function SystemSettings() {
             <option value="15">15 Gün</option>
             <option value="30">30 Gün</option>
             <option value="90">90 Gün</option>
+            <option value="120">120 Gün (4 ay)</option>
             <option value="0">Süresiz (Silme)</option>
           </select>
         </div>
