@@ -15,6 +15,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -24,6 +25,8 @@ public class CollectorOrchestrator {
     private final LogEventProducer producer;
     private final Map<com.faultlens.common.enums.LogSourceType, LogSourceAdapter> adapters;
     private final Map<Long, Future<?>> runningTasks = new ConcurrentHashMap<>();
+    /** Latest delivery time per source not yet written; one UPDATE per source per flush. */
+    private final Map<Long, Instant> pendingLastSeen = new ConcurrentHashMap<>();
     private final ExecutorService executorService = Executors.newCachedThreadPool(runnable -> {
         Thread thread = new Thread(runnable);
         thread.setName("faultlens-collector-" + thread.threadId());
@@ -64,8 +67,10 @@ public class CollectorOrchestrator {
             return;
         }
         Future<?> future = executorService.submit(() -> adapter.startStreaming(source, event -> {
-            source.setLastSeenAt(Instant.now());
-            repository.save(source);
+            Instant now = Instant.now();
+            // In memory for the adapter (resume point on retry); persisted by flushLastSeen().
+            source.setLastSeenAt(now);
+            pendingLastSeen.merge(source.getId(), now, (a, b) -> a.isAfter(b) ? a : b);
             producer.send(event);
         }));
         runningTasks.put(source.getId(), future);
@@ -108,6 +113,27 @@ public class CollectorOrchestrator {
     }
 
     /**
+     * Persists the pending last-seen times. Runs every 10 s instead of one write per log line
+     * (a busy source produced one UPDATE per event).
+     */
+    @Scheduled(fixedDelayString = "${faultlens.collector.last-seen-flush-ms:10000}")
+    public void flushLastSeen() {
+        for (Long sourceId : List.copyOf(pendingLastSeen.keySet())) {
+            Instant seenAt = pendingLastSeen.remove(sourceId);
+            if (seenAt == null) {
+                continue;
+            }
+            try {
+                repository.touchLastSeenAt(sourceId, seenAt);
+            } catch (RuntimeException ex) {
+                // keep it for the next flush unless something newer arrived meanwhile
+                pendingLastSeen.merge(sourceId, seenAt, (a, b) -> a.isAfter(b) ? a : b);
+                log.warn("Could not persist lastSeenAt for source {}", sourceId, ex);
+            }
+        }
+    }
+
+    /**
      * Stops all running adapters.
      */
     @PreDestroy
@@ -115,5 +141,6 @@ public class CollectorOrchestrator {
         List<Long> sourceIds = List.copyOf(runningTasks.keySet());
         sourceIds.forEach(this::stopSource);
         executorService.shutdownNow();
+        flushLastSeen();
     }
 }
