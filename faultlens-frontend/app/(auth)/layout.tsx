@@ -13,8 +13,6 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
   useEffect(() => {
     if (token) {
-      // Sync cookie for existing users who only have token in localStorage
-      document.cookie = `faultlens_token=${token}; path=/; max-age=86400; SameSite=Lax`;
       router.replace(mustChangePassword ? "/change-password" : "/dashboard");
     }
   }, [token, mustChangePassword, router]);

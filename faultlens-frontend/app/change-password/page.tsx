@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { ShieldAlert } from "lucide-react";
 import { useAuthStore } from "@/features/auth/store/auth.store";
 import { ChangePasswordForm } from "@/features/auth/components/ChangePasswordForm";
-import { useAuthHydrated } from "@/features/auth/hooks/useAuthHydrated";
+import { useSession } from "@/features/auth/hooks/useSession";
 
 /**
  * Standalone (no sidebar) page. Users created by bootstrap, or whose password
@@ -18,13 +18,16 @@ export default function ChangePasswordPage() {
   const token = useAuthStore((state) => state.token);
   const mustChangePassword = useAuthStore((state) => state.user?.mustChangePassword ?? false);
   const logout = useAuthStore((state) => state.logout);
-  const hydrated = useAuthHydrated();
+  const session = useSession();
 
   useEffect(() => {
-    if (hydrated && !token) router.replace("/login");
-  }, [hydrated, token, router]);
+    if (session === "anonymous") {
+      logout();
+      router.replace("/login");
+    }
+  }, [session, logout, router]);
 
-  if (!hydrated || !token) return null;
+  if (session !== "authenticated" || !token) return null;
 
   const handleLogout = () => {
     revokeSession();

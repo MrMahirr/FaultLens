@@ -7,7 +7,7 @@ import { Sidebar } from "@/shared/components/layout/Sidebar";
 import { Topbar } from "@/shared/components/layout/Topbar";
 import { useUIStore } from "@/shared/store/ui.store";
 import { useAuthStore } from "@/features/auth/store/auth.store";
-import { useAuthHydrated } from "@/features/auth/hooks/useAuthHydrated";
+import { useSession } from "@/features/auth/hooks/useSession";
 import { GlobalNotificationListener } from "@/shared/components/layout/GlobalNotificationListener";
 import { refreshSession } from "@/shared/api/session";
 import { decodeJwt } from "@/shared/lib/jwt";
@@ -17,12 +17,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const token = useAuthStore((state) => state.token);
   const mustChangePassword = useAuthStore((state) => state.user?.mustChangePassword ?? false);
   const router = useRouter();
-  const hydrated = useAuthHydrated();
+  const session = useSession();
 
   useEffect(() => {
-    // Before hydration the store still holds its initial state (no token) — do not redirect yet.
-    if (!hydrated) return;
-    if (!token) {
+    // Before hydration / while the session is restored there is no token yet — do not redirect.
+    if (session === "loading") return;
+    if (session === "anonymous" || !token) {
       // Also clears the session cookies, so proxy.ts does not bounce /login back here.
       useAuthStore.getState().logout();
       router.replace("/login");
@@ -34,10 +34,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       const exp = decodeJwt(token)?.exp;
       if (exp && exp * 1000 <= Date.now()) void refreshSession();
     }
-  }, [hydrated, token, mustChangePassword, router]);
+  }, [session, token, mustChangePassword, router]);
 
   // Prevent flash of content during initial SSR or before redirect
-  if (!hydrated || !token || mustChangePassword) {
+  if (session !== "authenticated" || !token || mustChangePassword) {
     return (
       <div className="min-h-screen bg-bg-primary flex items-center justify-center">
         <div className="w-10 h-10 border-2 border-accent border-t-transparent rounded-full animate-spin" />

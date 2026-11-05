@@ -3,35 +3,18 @@ import type { NextRequest } from "next/server";
 
 const publicPaths = ["/login"];
 
-/** Mirrors the cookie names in features/auth/store/auth.store.ts. */
-const TOKEN_COOKIE = "faultlens_token";
+/** Mirrors features/auth/store/auth.store.ts. */
 const SESSION_COOKIE = "faultlens_session";
+const LEGACY_TOKEN_COOKIE = "faultlens_token";
 
 /**
- * Seconds-since-epoch expiry of a JWT, or null if it cannot be read. Not a verification (the
- * proxy has no key): it only spares an obviously expired session a round trip to the API.
- */
-export function tokenExpiry(token: string): number | null {
-  try {
-    const payload = token.split(".")[1];
-    if (!payload) return null;
-    const json = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
-    const exp = JSON.parse(json).exp;
-    return typeof exp === "number" ? exp : null;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Whether the browser can probably reach the dashboard: a live access token, or an expired one
- * plus the session marker (the client will renew it with the HttpOnly refresh cookie).
+ * Whether the browser has an unexpired session: the marker cookie holds the epoch second its
+ * refresh cookie expires. Not a verification (the refresh cookie is HttpOnly and scoped to the
+ * API); it only spares an expired session a round trip, the API stays the authority.
  */
 export function hasSession(request: NextRequest, nowSec = Math.floor(Date.now() / 1000)): boolean {
-  const token = request.cookies.get(TOKEN_COOKIE)?.value;
-  const exp = token ? tokenExpiry(token) : null;
-  if (exp !== null && exp > nowSec) return true;
-  return request.cookies.has(SESSION_COOKIE);
+  const expiresAt = Number(request.cookies.get(SESSION_COOKIE)?.value);
+  return Number.isFinite(expiresAt) && expiresAt > nowSec;
 }
 
 export function proxy(request: NextRequest) {
@@ -61,10 +44,11 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Protected paths need a session; drop a stale access-token cookie on the way to /login.
+  // Protected paths need a session; drop stale cookies on the way to /login.
   if (!signedIn && !publicPaths.includes(pathname)) {
     const response = NextResponse.redirect(new URL("/login", request.url));
-    response.cookies.delete(TOKEN_COOKIE);
+    response.cookies.delete(SESSION_COOKIE);
+    response.cookies.delete(LEGACY_TOKEN_COOKIE);
     return response;
   }
 
