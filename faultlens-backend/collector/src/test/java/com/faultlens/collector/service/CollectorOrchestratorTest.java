@@ -144,7 +144,8 @@ class CollectorOrchestratorTest {
         orchestrator.startSource(source);
         assertThat(delivered.await(5, TimeUnit.SECONDS)).isTrue();
 
-        verify(producer, times(50)).send(any());
+        // the last line is sent when the stream ends (multi-line aggregator flush)
+        verify(producer, timeout(2000).times(50)).send(any());
         verify(repository, never()).save(any());
         verify(repository, never()).touchLastSeenAt(anyLong(), any());
         assertThat(source.getLastSeenAt()).as("kept in memory as the adapter's resume point").isNotNull();
@@ -171,6 +172,7 @@ class CollectorOrchestratorTest {
 
         orchestrator.startSource(source);
         assertThat(delivered.await(5, TimeUnit.SECONDS)).isTrue();
+        verify(producer, timeout(2000)).send(any());
         orchestrator.flushLastSeen();
         orchestrator.flushLastSeen();
 

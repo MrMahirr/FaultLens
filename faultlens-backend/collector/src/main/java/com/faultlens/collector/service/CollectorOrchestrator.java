@@ -27,6 +27,7 @@ public class CollectorOrchestrator {
     private final Map<Long, Future<?>> runningTasks = new ConcurrentHashMap<>();
     /** Latest delivery time per source not yet written; one UPDATE per source per flush. */
     private final Map<Long, Instant> pendingLastSeen = new ConcurrentHashMap<>();
+    private final Map<Long, MultilineAggregator> aggregators = new ConcurrentHashMap<>();
     private final ExecutorService executorService = Executors.newCachedThreadPool(runnable -> {
         Thread thread = new Thread(runnable);
         thread.setName("faultlens-collector-" + thread.threadId());
@@ -66,13 +67,23 @@ public class CollectorOrchestrator {
             log.warn("No adapter registered for source type {}", source.getType());
             return;
         }
-        Future<?> future = executorService.submit(() -> adapter.startStreaming(source, event -> {
+        // Adapters deliver one event per line; the aggregator joins multi-line events (stack traces).
+        MultilineAggregator aggregator = new MultilineAggregator(event -> {
             Instant now = Instant.now();
             // In memory for the adapter (resume point on retry); persisted by flushLastSeen().
             source.setLastSeenAt(now);
             pendingLastSeen.merge(source.getId(), now, (a, b) -> a.isAfter(b) ? a : b);
             producer.send(event);
-        }));
+        });
+        aggregators.put(source.getId(), aggregator);
+        Future<?> future = executorService.submit(() -> {
+            try {
+                adapter.startStreaming(source, aggregator);
+            } finally {
+                aggregator.flush();
+                aggregators.remove(source.getId(), aggregator);
+            }
+        });
         runningTasks.put(source.getId(), future);
     }
 
@@ -110,6 +121,15 @@ public class CollectorOrchestrator {
     public boolean testSource(LogSource source) {
         LogSourceAdapter adapter = adapters.get(source.getType());
         return adapter != null && adapter.testConnection(source);
+    }
+
+    /**
+     * Sends multi-line events whose source has been quiet for a moment (the last line of a stack
+     * trace has no "next line" that would close it).
+     */
+    @Scheduled(fixedDelay = 250)
+    public void flushIdleEvents() {
+        aggregators.values().forEach(MultilineAggregator::flushIfIdle);
     }
 
     /**
