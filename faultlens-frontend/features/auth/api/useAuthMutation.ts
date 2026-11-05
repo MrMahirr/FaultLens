@@ -1,28 +1,58 @@
 import { useMutation } from "@tanstack/react-query";
-import { AuthApi, type LoginRequest, type LoginResponse } from "./authApi";
+import {
+  AuthApi,
+  type ChangePasswordRequest,
+  type LoginRequest,
+  type LoginResponse,
+} from "./authApi";
 import { useAuthStore } from "@/features/auth/store/auth.store";
 import { decodeJwt } from "@/shared/lib/jwt";
+import { getApiErrorMessage } from "@/shared/api/errors";
 
 export const useLoginMutation = () => {
   const loginStore = useAuthStore.getState().login;
 
   return useMutation({
-    mutationFn: (data: LoginRequest) => AuthApi.login(data),
+    mutationFn: async (data: LoginRequest) => {
+      try {
+        return await AuthApi.login(data);
+      } catch (error) {
+        // Surface the backend message (e.g. "Invalid username or password") instead of
+        // axios' generic "Request failed with status code 401".
+        throw new Error(getApiErrorMessage(error, "Geçersiz kullanıcı adı veya şifre"));
+      }
+    },
     onSuccess: (data: LoginResponse) => {
       const payload = decodeJwt(data.token);
       let username = "admin";
       let role = "ADMIN";
-      
+
       if (payload) {
         username = payload.sub;
-        role = payload.roles?.[0]?.replace('ROLE_', '') || "ADMIN";
+        role = payload.roles?.[0]?.replace("ROLE_", "") || "ADMIN";
       }
 
-      loginStore(data.token, { username, role });
+      loginStore(data.token, {
+        username,
+        role,
+        mustChangePassword: data.mustChangePassword,
+      });
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.error?.message || error.message || "Geçersiz kullanıcı adı veya şifre";
-      throw new Error(message);
-    }
+  });
+};
+
+/**
+ * Changes the current user's password and swaps in the fresh token returned by
+ * the backend (the old one may still carry the password-change restriction).
+ */
+export const useChangePasswordMutation = () => {
+  return useMutation({
+    mutationFn: (data: ChangePasswordRequest) => AuthApi.changePassword(data),
+    onSuccess: (data: LoginResponse) => {
+      const { user, login } = useAuthStore.getState();
+      if (user) {
+        login(data.token, { ...user, mustChangePassword: data.mustChangePassword });
+      }
+    },
   });
 };

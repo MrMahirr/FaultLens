@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { AnalysisType, Severity } from "@/shared/types/common.types";
 import { motion } from "framer-motion";
 import { X, Clock, Server, Layers, Code, Lightbulb, Brain } from "lucide-react";
 import { SeverityBadge } from "@/features/logs/components/SeverityBadge";
@@ -9,6 +11,9 @@ import type { LogEntryDto } from "@/features/logs/types/log.types";
 import { formatDate } from "@/shared/lib/utils";
 import { cn } from "@/shared/lib/utils";
 import { useLogDetailQuery } from "@/features/logs/api/useLogQuery";
+
+/** Severities the analyzer receives (processor forwards only these to log-errors). */
+const ANALYZED_SEVERITIES = new Set<string>([Severity.ERROR, Severity.CRITICAL]);
 
 /* ── Props ─────────────────────────────────────────────────── */
 
@@ -34,7 +39,7 @@ function LogDetailPanel({ log, onClose }: LogDetailPanelProps) {
       className={cn(
         "fixed right-0 top-0 h-screen w-full sm:w-[480px] z-50",
         "bg-bg-secondary border-l border-border-default",
-        "shadow-2xl overflow-y-auto"
+        "shadow-2xl overflow-y-auto",
       )}
     >
       {/* Header */}
@@ -59,21 +64,15 @@ function LogDetailPanel({ log, onClose }: LogDetailPanelProps) {
           <div className="flex items-center gap-2">
             <Clock size={14} className="text-text-muted shrink-0" />
             <div>
-              <p className="text-[10px] text-text-muted uppercase tracking-wider">
-                Zaman
-              </p>
-              <p className="text-xs font-mono text-text-primary">
-                {formatDate(log.timestamp)}
-              </p>
+              <p className="text-[10px] text-text-muted uppercase tracking-wider">Zaman</p>
+              <p className="text-xs font-mono text-text-primary">{formatDate(log.timestamp)}</p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
             <Server size={14} className="text-text-muted shrink-0" />
             <div>
-              <p className="text-[10px] text-text-muted uppercase tracking-wider">
-                Kaynak
-              </p>
+              <p className="text-[10px] text-text-muted uppercase tracking-wider">Kaynak</p>
               <p className="text-xs font-mono text-text-primary">
                 {log.serviceName ?? `Source #${log.sourceId}`}
               </p>
@@ -83,12 +82,8 @@ function LogDetailPanel({ log, onClose }: LogDetailPanelProps) {
           <div className="flex items-center gap-2">
             <Layers size={14} className="text-text-muted shrink-0" />
             <div>
-              <p className="text-[10px] text-text-muted uppercase tracking-wider">
-                Namespace
-              </p>
-              <p className="text-xs font-mono text-text-primary">
-                {log.namespace}
-              </p>
+              <p className="text-[10px] text-text-muted uppercase tracking-wider">Namespace</p>
+              <p className="text-xs font-mono text-text-primary">{log.namespace}</p>
             </div>
           </div>
 
@@ -96,12 +91,8 @@ function LogDetailPanel({ log, onClose }: LogDetailPanelProps) {
             <div className="flex items-center gap-2">
               <Code size={14} className="text-text-muted shrink-0" />
               <div>
-                <p className="text-[10px] text-text-muted uppercase tracking-wider">
-                  Pod
-                </p>
-                <p className="text-xs font-mono text-text-primary">
-                  {log.podName}
-                </p>
+                <p className="text-[10px] text-text-muted uppercase tracking-wider">Pod</p>
+                <p className="text-xs font-mono text-text-primary">{log.podName}</p>
               </div>
             </div>
           )}
@@ -113,9 +104,7 @@ function LogDetailPanel({ log, onClose }: LogDetailPanelProps) {
             Mesaj
           </h3>
           <Card variant="bordered" padding="sm">
-            <p className="text-sm text-text-primary leading-relaxed">
-              {log.message}
-            </p>
+            <p className="text-sm text-text-primary leading-relaxed">{log.message}</p>
           </Card>
         </div>
 
@@ -136,7 +125,7 @@ function LogDetailPanel({ log, onClose }: LogDetailPanelProps) {
                         ? "text-error font-medium"
                         : line.trim().startsWith("at")
                           ? "text-text-muted pl-4"
-                          : "text-text-secondary"
+                          : "text-text-secondary",
                     )}
                   >
                     {line}
@@ -159,13 +148,20 @@ function LogDetailPanel({ log, onClose }: LogDetailPanelProps) {
             </div>
           ) : analyses && analyses.length > 0 ? (
             <div className="space-y-3">
-              {analyses.map((analysis: any, i: number) => (
-                <Card key={analysis.id || i} variant="glass" padding="sm" className="border-l-2 border-l-accent">
+              {analyses.map((analysis, i) => (
+                <Card
+                  key={analysis.id || i}
+                  variant="glass"
+                  padding="sm"
+                  className="border-l-2 border-l-accent"
+                >
                   <div className="flex items-start gap-2">
                     <Brain size={14} className="text-accent shrink-0 mt-0.5" />
                     <div className="flex-1">
                       <p className="text-xs font-semibold text-text-primary uppercase tracking-wider">
-                        {analysis.engineType === "AI_ANALYSIS" ? "AI Analizi" : "Kural Tabanlı Analiz"}
+                        {analysis.engineType === AnalysisType.RULE_BASED
+                          ? "Kural Tabanlı Analiz"
+                          : "AI Analizi"}
                       </p>
                       <p className="text-xs text-text-secondary mt-1">
                         <strong>Kök Neden:</strong> {analysis.rootCause}
@@ -183,28 +179,30 @@ function LogDetailPanel({ log, onClose }: LogDetailPanelProps) {
                 </Card>
               ))}
             </div>
+          ) : !ANALYZED_SEVERITIES.has(log.severity) ? (
+            // Only ERROR/CRITICAL entries go to the analyzer (log-errors topic).
+            <p className="text-xs text-text-muted">
+              {log.severity} seviyesindeki loglar analiz edilmez; yalnızca ERROR ve CRITICAL loglar
+              için kök neden analizi yapılır.
+            </p>
           ) : log.groupId ? (
             <Card variant="glass" padding="sm">
               <div className="flex items-start gap-2">
-                <Lightbulb
-                  size={14}
-                  className="text-warning shrink-0 mt-0.5"
-                />
+                <Lightbulb size={14} className="text-warning shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm text-text-primary">
-                    Bu log bir hata grubuna ait. Analiz sayfasından detaylı kök
-                    neden analizi görüntüleyebilirsiniz.
+                    Bu log bir hata grubuna ait. Grubun kök neden analizi Analizler sayfasında.
                   </p>
-                  <Button variant="ghost" size="sm" className="mt-2">
-                    Analize Git →
-                  </Button>
+                  <Link href="/analyses">
+                    <Button variant="ghost" size="sm" className="mt-2">
+                      Analize Git →
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </Card>
           ) : (
-            <p className="text-xs text-text-muted">
-              Bu log için henüz analiz bulunmuyor.
-            </p>
+            <p className="text-xs text-text-muted">Bu log için henüz analiz bulunmuyor.</p>
           )}
         </div>
       </div>

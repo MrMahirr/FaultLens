@@ -1,28 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/features/auth/store/auth.store";
+import { useAuthHydrated } from "@/features/auth/hooks/useAuthHydrated";
 
-export default function AuthLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AuthLayout({ children }: { children: React.ReactNode }) {
   const token = useAuthStore((state) => state.token);
+  const mustChangePassword = useAuthStore((state) => state.user?.mustChangePassword ?? false);
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
+  const hydrated = useAuthHydrated();
 
   useEffect(() => {
-    setMounted(true);
     if (token) {
       // Sync cookie for existing users who only have token in localStorage
       document.cookie = `faultlens_token=${token}; path=/; max-age=86400; SameSite=Lax`;
-      router.replace("/dashboard");
+      router.replace(mustChangePassword ? "/change-password" : "/dashboard");
     }
-  }, [token, router]);
+  }, [token, mustChangePassword, router]);
 
-  if (!mounted) return null;
+  if (!hydrated) return null;
 
   // If already authenticated, show empty loader during transition
   if (token) {

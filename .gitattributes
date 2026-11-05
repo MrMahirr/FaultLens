@@ -1,0 +1,6 @@
+# Scripts run by sh/bash must keep LF line endings even on Windows checkouts
+# (core.autocrlf=true); with CRLF, sh reads a trailing carriage return on every
+# line and e.g. the git hook's `cd faultlens-frontend` fails.
+*.sh text eol=lf
+mvnw text eol=lf
+faultlens-frontend/.husky/* text eol=lf

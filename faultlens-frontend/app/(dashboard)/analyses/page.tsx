@@ -5,7 +5,10 @@ import { PageHeader } from "@/shared/components/layout/PageHeader";
 import { EmptyState } from "@/shared/components/feedback/EmptyState";
 import { SkeletonCard } from "@/shared/components/ui/Skeleton";
 import { AnalysisCard } from "@/features/analyses/components/AnalysisCard";
-import { useAnalysesQuery, useDeleteAnalysisHistory } from "@/features/analyses/api/useAnalysisQuery";
+import {
+  useAnalysesQuery,
+  useDeleteAnalysisHistory,
+} from "@/features/analyses/api/useAnalysisQuery";
 import { useSourcesQuery } from "@/features/sources/api/useSourceQuery";
 import { Brain, Trash2, ChevronLeft, ChevronRight, Filter } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
@@ -18,7 +21,11 @@ export default function AnalysesPage() {
   const size = 10;
 
   const { data: sources } = useSourcesQuery();
-  const { data: analysisData, isLoading } = useAnalysesQuery({ sourceId: selectedSourceId, page, size });
+  const { data: analysisData, isLoading } = useAnalysesQuery({
+    sourceId: selectedSourceId,
+    page,
+    size,
+  });
   const deleteHistory = useDeleteAnalysisHistory();
 
   const analyses = analysisData?.content || [];
@@ -26,14 +33,14 @@ export default function AnalysesPage() {
 
   const handleClearHistory = async () => {
     const result = await Swal.fire({
-      title: 'Emin misiniz?',
+      title: "Emin misiniz?",
       text: "Seçili projenin analiz geçmişini silmek istediğinize emin misiniz? Bu işlem geri alınamaz.",
-      icon: 'warning',
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#3b82f6',
-      confirmButtonText: 'Evet, Sil',
-      cancelButtonText: 'İptal'
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#3b82f6",
+      confirmButtonText: "Evet, Sil",
+      cancelButtonText: "İptal",
     });
 
     if (result.isConfirmed) {
@@ -44,7 +51,7 @@ export default function AnalysesPage() {
         },
         onError: () => {
           toast.error("Geçmiş temizlenirken bir hata oluştu.");
-        }
+        },
       });
     }
   };
@@ -77,8 +84,8 @@ export default function AnalysesPage() {
             </select>
           </div>
 
-          <Button 
-            variant="danger" 
+          <Button
+            variant="danger"
             onClick={handleClearHistory}
             disabled={deleteHistory.isPending || analyses.length === 0}
             className="flex items-center gap-2"
@@ -98,7 +105,7 @@ export default function AnalysesPage() {
       ) : analyses.length > 0 ? (
         <div className="space-y-4">
           {analyses.map((analysis, index) => {
-            const sourceName = sources?.find(s => s.id === analysis.sourceId)?.name;
+            const sourceName = sources?.find((s) => s.id === analysis.sourceId)?.name;
             return (
               <AnalysisCard
                 key={analysis.id}
@@ -139,7 +146,11 @@ export default function AnalysesPage() {
         <EmptyState
           icon={<Brain size={28} />}
           title="Henüz analiz yok"
-          description={selectedSourceId ? "Bu proje için henüz bir hata analizi yapılmamış." : "Sistemde henüz bir hata analizi bulunmuyor."}
+          description={
+            selectedSourceId
+              ? "Bu proje için henüz bir hata analizi yapılmamış."
+              : "Sistemde henüz bir hata analizi bulunmuyor."
+          }
         />
       )}
     </div>

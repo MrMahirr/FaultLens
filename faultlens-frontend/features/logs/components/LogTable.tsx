@@ -1,8 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { type ColumnDef } from "@tanstack/react-table";
-import { DataTable } from "@/shared/components/ui/Table";
+import { DataTable, type DataTableColumnDef } from "@/shared/components/ui/Table";
 import { SeverityBadge } from "@/features/logs/components/SeverityBadge";
 import { Badge } from "@/shared/components/ui/Badge";
 import { Tooltip } from "@/shared/components/ui/Tooltip";
@@ -20,7 +19,7 @@ interface LogTableProps {
 /* ── Component ─────────────────────────────────────────────── */
 
 function LogTable({ data, loading = false, onRowClick }: LogTableProps) {
-  const columns = useMemo<ColumnDef<LogEntryDto, unknown>[]>(
+  const columns = useMemo<DataTableColumnDef<LogEntryDto>[]>(
     () => [
       {
         accessorKey: "timestamp",
@@ -38,10 +37,8 @@ function LogTable({ data, loading = false, onRowClick }: LogTableProps) {
       },
       {
         accessorKey: "severity",
-        header: "Severity",
-        cell: ({ getValue }) => (
-          <SeverityBadge severity={getValue() as LogEntryDto["severity"]} />
-        ),
+        header: "Seviye",
+        cell: ({ getValue }) => <SeverityBadge severity={getValue() as LogEntryDto["severity"]} />,
         size: 90,
       },
       {
@@ -61,9 +58,7 @@ function LogTable({ data, loading = false, onRowClick }: LogTableProps) {
           const message = getValue() as string;
           return (
             <Tooltip content={message} position="bottom">
-              <span className="text-sm text-text-primary">
-                {truncate(message, 80)}
-              </span>
+              <span className="text-sm text-text-primary">{truncate(message, 80)}</span>
             </Tooltip>
           );
         },
@@ -92,7 +87,7 @@ function LogTable({ data, loading = false, onRowClick }: LogTableProps) {
         size: 70,
       },
     ],
-    []
+    [],
   );
 
   return (

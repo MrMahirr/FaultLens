@@ -1,33 +1,34 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Sidebar } from "@/shared/components/layout/Sidebar";
 import { Topbar } from "@/shared/components/layout/Topbar";
 import { useUIStore } from "@/shared/store/ui.store";
 import { useAuthStore } from "@/features/auth/store/auth.store";
+import { useAuthHydrated } from "@/features/auth/hooks/useAuthHydrated";
 import { GlobalNotificationListener } from "@/shared/components/layout/GlobalNotificationListener";
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const sidebarOpen = useUIStore((state) => state.sidebarOpen);
   const token = useAuthStore((state) => state.token);
+  const mustChangePassword = useAuthStore((state) => state.user?.mustChangePassword ?? false);
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
+  const hydrated = useAuthHydrated();
 
   useEffect(() => {
-    setMounted(true);
+    // Before hydration the store still holds its initial state (no token) — do not redirect yet.
+    if (!hydrated) return;
     if (!token) {
       router.replace("/login");
+    } else if (mustChangePassword) {
+      router.replace("/change-password");
     }
-  }, [token, router]);
+  }, [hydrated, token, mustChangePassword, router]);
 
   // Prevent flash of content during initial SSR or before redirect
-  if (!mounted || !token) {
+  if (!hydrated || !token || mustChangePassword) {
     return (
       <div className="min-h-screen bg-bg-primary flex items-center justify-center">
         <div className="w-10 h-10 border-2 border-accent border-t-transparent rounded-full animate-spin" />
@@ -47,7 +48,7 @@ export default function DashboardLayout({
         transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
       >
         <GlobalNotificationListener />
-        
+
         {/* Topbar */}
         <Topbar />
 

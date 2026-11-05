@@ -1,7 +1,7 @@
 package com.faultlens.collector.adapter;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.model.Frame;
@@ -64,12 +64,15 @@ public class DockerAdapter implements LogSourceAdapter {
                 }
             };
             activeStreams.put(sourceId, callback);
-            client.logContainerCmd(containerId)
+            var command = client.logContainerCmd(containerId)
                     .withFollowStream(true)
                     .withStdOut(true)
-                    .withStdErr(true)
-                    .exec(callback)
-                    .awaitCompletion();
+                    .withStdErr(true);
+            Integer since = sinceEpochSeconds(source);
+            if (since != null) {
+                command = command.withSince(since);
+            }
+            command.exec(callback).awaitCompletion();
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         } catch (Exception ex) {
@@ -78,6 +81,19 @@ public class DockerAdapter implements LogSourceAdapter {
             closeActiveStream(sourceId);
             running.remove(sourceId);
         }
+    }
+
+    /**
+     * Where to resume reading: the last time this source delivered a line.
+     *
+     * <p>Without it Docker replays the container's whole log on every (re)start, so each backend
+     * restart stored the same lines again (seen: 99 distinct lines stored 917 times). A brand-new
+     * source (never seen) still reads the existing log once. Docker's {@code since} has second
+     * precision, so at most the lines of that one second can repeat.
+     */
+    static Integer sinceEpochSeconds(LogSource source) {
+        Instant lastSeen = source.getLastSeenAt();
+        return lastSeen == null ? null : Math.toIntExact(lastSeen.getEpochSecond());
     }
 
     /**

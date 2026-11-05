@@ -14,19 +14,23 @@ interface AnalysisDetailModalProps {
   sourceName?: string;
 }
 
-export function AnalysisDetailModal({ isOpen, onClose, analysis, sourceName }: AnalysisDetailModalProps) {
+export function AnalysisDetailModal({
+  isOpen,
+  onClose,
+  analysis,
+  sourceName,
+}: AnalysisDetailModalProps) {
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={`Analiz Detayı #${analysis.id}`}
-      size="lg"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title={`Analiz Detayı #${analysis.id}`} size="lg">
       <div className="space-y-6">
         <div className="flex flex-col gap-2 border-b border-border-default pb-4">
           <div className="flex items-center gap-2">
             {sourceName && (
-              <Badge variant="outline" size="md" className="border-border-default text-text-secondary bg-bg-secondary">
+              <Badge
+                variant="outline"
+                size="md"
+                className="border-border-default text-text-secondary bg-bg-secondary"
+              >
                 {sourceName}
               </Badge>
             )}
@@ -59,17 +63,19 @@ export function AnalysisDetailModal({ isOpen, onClose, analysis, sourceName }: A
           <div className="p-4 bg-bg-secondary/50 rounded-xl border border-border-default">
             <div className="flex items-center gap-2 mb-2">
               <Brain size={18} className="text-accent" />
-              <h4 className="text-sm font-bold text-text-primary uppercase tracking-wide">Kök Neden</h4>
+              <h4 className="text-sm font-bold text-text-primary uppercase tracking-wide">
+                Kök Neden
+              </h4>
             </div>
-            <p className="text-sm text-text-primary leading-relaxed">
-              {analysis.rootCause}
-            </p>
+            <p className="text-sm text-text-primary leading-relaxed">{analysis.rootCause}</p>
           </div>
 
           <div className="p-4 bg-bg-secondary/50 rounded-xl border border-border-default">
             <div className="flex items-center gap-2 mb-2">
               <Lightbulb size={18} className="text-warning" />
-              <h4 className="text-sm font-bold text-text-primary uppercase tracking-wide">Öneri ve Çözüm</h4>
+              <h4 className="text-sm font-bold text-text-primary uppercase tracking-wide">
+                Öneri ve Çözüm
+              </h4>
             </div>
             <pre className="text-sm text-text-secondary whitespace-pre-wrap font-body leading-relaxed">
               {analysis.suggestion}
@@ -81,9 +87,12 @@ export function AnalysisDetailModal({ isOpen, onClose, analysis, sourceName }: A
           <div className="p-4 rounded-xl bg-warning/5 border border-warning/20 flex items-start gap-3">
             <AlertTriangle size={18} className="text-warning shrink-0 mt-0.5" />
             <div>
-              <h4 className="text-sm font-bold text-warning mb-1">Etkilenen Dağıtım (Deployment)</h4>
+              <h4 className="text-sm font-bold text-warning mb-1">
+                Etkilenen Dağıtım (Deployment)
+              </h4>
               <p className="text-sm text-warning/90">
-                Bu hata <strong>{analysis.affectedDeployment}</strong> deployment&apos;ı ile ilişkili olabilir.
+                Bu hata <strong>{analysis.affectedDeployment}</strong> deployment&apos;ı ile
+                ilişkili olabilir.
               </p>
             </div>
           </div>

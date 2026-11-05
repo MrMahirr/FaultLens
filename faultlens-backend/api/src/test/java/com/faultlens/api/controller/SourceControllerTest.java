@@ -9,12 +9,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.faultlens.api.exception.GlobalExceptionHandler;
 import com.faultlens.api.mapper.ApiDtoMapper;
 import com.faultlens.collector.dto.LogSourceCreateRequest;
 import com.faultlens.collector.dto.LogSourceUpdateRequest;
 import com.faultlens.collector.model.LogSource;
+import com.faultlens.collector.service.CollectorOrchestrator;
 import com.faultlens.collector.service.LogSourceService;
 import com.faultlens.common.enums.LogSourceType;
 import java.util.List;
@@ -28,15 +29,41 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 class SourceControllerTest {
     private MockMvc mockMvc;
     private LogSourceService service;
+    private CollectorOrchestrator orchestrator;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     void setUp() {
         service = mock(LogSourceService.class);
+        orchestrator = mock(CollectorOrchestrator.class);
         ApiDtoMapper mapper = new ApiDtoMapper();
-        mockMvc = MockMvcBuilders.standaloneSetup(new SourceController(service, mapper))
+        mockMvc = MockMvcBuilders.standaloneSetup(new SourceController(service, mapper, orchestrator))
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
+    }
+
+    @Test
+    void statusReflectsWhetherTheCollectorIsReallyStreaming() throws Exception {
+        // Regression: the UI showed "Bağlı" for every source, even one the collector refused.
+        when(service.findAll()).thenReturn(List.of(
+                source(1L, true), source(2L, true), source(3L, false)));
+        when(orchestrator.isStreaming(1L)).thenReturn(true);
+        when(orchestrator.isStreaming(2L)).thenReturn(false);
+
+        mockMvc.perform(get("/api/v1/sources"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].status").value("CONNECTED"))
+                .andExpect(jsonPath("$.data[1].status").value("WARNING"))
+                .andExpect(jsonPath("$.data[2].status").value("DISCONNECTED"));
+    }
+
+    private static LogSource source(Long id, boolean enabled) {
+        LogSource source = new LogSource();
+        source.setId(id);
+        source.setName("source-" + id);
+        source.setType(LogSourceType.LOCAL_FILE);
+        source.setEnabled(enabled);
+        return source;
     }
 
     @Test

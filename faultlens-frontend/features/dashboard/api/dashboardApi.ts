@@ -2,6 +2,8 @@ import { apiClient } from "@/shared/api/client";
 import { Endpoints } from "@/shared/api/endpoints";
 import type { DashboardStats, ChartPoint } from "../types/dashboard.types";
 import { HttpMethod } from "@/shared/api/methods";
+import type { LogSourceDto } from "@/features/sources/types/source.types";
+import { ConnectionStatus } from "@/shared/types/common.types";
 
 export const DashboardApi = {
   getStats: async (): Promise<DashboardStats> => {
@@ -17,7 +19,10 @@ export const DashboardApi = {
     const groupsPage = groupsRes.data?.data || {};
     const analysesList = analysesRes.data?.data?.content || analysesRes.data?.data || [];
 
-    const activeSources = sourcesList.filter((s: any) => s.status === "CONNECTED" || s.enabled).length;
+    // "Bağlı" means the collector is streaming it right now, not merely enabled.
+    const activeSources = sourcesList.filter(
+      (s: LogSourceDto) => s.status === ConnectionStatus.CONNECTED,
+    ).length;
     const totalSources = sourcesList.length;
 
     const criticalCount = Number(statsData["CRITICAL"] || 0);

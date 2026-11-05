@@ -2,6 +2,8 @@
 
 Bu dosya mevcut `faultlens-backend` reposuna gore hazirlanmis ilerleme planidir. Repo sifirdan bos degildir: Maven multi-module yapi, temel paketler, entity/service/controller siniflari, Flyway migration'lari ve calisan bir `-DskipTests package` derlemesi vardir. Bu nedenle plan, mevcut kodu koruyarak eksikleri kapatma, sozlesmeleri netlestirme ve uretime hazir hale getirme akisi olarak tasarlanmistir.
 
+> **Guncel port sozlesmesi (2026-11-04):** API `3500`, frontend `3000`, yerel PostgreSQL `5433` (compose `5433:5432`), Redis `6379`, Kafka UI `8090`. WebSocket: `ws://localhost:3500/ws/logs`. Asagidaki eski adimlarda gecen `8080`/`5432` degerleri o anki durumu yansitir; dogrulama komutlari guncel portlara cekildi.
+
 ## Durum Takibi
 
 - [X] Mevcut modul yapisi ve derleme durumu incelendi
@@ -143,7 +145,7 @@ Bu dosya mevcut `faultlens-backend` reposuna gore hazirlanmis ilerleme planidir.
 - `docker-compose up -d`
 - `.\mvnw.cmd -q -pl api -am package -DskipTests`
 - `java -jar api/target/api-1.0.0-SNAPSHOT.jar`
-- `curl http://localhost:8080/actuator/health`
+- `curl http://localhost:3500/actuator/health`
 
 **Tahmini sure:** 45 dakika
 
@@ -306,7 +308,7 @@ Bu dosya mevcut `faultlens-backend` reposuna gore hazirlanmis ilerleme planidir.
 **Dogrulama:**
 
 - `.\mvnw.cmd -q -pl api -am test`
-- `curl -X POST http://localhost:8080/api/v1/auth/login ...` token dondurmeli.
+- `curl -X POST http://localhost:3500/api/v1/auth/login ...` token dondurmeli.
 - Token olmadan `/api/v1/logs` 401, token ile 200 donmeli.
 
 **Tahmini sure:** 75 dakika
@@ -335,7 +337,7 @@ Bu dosya mevcut `faultlens-backend` reposuna gore hazirlanmis ilerleme planidir.
 **Dogrulama:**
 
 - `.\mvnw.cmd -q -pl api,processor -am test`
-- `wscat -c ws://localhost:8080/ws/logs`
+- `wscat -c ws://localhost:3500/ws/logs`
 - Kafka'ya yeni log atildiginda WebSocket mesaj almali.
 
 **Tahmini sure:** 60 dakika
@@ -395,7 +397,7 @@ Bu dosya mevcut `faultlens-backend` reposuna gore hazirlanmis ilerleme planidir.
 - `docker-compose up -d`
 - `.\mvnw.cmd clean package -DskipTests`
 - `java -jar api/target/api-1.0.0-SNAPSHOT.jar`
-- `curl http://localhost:8080/actuator/health`
+- `curl http://localhost:3500/actuator/health`
 - Login ve authenticated endpoint curl'leri basarili olmali.
 - Kafka test mesaji sonrasi `/api/v1/logs?severity=ERROR` ve `/api/v1/analyses` beklenen sonucu dondurmeli.
 
@@ -618,8 +620,8 @@ Bu dosya mevcut `faultlens-backend` reposuna gore hazirlanmis ilerleme planidir.
 ### Yapilan Degisiklikler
 
 - `application.yml` hedef lokal E2E sozlesmesine cekildi:
-  - API portu `8080`.
-  - PostgreSQL default portu `5432`.
+  - API portu `8080` (sonradan `3500` oldu — bkz. ustteki not).
+  - PostgreSQL default portu `5432` (sonradan `5433` oldu).
   - Redis default portu `6379`.
   - Hikari `connection-timeout: 30000`.
   - Flyway `baseline-on-migrate: true`.
@@ -627,7 +629,7 @@ Bu dosya mevcut `faultlens-backend` reposuna gore hazirlanmis ilerleme planidir.
   - JWT default secret hedef metinle uyumlu hale getirildi.
   - Collector config'inden hedefte olmayan `kubeconfig-path` kaldirildi.
 - `docker-compose.yml` hedef servis setine uyarlandi:
-  - PostgreSQL `5432:5432`.
+  - PostgreSQL `5432:5432` (sonradan `5433:5432` oldu).
   - Redis `6379:6379`.
   - ZooKeeper `2181:2181`.
   - Kafka `9092:9092`.

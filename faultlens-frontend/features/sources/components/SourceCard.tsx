@@ -9,10 +9,7 @@ import { Badge } from "@/shared/components/ui/Badge";
 import { Button } from "@/shared/components/ui/Button";
 import { Dropdown, type DropdownItem } from "@/shared/components/ui/Dropdown";
 import type { LogSourceDto } from "@/features/sources/types/source.types";
-import {
-  ConnectionStatus,
-  SOURCE_TYPE_LABELS,
-} from "@/shared/types/common.types";
+import { ConnectionStatus, SOURCE_TYPE_LABELS } from "@/shared/types/common.types";
 import { formatRelativeTime } from "@/shared/lib/utils";
 import { useTestConnectionMutation } from "@/features/sources/api/useSourceMutation";
 import { cn } from "@/shared/lib/utils";
@@ -40,16 +37,11 @@ function StatusDot({ status }: { status: ConnectionStatus }) {
           <span
             className={cn(
               "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75",
-              colors[status]
+              colors[status],
             )}
           />
         )}
-        <span
-          className={cn(
-            "relative inline-flex rounded-full h-2.5 w-2.5",
-            colors[status]
-          )}
-        />
+        <span className={cn("relative inline-flex rounded-full h-2.5 w-2.5", colors[status])} />
       </span>
       <span className="text-xs text-text-secondary">{labels[status]}</span>
     </div>
@@ -89,17 +81,17 @@ function SourceCard({ source, index }: SourceCardProps) {
         {/* Header */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2">
-            <StatusDot status={source.status ?? ConnectionStatus.CONNECTED} />
+            <StatusDot status={source.status ?? ConnectionStatus.DISCONNECTED} />
           </div>
-            <Dropdown
-              trigger={
-                <button
-                  className="p-1 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-tertiary transition-colors"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <MoreVertical size={16} />
-                </button>
-              }
+          <Dropdown
+            trigger={
+              <button
+                className="p-1 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-tertiary transition-colors"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <MoreVertical size={16} />
+              </button>
+            }
             items={menuItems}
             onSelect={() => {}}
           />
@@ -117,18 +109,12 @@ function SourceCard({ source, index }: SourceCardProps) {
         <div className="mt-3 space-y-1.5">
           {config.namespace && (
             <p className="text-xs text-text-muted">
-              Namespace:{" "}
-              <span className="text-text-secondary font-mono">
-                {config.namespace}
-              </span>
+              Namespace: <span className="text-text-secondary font-mono">{config.namespace}</span>
             </p>
           )}
           {config.host && (
             <p className="text-xs text-text-muted">
-              Host:{" "}
-              <span className="text-text-secondary font-mono">
-                {config.host}
-              </span>
+              Host: <span className="text-text-secondary font-mono">{config.host}</span>
             </p>
           )}
           <p className="text-xs text-text-muted">
@@ -153,11 +139,11 @@ function SourceCard({ source, index }: SourceCardProps) {
           </Button>
         </div>
       </Card>
-      
-      <SourceDetailModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        source={source} 
+
+      <SourceDetailModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        source={source}
       />
     </motion.div>
   );

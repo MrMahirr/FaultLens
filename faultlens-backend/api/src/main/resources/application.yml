@@ -2,7 +2,7 @@ spring:
   lifecycle:
     timeout-per-shutdown-phase: 30s
   application:
-    name: faultlens-api
+    name: faultlens-api9
   threads:
     virtual:
       enabled: true
@@ -19,7 +19,6 @@ spring:
       ddl-auto: validate
     show-sql: false
     properties:
-      hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
       hibernate.jdbc.batch_size: 100
       hibernate.order_inserts: true
   flyway:
@@ -32,12 +31,12 @@ spring:
       group-id: faultlens-processor
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JacksonJsonDeserializer
       properties:
         spring.json.trusted.packages: "com.faultlens.*"
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JacksonJsonSerializer
   data:
     redis:
       host: ${REDIS_HOST:localhost}
@@ -66,9 +65,13 @@ management:
 
 faultlens:
   jwt:
-    secret: ${JWT_SECRET:faultlens-secret-change-in-production-needs-256-bits-minimum}
+    # >= 32 bytes. Unset -> random per-process key (sessions end on restart). Generate: openssl rand -base64 48
+    secret: ${JWT_SECRET:}
     expiration-ms: 86400000
   collector:
+    file:
+      # Comma-separated directories LOCAL_FILE sources may read; anything else is rejected.
+      allowed-dirs: ${COLLECTOR_FILE_ALLOWED_DIRS:/var/log}
     k8s:
       reconnect-interval-seconds: 30
     ssh:
@@ -81,6 +84,10 @@ faultlens:
       model: gpt-4o-mini
   cors:
     allowed-origins: ${CORS_ORIGINS:http://localhost:3000}
+  security:
+    # Initial password for the 'admin' account (min 8 chars). Empty -> a random one is generated
+    # and logged once at startup. Either way it must be changed at first login.
+    admin-initial-password: ${ADMIN_INITIAL_PASSWORD:}
 
 logging:
   level:

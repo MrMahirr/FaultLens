@@ -1,5 +1,6 @@
 package com.faultlens.api.service;
 
+import com.faultlens.api.model.AlarmStatus;
 import com.faultlens.common.dto.AnalysisResultDto;
 import com.faultlens.api.model.Alarm;
 import com.faultlens.api.model.NotificationSettings;
@@ -36,9 +37,9 @@ public class AlarmDispatcherService {
         Alarm alarm = Alarm.builder()
                 .ruleId("AI_ANALYSIS")
                 .ruleName("Yapay Zeka Kritik Hata Tespiti")
-                .sourceId(analysis.getLogGroupId())
+                .sourceId(analysis.getSourceId())
                 .severity(severityLevel)
-                .status("ACTIVE")
+                .status(AlarmStatus.ACTIVE)
                 .message(String.format("Hata Analizi (Grup ID: %d)\nKök Neden: %s\nÖneri: %s\nGüven Skoru: %%%.0f", 
                     analysis.getLogGroupId(), 
                     analysis.getRootCause(), 

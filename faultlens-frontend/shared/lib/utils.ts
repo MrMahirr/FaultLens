@@ -17,7 +17,7 @@ export function cn(...inputs: ClassValue[]): string {
  */
 export function formatDate(
   date?: string | Date | null,
-  options?: Intl.DateTimeFormatOptions
+  options?: Intl.DateTimeFormatOptions,
 ): string {
   if (!date) return "-";
   const d = typeof date === "string" ? new Date(date) : date;

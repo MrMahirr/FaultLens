@@ -2,15 +2,24 @@ import { Button } from "@/shared/components/ui/Button";
 import { apiClient } from "@/shared/api/client";
 import { Endpoints } from "@/shared/api/endpoints";
 import toast from "react-hot-toast";
+import { getApiErrorMessage } from "@/shared/api/errors";
 
 interface EmailConfigFormProps {
   serviceId: string | null;
   templateId: string | null;
   publicKey: string | null;
-  onChange: (field: "emailjsServiceId" | "emailjsTemplateId" | "emailjsPublicKey", value: string) => void;
+  onChange: (
+    field: "emailjsServiceId" | "emailjsTemplateId" | "emailjsPublicKey",
+    value: string,
+  ) => void;
 }
 
-export function EmailConfigForm({ serviceId, templateId, publicKey, onChange }: EmailConfigFormProps) {
+export function EmailConfigForm({
+  serviceId,
+  templateId,
+  publicKey,
+  onChange,
+}: EmailConfigFormProps) {
   const handleTest = async () => {
     const emailInput = document.getElementById("test-email-input") as HTMLInputElement;
     const testEmail = emailInput?.value;
@@ -21,15 +30,16 @@ export function EmailConfigForm({ serviceId, templateId, publicKey, onChange }: 
     try {
       await apiClient.post(Endpoints.SETTINGS.TEST.EMAIL, { emailAddress: testEmail });
       toast.success("Test e-postası başarıyla gönderildi!");
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "E-posta gönderilemedi.");
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "E-posta gönderilemedi."));
     }
   };
 
   return (
     <>
       <p className="text-xs text-text-muted mt-2 border-l-2 border-accent pl-2">
-        E-posta gönderimleri <b>Email.js</b> kullanılarak yapılmaktadır. Gerekli API anahtarlarını aşağıya girin.
+        E-posta gönderimleri <b>Email.js</b> kullanılarak yapılmaktadır. Gerekli API anahtarlarını
+        aşağıya girin.
       </p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="flex flex-col gap-1">
@@ -63,7 +73,7 @@ export function EmailConfigForm({ serviceId, templateId, publicKey, onChange }: 
           />
         </div>
       </div>
-      
+
       <hr className="border-border-default" />
 
       <div className="flex flex-col gap-1">

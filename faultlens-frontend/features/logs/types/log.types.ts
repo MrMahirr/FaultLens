@@ -1,4 +1,5 @@
 import { Severity, LogSourceType } from "@/shared/types/common.types";
+import type { AnalysisResultDto } from "@/features/analyses/types/analysis.types";
 
 /* ── Log Entry DTO ─────────────────────────────────────────── */
 
@@ -57,5 +58,5 @@ export interface LogStatsDto {
 
 export interface LogDetailDto {
   log: LogEntryDto;
-  analyses: any[];
+  analyses: AnalysisResultDto[];
 }

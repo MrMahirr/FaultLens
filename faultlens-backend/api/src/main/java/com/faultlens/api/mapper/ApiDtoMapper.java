@@ -1,5 +1,6 @@
 package com.faultlens.api.mapper;
 
+import com.faultlens.collector.mapper.SourceConfigSecrets;
 import com.faultlens.analyzer.model.Analysis;
 import com.faultlens.analyzer.model.Deployment;
 import com.faultlens.api.dto.DeploymentDto;
@@ -75,7 +76,7 @@ public class ApiDtoMapper {
                 .id(source.getId())
                 .name(source.getName())
                 .type(source.getType())
-                .config(source.getConfig())
+                .config(SourceConfigSecrets.mask(source.getConfig()))
                 .enabled(source.isEnabled())
                 .createdAt(source.getCreatedAt())
                 .lastSeenAt(source.getLastSeenAt())

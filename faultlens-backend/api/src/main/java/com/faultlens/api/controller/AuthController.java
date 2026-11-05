@@ -60,13 +60,13 @@ public class AuthController {
     }
 
     /**
-     * Changes the password of the authenticated user.
+     * Changes the password of the authenticated user and returns a fresh token
+     * (without the password-change restriction).
      */
     @PutMapping("/password")
-    public ResponseEntity<ApiResponse<Void>> changePassword(
+    public ResponseEntity<ApiResponse<TokenResponse>> changePassword(
             Principal principal,
             @Valid @RequestBody ChangePasswordRequest request) {
-        authService.changePassword(principal.getName(), request);
-        return ResponseEntity.ok(ApiResponse.ok(null));
+        return ResponseEntity.ok(ApiResponse.ok(authService.changePassword(principal.getName(), request)));
     }
 }

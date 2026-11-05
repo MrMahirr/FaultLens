@@ -13,11 +13,13 @@ import { useAuthStore } from "@/features/auth/store/auth.store";
 /* ── Breadcrumb Map ────────────────────────────────────────── */
 
 const ROUTE_LABELS: Record<string, string> = {
-  "/dashboard": "Dashboard",
-  "/logs": "Logs",
-  "/sources": "Sources",
-  "/analyses": "Analyses",
-  "/deployments": "Deployments",
+  "/dashboard": "Panel",
+  "/logs": "Loglar",
+  "/sources": "Kaynaklar",
+  "/analyses": "Analizler",
+  "/deployments": "Dağıtımlar",
+  "/alarms": "Alarmlar",
+  "/settings": "Ayarlar",
 };
 
 /* ── Component ─────────────────────────────────────────────── */
@@ -31,13 +33,13 @@ function Topbar() {
 
   // Build breadcrumb from pathname
   const breadcrumb = pathname
-    ? ROUTE_LABELS[pathname] ??
+    ? (ROUTE_LABELS[pathname] ??
       pathname
         .split("/")
         .filter(Boolean)
         .map((seg) => seg.charAt(0).toUpperCase() + seg.slice(1))
-        .join(" / ")
-    : "Dashboard";
+        .join(" / "))
+    : "Panel";
 
   const userMenuItems: DropdownItem[] = [
     { label: "Profil", value: "profile", icon: <User size={14} /> },
@@ -67,7 +69,7 @@ function Topbar() {
         "bg-bg-primary/80 backdrop-blur-lg",
         "border-b border-border-default",
         "flex items-center justify-between px-4 gap-4",
-        "transition-theme"
+        "transition-theme",
       )}
     >
       {/* Left: Hamburger + Breadcrumb */}
@@ -114,9 +116,7 @@ function Topbar() {
                 <span className="text-xs font-bold text-accent">A</span>
               </div>
               {sidebarOpen && (
-                <span className="text-sm text-text-secondary hidden md:block">
-                  Admin
-                </span>
+                <span className="text-sm text-text-secondary hidden md:block">Admin</span>
               )}
             </button>
           }

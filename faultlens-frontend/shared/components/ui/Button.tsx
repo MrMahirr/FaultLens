@@ -21,14 +21,11 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 /* ── Style Maps ────────────────────────────────────────────── */
 
 const variantStyles: Record<ButtonVariant, string> = {
-  primary:
-    "bg-accent hover:bg-accent-hover text-white shadow-glow hover:shadow-lg",
+  primary: "bg-accent hover:bg-accent-hover text-white shadow-glow hover:shadow-lg",
   secondary:
     "bg-bg-tertiary hover:bg-bg-glass-hover text-text-primary border border-border-default hover:border-border-hover",
-  ghost:
-    "bg-transparent hover:bg-bg-tertiary text-text-secondary hover:text-text-primary",
-  danger:
-    "bg-error/10 hover:bg-error/20 text-error border border-error/20 hover:border-error/40",
+  ghost: "bg-transparent hover:bg-bg-tertiary text-text-secondary hover:text-text-primary",
+  danger: "bg-error/10 hover:bg-error/20 text-error border border-error/20 hover:border-error/40",
   success:
     "bg-success/10 hover:bg-success/20 text-success border border-success/20 hover:border-success/40",
 };
@@ -55,7 +52,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       children,
       ...props
     },
-    ref
+    ref,
   ) => {
     const isDisabled = disabled || loading;
 
@@ -71,7 +68,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           variantStyles[variant],
           sizeStyles[size],
           fullWidth && "w-full",
-          className
+          className,
         )}
         {...props}
       >
@@ -79,18 +76,14 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           <Loader2 className="animate-spin" size={size === "sm" ? 14 : 16} />
         ) : (
           <>
-            {icon && iconPosition === "left" && (
-              <span className="shrink-0">{icon}</span>
-            )}
+            {icon && iconPosition === "left" && <span className="shrink-0">{icon}</span>}
             {children}
-            {icon && iconPosition === "right" && (
-              <span className="shrink-0">{icon}</span>
-            )}
+            {icon && iconPosition === "right" && <span className="shrink-0">{icon}</span>}
           </>
         )}
       </button>
     );
-  }
+  },
 );
 
 Button.displayName = "Button";

@@ -5,10 +5,11 @@ import { Sparkles, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/shared/components/ui/Button";
 import { useAnalysesQuery } from "@/features/analyses/api/useAnalysisQuery";
+import { AnalysisType } from "@/shared/types/common.types";
 
 function AiSummaryWidget() {
   const { data: analysisData, isLoading } = useAnalysesQuery({ page: 0, size: 1 });
-  
+
   const totalElements = analysisData?.totalElements || 0;
   const latestAnalysis = analysisData?.content?.[0];
   return (
@@ -28,7 +29,7 @@ function AiSummaryWidget() {
           </div>
           <div>
             <h2 className="text-lg font-bold font-display text-text-primary mb-1">
-              FaultLens AI Analizi
+              FaultLens Analiz Özeti
             </h2>
             {isLoading ? (
               <div className="space-y-2 mt-2">
@@ -37,24 +38,35 @@ function AiSummaryWidget() {
               </div>
             ) : totalElements > 0 ? (
               <p className="text-sm text-text-secondary leading-relaxed max-w-2xl">
-                Sistemde toplam <strong className="text-text-primary">{totalElements} hata analizi</strong> gerçekleştirildi.
+                Sistemde toplam{" "}
+                <strong className="text-text-primary">{totalElements} hata analizi</strong>{" "}
+                gerçekleştirildi.
                 {latestAnalysis && (
                   <>
-                    {" "}En son yapılan analiz
+                    {" "}
+                    En son yapılan analiz
                     {latestAnalysis.affectedDeployment ? (
                       <>
-                        {" "}<strong className="text-text-primary">{latestAnalysis.affectedDeployment}</strong> deployment'ı ile
+                        {" "}
+                        <strong className="text-text-primary">
+                          {latestAnalysis.affectedDeployment}
+                        </strong>{" "}
+                        deployment&apos;ı ile
                       </>
                     ) : (
                       " genel sistem hataları ile"
                     )}{" "}
-                    ilişkili. Yapay zeka kök neden analizini tamamladı.
+                    ilişkili.{" "}
+                    {latestAnalysis.engineType === AnalysisType.AI
+                      ? "Yapay zeka kök neden analizini tamamladı."
+                      : "Kök neden kural tabanlı motorla belirlendi."}
                   </>
                 )}
               </p>
             ) : (
               <p className="text-sm text-text-secondary leading-relaxed max-w-2xl">
-                Şu an için sistemde yapay zeka tarafından incelenmiş bir hata veya anomali bulunmuyor. Sistem durumu stabil.
+                Şu an için sistemde analiz edilmiş bir hata veya anomali bulunmuyor. Sistem durumu
+                stabil.
               </p>
             )}
           </div>
@@ -62,7 +74,12 @@ function AiSummaryWidget() {
 
         <div className="shrink-0 flex items-center gap-3">
           <Link href="/analyses">
-            <Button variant="primary" size="md" icon={<ArrowRight size={16} />} iconPosition="right">
+            <Button
+              variant="primary"
+              size="md"
+              icon={<ArrowRight size={16} />}
+              iconPosition="right"
+            >
               {totalElements > 0 ? "Analizi İncele" : "Analiz Sayfasına Git"}
             </Button>
           </Link>

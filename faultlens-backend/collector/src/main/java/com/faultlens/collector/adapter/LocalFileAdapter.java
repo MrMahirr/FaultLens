@@ -1,7 +1,7 @@
 package com.faultlens.collector.adapter;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 import com.faultlens.collector.model.LogSource;
 import com.faultlens.common.dto.LogEventDto;
 import com.faultlens.common.enums.LogSourceType;
@@ -16,16 +16,19 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class LocalFileAdapter implements LogSourceAdapter {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Set<String> running = ConcurrentHashMap.newKeySet();
+    private final LocalFilePathPolicy pathPolicy;
+
+    public LocalFileAdapter(LocalFilePathPolicy pathPolicy) {
+        this.pathPolicy = pathPolicy;
+    }
 
     @Override
     public LogSourceType getType() {
@@ -44,8 +47,14 @@ public class LocalFileAdapter implements LogSourceAdapter {
             running.remove(sourceId);
             return;
         }
+        // Re-checked here too: sources stored before the allow-list existed must not keep reading.
+        if (!pathPolicy.isAllowed(path)) {
+            log.error("Local file source {} points outside faultlens.collector.file.allowed-dirs; not streaming", sourceId);
+            running.remove(sourceId);
+            return;
+        }
 
-        File file = new File(path);
+        File file = pathPolicy.requireAllowed(path).toFile();
         long filePointer = 0;
 
         // Start at the end of the file if it exists, to avoid reading history on startup
@@ -91,10 +100,10 @@ public class LocalFileAdapter implements LogSourceAdapter {
     public boolean testConnection(LogSource source) {
         Map<String, String> config = parseConfig(source.getConfig());
         String path = config.get("logFilePath");
-        if (path == null || path.isBlank()) {
+        if (path == null || path.isBlank() || !pathPolicy.isAllowed(path)) {
             return false;
         }
-        File file = new File(path);
+        File file = pathPolicy.requireAllowed(path).toFile();
         // It's valid if the parent directory exists or if we can read the file
         return file.exists() || (file.getParentFile() != null && file.getParentFile().exists());
     }

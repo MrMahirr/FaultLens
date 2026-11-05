@@ -8,8 +8,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import tools.jackson.databind.ObjectMapper;
 import com.faultlens.api.dto.DeploymentDto;
 import com.faultlens.api.exception.GlobalExceptionHandler;
 import com.faultlens.api.service.DeploymentService;
@@ -25,7 +24,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 class DeploymentControllerTest {
     private MockMvc mockMvc;
     private DeploymentService service;
-    private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     void setUp() {

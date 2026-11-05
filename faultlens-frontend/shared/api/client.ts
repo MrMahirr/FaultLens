@@ -30,7 +30,7 @@ apiClient.interceptors.request.use(
 
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // ── Response Interceptor ────────────────────────────────────
@@ -45,6 +45,19 @@ apiClient.interceptors.response.use(
     return response;
   },
   async (error) => {
+    // Backend blocks every endpoint except the password-change flow until the
+    // user replaces a bootstrap/default password. Setting the flag is enough:
+    // the dashboard layout reacts to it and routes to /change-password.
+    if (
+      error.response?.status === 403 &&
+      error.response?.data?.error?.code === "PASSWORD_CHANGE_REQUIRED"
+    ) {
+      const { user, updateUser } = useAuthStore.getState();
+      if (user && !user.mustChangePassword) {
+        updateUser({ mustChangePassword: true });
+      }
+    }
+
     if (error.response?.status === 401) {
       useAuthStore.getState().logout();
 
@@ -54,5 +67,5 @@ apiClient.interceptors.response.use(
       }
     }
     return Promise.reject(error);
-  }
+  },
 );

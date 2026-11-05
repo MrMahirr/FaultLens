@@ -2,6 +2,7 @@
 
 import { Endpoints } from "@/shared/api/endpoints";
 import { useWebSocket } from "@/shared/hooks/useWebSocket";
+import { useAuthStore } from "@/features/auth/store/auth.store";
 import type { LogEntryDto } from "@/features/logs/types/log.types";
 
 /**
@@ -15,9 +16,12 @@ export function useLogStream({
   enabled?: boolean;
   onNewLog?: (log: LogEntryDto) => void;
 }) {
+  const token = useAuthStore((state) => state.token);
+
   const { status, disconnect, reconnect } = useWebSocket({
     url: Endpoints.WS.LOGS,
-    enabled,
+    token,
+    enabled: enabled && !!token,
     onMessage: (data) => {
       // Parse incoming log entry
       const log = data as LogEntryDto;

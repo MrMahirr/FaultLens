@@ -1,13 +1,16 @@
 "use client";
 
 import {
-  useReactTable,
-  getCoreRowModel,
-  getSortedRowModel,
-  type ColumnDef,
-  type SortingState,
-  type RowSelectionState,
+  createSortedRowModel,
   flexRender,
+  rowSelectionFeature,
+  rowSortingFeature,
+  sortFns,
+  tableFeatures,
+  useTable,
+  type ColumnDef,
+  type RowSelectionState,
+  type SortingState,
 } from "@tanstack/react-table";
 import { useState, useCallback } from "react";
 import { ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
@@ -15,11 +18,28 @@ import { cn } from "@/shared/lib/utils";
 
 import { useUIStore } from "@/shared/store/ui.store";
 
+/* ── Features ──────────────────────────────────────────────── */
+
+/**
+ * Table v9 registers features explicitly. DataTable uses sorting and row selection; the
+ * built-in sort functions keep v8's automatic per-column sort choice. Module-level so the
+ * object is stable across renders.
+ */
+const dataTableFeatures = tableFeatures({
+  rowSortingFeature,
+  rowSelectionFeature,
+  sortedRowModel: createSortedRowModel(),
+  sortFns,
+});
+
+/** Column definition for {@link DataTable}; use this instead of react-table's `ColumnDef`. */
+type DataTableColumnDef<TData extends object> = ColumnDef<typeof dataTableFeatures, TData, unknown>;
+
 /* ── Types ─────────────────────────────────────────────────── */
 
-interface DataTableProps<TData> {
+interface DataTableProps<TData extends object> {
   data: TData[];
-  columns: ColumnDef<TData, unknown>[];
+  columns: DataTableColumnDef<TData>[];
   onRowClick?: (row: TData) => void;
   enableSorting?: boolean;
   enableSelection?: boolean;
@@ -31,7 +51,7 @@ interface DataTableProps<TData> {
 
 /* ── Component ─────────────────────────────────────────────── */
 
-function DataTable<TData>({
+function DataTable<TData extends object>({
   data,
   columns,
   onRowClick,
@@ -46,7 +66,8 @@ function DataTable<TData>({
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const { compactMode } = useUIStore();
 
-  const table = useReactTable({
+  const table = useTable({
+    features: dataTableFeatures,
     data,
     columns,
     state: {
@@ -55,8 +76,7 @@ function DataTable<TData>({
     },
     onSortingChange: setSorting,
     onRowSelectionChange: setRowSelection,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: enableSorting ? getSortedRowModel() : undefined,
+    enableSorting,
     enableRowSelection: enableSelection,
   });
 
@@ -64,24 +84,16 @@ function DataTable<TData>({
     (row: TData) => {
       onRowClick?.(row);
     },
-    [onRowClick]
+    [onRowClick],
   );
 
   return (
     <div
-      className={cn(
-        "w-full overflow-x-auto rounded-xl border border-border-default",
-        className
-      )}
+      className={cn("w-full overflow-x-auto rounded-xl border border-border-default", className)}
     >
       <table className="w-full text-sm">
         {/* ── Header ────────────────────────────────── */}
-        <thead
-          className={cn(
-            "bg-bg-tertiary/50",
-            stickyHeader && "sticky top-0 z-10"
-          )}
-        >
+        <thead className={cn("bg-bg-tertiary/50", stickyHeader && "sticky top-0 z-10")}>
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
@@ -94,21 +106,14 @@ function DataTable<TData>({
                     className={cn(
                       "px-4 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider",
                       "border-b border-border-default",
-                      canSort && "cursor-pointer select-none hover:text-text-secondary"
+                      canSort && "cursor-pointer select-none hover:text-text-secondary",
                     )}
-                    onClick={
-                      canSort
-                        ? header.column.getToggleSortingHandler()
-                        : undefined
-                    }
+                    onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
                   >
                     <div className="flex items-center gap-1.5">
                       {header.isPlaceholder
                         ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                        : flexRender(header.column.columnDef.header, header.getContext())}
                       {canSort && (
                         <span className="text-text-muted">
                           {sortDir === "asc" ? (
@@ -145,10 +150,7 @@ function DataTable<TData>({
             ))
           ) : table.getRowModel().rows.length === 0 ? (
             <tr>
-              <td
-                colSpan={columns.length}
-                className="px-4 py-12 text-center text-text-muted"
-              >
+              <td colSpan={columns.length} className="px-4 py-12 text-center text-text-muted">
                 {emptyMessage}
               </td>
             </tr>
@@ -159,16 +161,13 @@ function DataTable<TData>({
                 onClick={() => handleRowClick(row.original)}
                 className={cn(
                   "border-b border-border-default transition-colors duration-150",
-                  onRowClick &&
-                    "cursor-pointer hover:bg-bg-tertiary/50",
-                  row.getIsSelected() && "bg-accent/5"
+                  onRowClick && "cursor-pointer hover:bg-bg-tertiary/50",
+                  row.getIsSelected() && "bg-accent/5",
                 )}
               >
-                {row.getVisibleCells().map((cell) => (
-                  <td 
-                    key={cell.id} 
-                    className={cn("px-4", compactMode ? "py-1" : "py-3")}
-                  >
+                {/* No column-visibility feature registered, so every cell is visible. */}
+                {row.getAllCells().map((cell) => (
+                  <td key={cell.id} className={cn("px-4", compactMode ? "py-1" : "py-3")}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}
@@ -181,4 +180,4 @@ function DataTable<TData>({
   );
 }
 
-export { DataTable, type DataTableProps };
+export { DataTable, type DataTableColumnDef, type DataTableProps };

@@ -25,11 +25,7 @@ export default function AlarmsPage() {
             Sistem durumunu, alarmları ve tetikleyici kuralları yönetin.
           </p>
         </div>
-        <Button
-          variant="primary"
-          icon={<Plus size={16} />}
-          onClick={() => setIsModalOpen(true)}
-        >
+        <Button variant="primary" icon={<Plus size={16} />} onClick={() => setIsModalOpen(true)}>
           Yeni Kural Ekle
         </Button>
       </div>
@@ -63,10 +59,7 @@ export default function AlarmsPage() {
         {activeTab === "alarms" ? <AlarmsList /> : <AlarmRulesList />}
       </div>
 
-      <CreateRuleModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-      />
+      <CreateRuleModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 }

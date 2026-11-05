@@ -19,9 +19,7 @@ export function AppearanceSettings() {
       <div className="bg-bg-tertiary/30 p-6 rounded-2xl border border-border-default space-y-6">
         {/* Theme Selection */}
         <div>
-          <h3 className="text-sm font-medium text-text-secondary mb-4">
-            Tema Seçimi
-          </h3>
+          <h3 className="text-sm font-medium text-text-secondary mb-4">Tema Seçimi</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {/* Light Mode */}
             <button
@@ -32,10 +30,7 @@ export function AppearanceSettings() {
                   : "border-border-default hover:border-accent/40 bg-bg-primary"
               }`}
             >
-              <Sun
-                size={28}
-                className={theme === "light" ? "text-accent" : "text-text-muted"}
-              />
+              <Sun size={28} className={theme === "light" ? "text-accent" : "text-text-muted"} />
               <span
                 className={`mt-3 font-medium ${
                   theme === "light" ? "text-accent" : "text-text-secondary"
@@ -54,10 +49,7 @@ export function AppearanceSettings() {
                   : "border-border-default hover:border-accent/40 bg-bg-primary"
               }`}
             >
-              <Moon
-                size={28}
-                className={theme === "dark" ? "text-accent" : "text-text-muted"}
-              />
+              <Moon size={28} className={theme === "dark" ? "text-accent" : "text-text-muted"} />
               <span
                 className={`mt-3 font-medium ${
                   theme === "dark" ? "text-accent" : "text-text-secondary"
@@ -96,16 +88,14 @@ export function AppearanceSettings() {
         {/* Compact View */}
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-medium text-text-primary">
-              Kompakt Görünüm
-            </h3>
+            <h3 className="text-sm font-medium text-text-primary">Kompakt Görünüm</h3>
             <p className="text-xs text-text-muted mt-1">
               Tablolarda daha dar satır aralıkları kullanarak daha fazla veri görün.
             </p>
           </div>
-          <Button 
-            variant={compactMode ? "primary" : "secondary"} 
-            size="sm" 
+          <Button
+            variant={compactMode ? "primary" : "secondary"}
+            size="sm"
             onClick={() => setCompactMode(!compactMode)}
           >
             {compactMode ? "Kapat" : "Etkinleştir"}

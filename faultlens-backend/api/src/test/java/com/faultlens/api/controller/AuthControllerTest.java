@@ -6,8 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import tools.jackson.databind.ObjectMapper;
 import com.faultlens.api.dto.AuthDtos.LoginRequest;
 import com.faultlens.api.dto.AuthDtos.RefreshRequest;
 import com.faultlens.api.dto.AuthDtos.TokenResponse;
@@ -23,7 +22,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 class AuthControllerTest {
     private MockMvc mockMvc;
     private AuthService authService;
-    private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     void setUp() {

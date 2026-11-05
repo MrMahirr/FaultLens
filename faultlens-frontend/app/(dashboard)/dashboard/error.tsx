@@ -21,11 +21,7 @@ export default function DashboardError({
       <p className="text-sm text-text-secondary max-w-md mb-4">
         {error.message || "Beklenmeyen bir hata oluştu."}
       </p>
-      <Button
-        variant="secondary"
-        icon={<RefreshCw size={16} />}
-        onClick={reset}
-      >
+      <Button variant="secondary" icon={<RefreshCw size={16} />} onClick={reset}>
         Tekrar Dene
       </Button>
     </div>

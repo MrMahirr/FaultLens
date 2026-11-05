@@ -33,12 +33,19 @@ function AnalysisCard({ analysis, index, sourceName }: AnalysisCardProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: index * 0.1, duration: 0.3 }}
       >
-        <Card variant="default" className="border-l-4 border-l-accent hover:border-l-accent-hover transition-colors">
+        <Card
+          variant="default"
+          className="border-l-4 border-l-accent hover:border-l-accent-hover transition-colors"
+        >
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <div className="flex items-center gap-3">
               {sourceName && (
-                <Badge variant="outline" size="sm" className="border-border-default text-text-secondary bg-bg-secondary">
+                <Badge
+                  variant="outline"
+                  size="sm"
+                  className="border-border-default text-text-secondary bg-bg-secondary"
+                >
                   {sourceName}
                 </Badge>
               )}
@@ -52,7 +59,7 @@ function AnalysisCard({ analysis, index, sourceName }: AnalysisCardProps) {
                 {formatRelativeTime(analysis.analyzedAt)}
               </span>
             </div>
-            
+
             <div className="flex items-center gap-2">
               <span className="text-xs text-text-muted">Güven:</span>
               <div className="w-24 h-1.5 bg-bg-tertiary rounded-full">
@@ -85,9 +92,13 @@ function AnalysisCard({ analysis, index, sourceName }: AnalysisCardProps) {
             {analysis.affectedDeployment ? (
               <div className="flex items-center gap-1.5 px-2 py-1 bg-warning/10 rounded text-warning">
                 <AlertTriangle size={12} />
-                <span className="text-[10px] uppercase font-bold tracking-wide">Deployment Etkilenmiş</span>
+                <span className="text-[10px] uppercase font-bold tracking-wide">
+                  Deployment Etkilenmiş
+                </span>
               </div>
-            ) : <div />}
+            ) : (
+              <div />
+            )}
 
             <div className="flex gap-2">
               <Button

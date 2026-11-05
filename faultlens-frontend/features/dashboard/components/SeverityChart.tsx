@@ -35,15 +35,10 @@ function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
       {payload.map((entry) => (
         <div key={entry.name} className="flex items-center justify-between gap-4 text-xs">
           <div className="flex items-center gap-1.5">
-            <span
-              className="w-2 h-2 rounded-full"
-              style={{ backgroundColor: entry.color }}
-            />
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
             <span className="text-text-secondary capitalize">{entry.name}</span>
           </div>
-          <span className="font-mono font-medium text-text-primary">
-            {entry.value}
-          </span>
+          <span className="font-mono font-medium text-text-primary">{entry.value}</span>
         </div>
       ))}
     </div>
@@ -90,11 +85,7 @@ function SeverityChart() {
               </linearGradient>
             </defs>
 
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke="var(--border)"
-              vertical={false}
-            />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
             <XAxis
               dataKey="time"
               tick={{ fill: "var(--text-muted)", fontSize: 11 }}

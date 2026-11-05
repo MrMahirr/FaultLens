@@ -14,13 +14,7 @@ interface SkeletonProps {
 
 /* ── Component ─────────────────────────────────────────────── */
 
-function Skeleton({
-  className,
-  variant = "rectangular",
-  width,
-  height,
-  lines,
-}: SkeletonProps) {
+function Skeleton({ className, variant = "rectangular", width, height, lines }: SkeletonProps) {
   const baseStyles = "animate-pulse bg-bg-tertiary";
 
   // Multiple lines of text skeleton
@@ -28,14 +22,7 @@ function Skeleton({
     return (
       <div className={cn("space-y-2", className)}>
         {Array.from({ length: lines }, (_, i) => (
-          <div
-            key={i}
-            className={cn(
-              baseStyles,
-              "h-4 rounded",
-              i === lines - 1 && "w-3/4"
-            )}
-          />
+          <div key={i} className={cn(baseStyles, "h-4 rounded", i === lines - 1 && "w-3/4")} />
         ))}
       </div>
     );
@@ -94,10 +81,4 @@ function SkeletonTable({ rows = 5 }: { rows?: number }) {
   );
 }
 
-export {
-  Skeleton,
-  SkeletonCard,
-  SkeletonTableRow,
-  SkeletonTable,
-  type SkeletonProps,
-};
+export { Skeleton, SkeletonCard, SkeletonTableRow, SkeletonTable, type SkeletonProps };

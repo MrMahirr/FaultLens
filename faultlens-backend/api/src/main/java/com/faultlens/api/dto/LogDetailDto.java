@@ -1,7 +1,7 @@
 package com.faultlens.api.dto;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.annotation.JsonNaming;
 import com.faultlens.common.dto.AnalysisResultDto;
 import com.faultlens.common.dto.LogEntryDto;
 import java.util.List;

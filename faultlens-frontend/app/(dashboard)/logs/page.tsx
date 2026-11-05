@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PageHeader } from "@/shared/components/layout/PageHeader";
 import { Pagination } from "@/shared/components/ui/Pagination";
@@ -12,12 +12,20 @@ import { useLogs as useLogsFilter } from "@/features/logs/hooks/useLogs";
 import { useLogsQuery, logKeys } from "@/features/logs/api/useLogQuery";
 import { useLogStream } from "@/features/logs/hooks/useLogStream";
 import type { LogEntryDto } from "@/features/logs/types/log.types";
+import { useDebounce } from "@/shared/hooks/useDebounce";
+
+const SEARCH_DEBOUNCE_MS = 300;
 
 export default function LogsPage() {
   const queryClient = useQueryClient();
-  const { filters, updateFilter, resetFilters, liveMode, toggleLiveMode } =
-    useLogsFilter();
-  const { data, isLoading } = useLogsQuery(filters);
+  const { filters, updateFilter, resetFilters, liveMode, toggleLiveMode } = useLogsFilter();
+  // The input updates immediately; the API is queried once typing pauses (not per keystroke).
+  const debouncedSearch = useDebounce(filters.search, SEARCH_DEBOUNCE_MS);
+  const queryFilters = useMemo(
+    () => ({ ...filters, search: debouncedSearch }),
+    [filters, debouncedSearch],
+  );
+  const { data, isLoading } = useLogsQuery(queryFilters);
   const [selectedLog, setSelectedLog] = useState<LogEntryDto | null>(null);
 
   // Canlı mod açıksa WebSocket üzerinden logları dinle ve tabloyu güncelle
@@ -26,7 +34,7 @@ export default function LogsPage() {
     onNewLog: () => {
       // Sadece 1. sayfadaysak sorguyu invalidate et (anında üstten eklensin diye)
       if (filters.page === 0) {
-        queryClient.invalidateQueries({ queryKey: logKeys.list(filters) });
+        queryClient.invalidateQueries({ queryKey: logKeys.list(queryFilters) });
       }
     },
   });
@@ -34,7 +42,7 @@ export default function LogsPage() {
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Logs"
+        title="Loglar"
         description="Tüm kaynaklardan gelen logları izleyin ve filtreleyin"
       />
 
@@ -48,11 +56,7 @@ export default function LogsPage() {
       />
 
       {/* Table */}
-      <LogTable
-        data={data?.content ?? []}
-        loading={isLoading}
-        onRowClick={setSelectedLog}
-      />
+      <LogTable data={data?.content ?? []} loading={isLoading} onRowClick={setSelectedLog} />
 
       {/* Pagination */}
       {data && data.totalPages > 1 && (
@@ -76,14 +80,8 @@ export default function LogsPage() {
             className="fixed inset-0 z-40 flex justify-end"
           >
             {/* Backdrop */}
-            <div
-              className="absolute inset-0 bg-black/30"
-              onClick={() => setSelectedLog(null)}
-            />
-            <LogDetailPanel
-              log={selectedLog}
-              onClose={() => setSelectedLog(null)}
-            />
+            <div className="absolute inset-0 bg-black/30" onClick={() => setSelectedLog(null)} />
+            <LogDetailPanel log={selectedLog} onClose={() => setSelectedLog(null)} />
           </motion.div>
         )}
       </AnimatePresence>

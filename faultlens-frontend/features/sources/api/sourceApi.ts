@@ -22,7 +22,9 @@ export const SourceApi = {
     return { success: true, message: "Bağlantı başarılı" };
   },
 
-  testConfig: async (data: Partial<LogSourceDto>): Promise<{ success: boolean; message: string }> => {
+  testConfig: async (
+    data: Partial<LogSourceDto>,
+  ): Promise<{ success: boolean; message: string }> => {
     const response = await apiClient({
       method: HttpMethod.POST,
       url: Endpoints.SOURCES.TEST_CONFIG,

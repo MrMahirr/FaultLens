@@ -6,8 +6,19 @@ import { useRef, useEffect, useCallback, useState } from "react";
 
 type WebSocketStatus = "connecting" | "connected" | "disconnected";
 
+/** Sub-protocol marker the backend expects before the JWT (see JwtHandshakeInterceptor). */
+const BEARER_PROTOCOL = "bearer";
+/** Close code the backend sends when the session's token has expired. */
+const TOKEN_EXPIRED_CLOSE_CODE = 4401;
+
 interface UseWebSocketOptions {
   url: string;
+  /**
+   * JWT sent as the `["bearer", token]` sub-protocol. Browsers cannot set an
+   * Authorization header on WebSocket requests, and a query param would leak
+   * the token into proxy/access logs.
+   */
+  token?: string | null;
   onMessage?: (data: unknown) => void;
   onOpen?: () => void;
   onClose?: () => void;
@@ -29,6 +40,7 @@ interface UseWebSocketReturn {
 
 export function useWebSocket({
   url,
+  token,
   onMessage,
   onOpen,
   onClose,
@@ -44,6 +56,9 @@ export function useWebSocket({
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const enabledRef = useRef(enabled);
   const mountedRef = useRef(true);
+  // Reconnect timers call the latest `connect` through this ref (a callback
+  // cannot reference itself while it is being declared).
+  const connectRef = useRef<() => void>(() => {});
 
   // Refs for callbacks to prevent unnecessary reconnects
   const onMessageRef = useRef(onMessage);
@@ -72,7 +87,7 @@ export function useWebSocket({
     setStatus("connecting");
 
     try {
-      const ws = new WebSocket(url);
+      const ws = token ? new WebSocket(url, [BEARER_PROTOCOL, token]) : new WebSocket(url);
       wsRef.current = ws;
 
       ws.onopen = () => {
@@ -97,23 +112,20 @@ export function useWebSocket({
         onErrorRef.current?.(event);
       };
 
-      ws.onclose = () => {
+      ws.onclose = (event) => {
         if (!mountedRef.current) return;
         setStatus("disconnected");
         onCloseRef.current?.();
 
+        // An expired token will not become valid by retrying; a new token
+        // (after re-login) changes `token` and triggers a fresh connect.
+        if (event.code === TOKEN_EXPIRED_CLOSE_CODE) return;
+
         // Auto-reconnect with exponential backoff
-        if (
-          enabledRef.current &&
-          retryCountRef.current < maxRetries &&
-          mountedRef.current
-        ) {
-          const delay = Math.min(
-            baseDelay * Math.pow(2, retryCountRef.current),
-            maxDelay,
-          );
+        if (enabledRef.current && retryCountRef.current < maxRetries && mountedRef.current) {
+          const delay = Math.min(baseDelay * Math.pow(2, retryCountRef.current), maxDelay);
           retryCountRef.current += 1;
-          retryTimerRef.current = setTimeout(connect, delay);
+          retryTimerRef.current = setTimeout(() => connectRef.current(), delay);
         }
       };
     } catch {
@@ -121,7 +133,11 @@ export function useWebSocket({
         setStatus("disconnected");
       }
     }
-  }, [url, maxRetries, baseDelay, maxDelay]);
+  }, [url, token, maxRetries, baseDelay, maxDelay]);
+
+  useEffect(() => {
+    connectRef.current = connect;
+  }, [connect]);
 
   const disconnect = useCallback(() => {
     if (retryTimerRef.current) {

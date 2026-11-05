@@ -21,6 +21,21 @@ desktop.ini
 *.sublime-project
 *.sublime-workspace
 
+# Obsidian vault (local project notes / todo list)
+FaultLens-Vault/
+
+# Ruflo / Claude Flow runtime state (local memory DB, daemon pid, metrics)
+.claude-flow/
+.swarm/
+
+# Secrets / credentials (never commit)
+*.pem
+*.key
+*.p12
+*.jks
+id_rsa*
+kubeconfig*
+
 # Temporary & Log files
 *.log
 *.tmp
@@ -40,6 +55,11 @@ faultlens-backend/target/
 faultlens-backend/*/target/
 faultlens-backend/.env
 faultlens-backend/*.log
+faultlens-backend/logs/
+
+# Maven Wrapper downloads the distribution itself (see .mvn/wrapper/maven-wrapper.properties)
+faultlens-backend/.mvn/apache-maven-*/
+faultlens-backend/.mvn/*.zip
 
 # ====================================================================
 # Frontend (faultlens-frontend)

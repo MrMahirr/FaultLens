@@ -2,8 +2,8 @@ package com.faultlens.common.dto;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.annotation.JsonNaming;
 import org.junit.jupiter.api.Test;
 
 class CommonDtoContractTest {

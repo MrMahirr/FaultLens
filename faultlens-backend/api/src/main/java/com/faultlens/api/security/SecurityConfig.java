@@ -1,6 +1,6 @@
 package com.faultlens.api.security;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.faultlens.api.dto.ErrorEnvelope;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
@@ -13,6 +13,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -32,7 +33,9 @@ public class SecurityConfig {
                         .accessDeniedHandler((request, response, accessDeniedException) ->
                                 writeError(response, objectMapper, HttpServletResponse.SC_FORBIDDEN, "ACCESS_DENIED", "Access denied")))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher("/ws/**")).permitAll()
+                        // WebSocket handshakes carry the JWT as a sub-protocol, not an Authorization header;
+                        // they are authenticated by JwtHandshakeInterceptor (see WebSocketConfig).
+                        .requestMatchers(PathPatternRequestMatcher.withDefaults().matcher("/ws/**")).permitAll()
                         .requestMatchers("/api/v1/auth/**", "/actuator/health", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/actuator/**").hasRole("ADMIN")
                         .anyRequest().authenticated())

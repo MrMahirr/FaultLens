@@ -1,6 +1,6 @@
 # FaultLens API Contract Specification
 
-This document details the REST API endpoints and real-time WebSocket channels provided by the FaultLens (LogLens) backend application.
+This document details the REST API endpoints and real-time WebSocket channels provided by the FaultLens backend application.
 
 - **Base URL:** `http://localhost:3500/api/v1`
 - **WebSocket Protocol URL:** `ws://localhost:3500/ws`
@@ -10,7 +10,12 @@ This document details the REST API endpoints and real-time WebSocket channels pr
 
 ## 1. Authentication Endpoints (`/api/v1/auth`)
 
-All auth endpoints are public.
+`/login` and `/refresh` are public; `/profile` and `/password` require a bearer token.
+
+> **Initial admin account.** On first start the backend creates `admin` with the password from
+> `ADMIN_INITIAL_PASSWORD`, or generates one and prints it **once** in the backend log. An admin
+> still using a well-known default (the old `admin123` / V6 seed) is reset the same way on startup.
+> Either way the admin must change the password at first login (see *Password change required*).
 
 ### A. Login User
 - **Method:** `POST`
@@ -19,7 +24,7 @@ All auth endpoints are public.
   ```json
   {
     "username": "admin",
-    "password": "admin123"
+    "password": "<password>"
   }
   ```
 - **Response (`200 OK`):**
@@ -28,13 +33,17 @@ All auth endpoints are public.
     "success": true,
     "data": {
       "token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIs...",
-      "expires_at": "2026-05-26T12:22:00.089Z"
+      "expires_at": "2026-05-26T12:22:00.089Z",
+      "must_change_password": false
     },
     "message": "OK",
     "timestamp": "2026-05-25T15:30:00.000Z"
   }
   ```
-- **Error Codes:** `401 BadCredentialsException` (invalid user/pass).
+- **Error Codes:** `401 AUTH_FAILED` (invalid user/pass).
+- **Password change required:** when `must_change_password` is `true`, the token only allows
+  `PUT /auth/password`, `GET /auth/profile` and `POST /auth/refresh`. Every other endpoint answers
+  `403` with error code `PASSWORD_CHANGE_REQUIRED`, and the WebSocket handshake is refused (`403`).
 
 ### B. Refresh Token
 - **Method:** `POST`
@@ -52,6 +61,14 @@ All auth endpoints are public.
     "timestamp": "2026-05-25T15:31:00.000Z"
   }
   ```
+
+### C. Change Password
+- **Method:** `PUT`
+- **Path:** `/api/v1/auth/password`
+- **Headers:** `Authorization: Bearer <JWT_TOKEN>`
+- **Request Body:** `{ "current_password": "...", "new_password": "..." }` (`new_password`: 8-128 characters, must differ from the current one)
+- **Response (`200 OK`):** a fresh token (same shape as login) with `must_change_password: false`. Clients should replace their stored token.
+- **Error Codes:** `400 INVALID_CURRENT_PASSWORD`, `400 PASSWORD_REUSED`, `422 VALIDATION_FAILED`. A wrong current password is deliberately **not** `401`, so clients do not treat it as a logged-out session.
 
 ---
 
@@ -271,12 +288,38 @@ Requires authentication.
 
 ---
 
+## 4b. Alarms (`/api/v1/alarms`)
+
+All endpoints require a bearer token and use the standard `ApiResponse` wrapper; fields are snake_case.
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/v1/alarms?status=&severity=&page=0&size=20` | Paged list, newest first. `status`: `ACTIVE` / `ACKNOWLEDGED` / `RESOLVED`; `size` 1-200 |
+| `GET` | `/api/v1/alarms/stats` | `{ active, acknowledged, resolved, open_critical }` (independent of paging) |
+| `PUT` | `/api/v1/alarms/{id}/ack` | `ACTIVE` -> `ACKNOWLEDGED`; `400 ALARM_ALREADY_RESOLVED` for resolved alarms |
+| `PUT` | `/api/v1/alarms/{id}/resolve` | -> `RESOLVED` (idempotent, keeps the first `resolved_at`) |
+| `DELETE` | `/api/v1/alarms/{id}` | `204`; `404` when the alarm does not exist |
+
+Alarm object: `id, rule_id, rule_name, source_id, severity, status, message, triggered_at, resolved_at`.
+
 ## 5. Real-time Log Stream WebSocket (`/ws/logs`)
 
 A stateless, full-duplex WebSocket stream intended for front-end dashboards to receive parsed, structured logs instantly.
 
 - **Endpoint:** `ws://localhost:3500/ws/logs`
-- **Connection Handshake:** Publicly accessible, but capped to a maximum of **2 active global concurrent socket sessions** to protect backend resources from OOM.
+- **Authentication (required):** send the JWT from `/api/v1/auth/login` as WebSocket sub-protocols `["bearer", <token>]`. Browsers cannot set an `Authorization` header on WebSocket requests, and a query parameter would leak the token into proxy/access logs.
+  ```js
+  const ws = new WebSocket("ws://localhost:3500/ws/logs", ["bearer", token]);
+  // server selects the "bearer" sub-protocol: ws.protocol === "bearer"
+  ```
+  CLI example: `wscat -c ws://localhost:3500/ws/logs -s bearer -s <token> -o http://localhost:3000`
+- **Handshake rejections:**
+  | Status | Reason |
+  |---|---|
+  | `401` | Missing, malformed, wrongly signed or expired token |
+  | `403` | `Origin` not in `CORS_ORIGINS` (same allow-list as the REST API) |
+  | `503` | Global connection limit reached (`faultlens.ws.max-connections`, default 1000) |
+- **Token expiry:** the server checks open sessions every 10 seconds and closes those whose token has expired with close code **`4401` (`Token expired`)**. Clients should not auto-retry on `4401`; reconnect after obtaining a new token.
 - **Message Payload Broadcast (Server to Client):**
   ```json
   {

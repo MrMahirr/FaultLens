@@ -1,6 +1,10 @@
 package com.faultlens.api.controller;
 
 import com.faultlens.api.mapper.ApiDtoMapper;
+import com.faultlens.api.dto.LogSourceDto;
+import com.faultlens.api.dto.SourceStatus;
+import com.faultlens.collector.model.LogSource;
+import com.faultlens.collector.service.CollectorOrchestrator;
 import com.faultlens.collector.dto.LogSourceCreateRequest;
 import com.faultlens.collector.dto.LogSourceUpdateRequest;
 import com.faultlens.collector.service.LogSourceService;
@@ -25,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class SourceController {
     private final LogSourceService service;
     private final ApiDtoMapper mapper;
+    private final CollectorOrchestrator orchestrator;
 
     /**
      * Lists sources.
@@ -32,7 +37,7 @@ public class SourceController {
     @GetMapping
     public ResponseEntity<ApiResponse<?>> list() {
         return ResponseEntity.ok(ApiResponse.ok(service.findAll().stream()
-                .map(mapper::toLogSourceDto)
+                .map(this::toDto)
                 .toList()));
     }
 
@@ -41,7 +46,7 @@ public class SourceController {
      */
     @PostMapping
     public ResponseEntity<ApiResponse<?>> create(@Valid @RequestBody LogSourceCreateRequest source) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(mapper.toLogSourceDto(service.create(source))));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(toDto(service.create(source))));
     }
 
     /**
@@ -49,7 +54,7 @@ public class SourceController {
      */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<?>> update(@PathVariable Long id, @Valid @RequestBody LogSourceUpdateRequest source) {
-        return ResponseEntity.ok(ApiResponse.ok(mapper.toLogSourceDto(service.update(id, source))));
+        return ResponseEntity.ok(ApiResponse.ok(toDto(service.update(id, source))));
     }
 
     /**
@@ -82,7 +87,7 @@ public class SourceController {
      */
     @PostMapping("/{id}/enable")
     public ResponseEntity<ApiResponse<?>> enable(@PathVariable Long id) {
-        return ResponseEntity.ok(ApiResponse.ok(mapper.toLogSourceDto(service.enable(id))));
+        return ResponseEntity.ok(ApiResponse.ok(toDto(service.enable(id))));
     }
 
     /**
@@ -90,6 +95,12 @@ public class SourceController {
      */
     @PostMapping("/{id}/disable")
     public ResponseEntity<ApiResponse<?>> disable(@PathVariable Long id) {
-        return ResponseEntity.ok(ApiResponse.ok(mapper.toLogSourceDto(service.disable(id))));
+        return ResponseEntity.ok(ApiResponse.ok(toDto(service.disable(id))));
+    }
+
+    private LogSourceDto toDto(LogSource source) {
+        LogSourceDto dto = mapper.toLogSourceDto(source);
+        dto.setStatus(SourceStatus.of(source.isEnabled(), orchestrator.isStreaming(source.getId())));
+        return dto;
     }
 }

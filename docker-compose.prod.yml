@@ -1,4 +1,3 @@
-version: '3.9'
 services:
   backend:
     build:
@@ -24,6 +23,8 @@ services:
       # Security & CORS
       - JWT_SECRET=${JWT_SECRET}
       - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
+      - ADMIN_INITIAL_PASSWORD=${ADMIN_INITIAL_PASSWORD:-}
+      - COLLECTOR_FILE_ALLOWED_DIRS=${COLLECTOR_FILE_ALLOWED_DIRS:-/var/log}
       - AI_ENABLED=${AI_ENABLED:-false}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
     logging:
@@ -41,15 +42,15 @@ services:
     build:
       context: ./faultlens-frontend
       dockerfile: Dockerfile
+      # Baked into the client bundle at build time; rebuild the image when they change.
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.faultlens.com/api/v1}
+        NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL:-wss://api.faultlens.com/ws}
     image: faultlens-frontend:latest
     container_name: faultlens-frontend-prod
     restart: always
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
-    environment:
-      # These must be provided during build or runtime
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://api.faultlens.com/api/v1}
-      - NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL:-wss://api.faultlens.com/ws}
     logging:
       driver: "json-file"
       options:

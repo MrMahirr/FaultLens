@@ -1,6 +1,10 @@
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { LogSourceType } from "@/shared/types/common.types";
-import { useTestConfigMutation, useCreateSourceMutation } from "@/features/sources/api/useSourceMutation";
+import {
+  useTestConfigMutation,
+  useCreateSourceMutation,
+} from "@/features/sources/api/useSourceMutation";
 
 export function useSourceWizard(onClose: () => void) {
   const [step, setStep] = useState(1);
@@ -22,7 +26,7 @@ export function useSourceWizard(onClose: () => void) {
   };
 
   const buildConfigObj = () => {
-    let configObj: Record<string, any> = {};
+    let configObj: Record<string, string> = {};
     if (selectedType === LogSourceType.SSH) {
       configObj = { host, username, password, logFilePath };
     } else if (selectedType === LogSourceType.DOCKER) {
@@ -50,12 +54,19 @@ export function useSourceWizard(onClose: () => void) {
   };
 
   const handleSave = async () => {
-    await createSource.mutateAsync({
-      name,
-      type: selectedType!,
-      config: JSON.stringify(buildConfigObj()),
-    });
-    handleClose();
+    try {
+      await createSource.mutateAsync({
+        name,
+        type: selectedType!,
+        config: JSON.stringify(buildConfigObj()),
+      });
+      handleClose();
+    } catch (error) {
+      // e.g. LOCAL_FILE_PATH_NOT_ALLOWED: path outside COLLECTOR_FILE_ALLOWED_DIRS
+      const apiError = (error as { response?: { data?: { error?: { message?: string } } } })
+        ?.response?.data?.error;
+      toast.error(apiError?.message ?? "Kaynak kaydedilemedi.");
+    }
   };
 
   const handleClose = () => {
@@ -73,16 +84,24 @@ export function useSourceWizard(onClose: () => void) {
 
   return {
     // State
-    step, setStep,
+    step,
+    setStep,
     selectedType,
-    name, setName,
-    host, setHost,
-    namespace, setNamespace,
-    username, setUsername,
-    password, setPassword,
-    logFilePath, setLogFilePath,
-    testResult, setTestResult,
-    
+    name,
+    setName,
+    host,
+    setHost,
+    namespace,
+    setNamespace,
+    username,
+    setUsername,
+    password,
+    setPassword,
+    logFilePath,
+    setLogFilePath,
+    testResult,
+    setTestResult,
+
     // Mutations state
     isTesting: testConfig.isPending,
     isSaving: createSource.isPending,

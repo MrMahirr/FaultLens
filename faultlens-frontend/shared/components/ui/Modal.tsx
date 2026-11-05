@@ -82,7 +82,7 @@ function Modal({
         onClose();
       }
     },
-    [closeOnEsc, onClose]
+    [closeOnEsc, onClose],
   );
 
   useEffect(() => {
@@ -141,7 +141,7 @@ function Modal({
               "border border-border-default shadow-lg",
               "overflow-hidden",
               sizeStyles[size],
-              className
+              className,
             )}
           >
             {/* Header */}
@@ -157,10 +157,7 @@ function Modal({
                     </h2>
                   )}
                   {description && (
-                    <p
-                      id="modal-description"
-                      className="mt-1 text-sm text-text-secondary"
-                    >
+                    <p id="modal-description" className="mt-1 text-sm text-text-secondary">
                       {description}
                     </p>
                   )}
@@ -190,7 +187,7 @@ function Modal({
         </motion.div>
       )}
     </AnimatePresence>,
-    document.body
+    document.body,
   );
 }
 

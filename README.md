@@ -12,7 +12,7 @@ FaultLens, yapay zeka destekli, modern ve yüksek performanslı bir log analizi 
 ## 🏗️ Mimari ve Teknolojiler
 Proje iki ana bileşenden oluşmaktadır:
 1. **Frontend (Kullanıcı Arayüzü):** Next.js, React, TailwindCSS ve TypeScript kullanılarak geliştirilmiştir.
-2. **Backend (Sunucu ve Veri İşleme):** Java 21, Spring Boot, Apache Kafka ve PostgreSQL kullanılarak yüksek veri hacimlerini işleyebilecek şekilde tasarlanmıştır.
+2. **Backend (Sunucu ve Veri İşleme):** Java 25, Spring Boot 4, Apache Kafka ve PostgreSQL kullanılarak yüksek veri hacimlerini işleyebilecek şekilde tasarlanmıştır.
 
 ## 🏃‍♂️ Kurulum ve Çalıştırma
 
@@ -20,9 +20,9 @@ Projeyi lokal ortamınızda çalıştırmak için aşağıdaki adımları izleye
 
 ### 1. Altyapıyı Ayağa Kaldırma (Docker)
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
-Bu komut PostgreSQL veritabanını, Apache Kafka'yı ve Zookeeper'ı başlatacaktır.
+Bu komut PostgreSQL 18, Apache Kafka 4 (KRaft — Zookeeper yok), Redis 8 ve Kafka UI'ı (http://localhost:8090) başlatır; backend ve frontend imajlarını da derleyip çalıştırır. Postgres 16'dan gelen eski bir yerel veritabanınız varsa: [deploy/POSTGRES_UPGRADE.md](./deploy/POSTGRES_UPGRADE.md).
 
 ### 2. Backend'i Başlatma
 Detaylı bilgi için [Backend README](./faultlens-backend/README.md) dosyasına göz atın.
@@ -35,11 +35,24 @@ cd faultlens-backend
 Detaylı bilgi için [Frontend README](./faultlens-frontend/README.md) dosyasına göz atın.
 ```bash
 cd faultlens-frontend
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
-Uygulama başarıyla başlatıldığında **http://localhost:3000** adresinden arayüze erişebilirsiniz!
+Uygulama başarıyla başlatıldığında **http://localhost:3000** adresinden arayüze erişebilirsiniz.
+
+### Portlar (tek kaynak)
+| Servis | Adres (host) | Not |
+|---|---|---|
+| Frontend (Next.js) | `http://localhost:3000` | `pnpm dev` / compose |
+| Backend API | `http://localhost:3500/api/v1` | `PORT`, Swagger: `/swagger-ui/index.html` |
+| Backend WebSocket | `ws://localhost:3500/ws/logs` | `NEXT_PUBLIC_WS_URL=ws://localhost:3500/ws` (`/logs` frontend ekler) |
+| PostgreSQL | `localhost:5433` | compose `5433:5432`; container içinden `postgres:5432` |
+| Redis | `localhost:6379` | |
+| Kafka | `localhost:9092` | container içinden `kafka:29092` |
+| Kafka UI | `http://localhost:8090` | |
+
+Nginx örneği (`deploy/nginx.conf`) aynı portlara yönlendirir: `/api/v1` ve `/ws` → 3500, geri kalan → 3000.
 
 ## 📚 Entegrasyon Rehberi
 Kendi projelerinizi FaultLens'e nasıl bağlayacağınızı öğrenmek için [INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md) dosyasını inceleyebilirsiniz.

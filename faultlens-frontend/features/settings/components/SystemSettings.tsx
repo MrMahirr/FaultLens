@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Database, BrainCircuit, Globe, HardDrive } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { apiClient } from "@/shared/api/client";
 import { Endpoints } from "@/shared/api/endpoints";
 import toast from "react-hot-toast";
+import { getApiErrorMessage } from "@/shared/api/errors";
 
 export function SystemSettings() {
   const [retention, setRetention] = useState("30");
@@ -15,26 +16,29 @@ export function SystemSettings() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  const fetchSettings = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const response = await apiClient.get(Endpoints.SETTINGS.SYSTEM);
-      const data = response.data?.data;
-      if (data) {
-        setRetention(String(data.logRetentionDays ?? 30));
-        setEngine(data.defaultEngine ?? "ai");
-        setLanguage(data.language ?? "tr");
-      }
-    } catch {
-      // Fallback to defaults
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
+  // Load once on mount; state is only set in promise callbacks and not after unmount.
   useEffect(() => {
-    fetchSettings();
-  }, [fetchSettings]);
+    let active = true;
+    apiClient
+      .get(Endpoints.SETTINGS.SYSTEM)
+      .then((response) => {
+        const data = response.data?.data;
+        if (active && data) {
+          setRetention(String(data.logRetentionDays ?? 30));
+          setEngine(data.defaultEngine ?? "ai");
+          setLanguage(data.language ?? "tr");
+        }
+      })
+      .catch(() => {
+        // Fallback to defaults
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -51,10 +55,8 @@ export function SystemSettings() {
         setLanguage(data.language);
       }
       toast.success("Sistem tercihleri başarıyla kaydedildi!");
-    } catch (err: any) {
-      const message =
-        err.response?.data?.message || "Ayarlar kaydedilirken bir hata oluştu.";
-      toast.error(message);
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Ayarlar kaydedilirken bir hata oluştu."));
     } finally {
       setIsSaving(false);
     }
@@ -79,20 +81,13 @@ export function SystemSettings() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-text-primary">
-            Sistem Tercihleri
-          </h2>
+          <h2 className="text-lg font-semibold text-text-primary">Sistem Tercihleri</h2>
           <p className="text-sm text-text-muted mt-1">
             Uygulamanın veri saklama, dil ve analiz motoru ayarlarını yapılandırın.
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={handleSave}
-            loading={isSaving}
-          >
+          <Button variant="primary" size="sm" onClick={handleSave} loading={isSaving}>
             Değişiklikleri Kaydet
           </Button>
         </div>

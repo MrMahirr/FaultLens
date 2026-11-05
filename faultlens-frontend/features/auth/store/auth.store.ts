@@ -7,6 +7,8 @@ interface AuthUser {
   username: string;
   email?: string;
   role: string;
+  /** Mirrors the backend flag; the app only allows /change-password while true. */
+  mustChangePassword?: boolean;
 }
 
 interface AuthStore {

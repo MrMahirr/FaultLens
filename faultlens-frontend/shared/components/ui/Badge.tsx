@@ -6,14 +6,7 @@ import { cn } from "@/shared/lib/utils";
 /* ── Types ─────────────────────────────────────────────────── */
 
 type BadgeVariant =
-  | "default"
-  | "accent"
-  | "success"
-  | "warning"
-  | "error"
-  | "critical"
-  | "info"
-  | "outline";
+  "default" | "accent" | "success" | "warning" | "error" | "critical" | "info" | "outline";
 type BadgeSize = "sm" | "md" | "lg";
 
 interface BadgeProps {
@@ -62,7 +55,7 @@ function Badge({
         variantStyles[variant],
         sizeStyles[size],
         pulse && "animate-glow-pulse",
-        className
+        className,
       )}
     >
       {icon && <span className="shrink-0">{icon}</span>}

@@ -1,9 +1,10 @@
 package com.faultlens.api.ws;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.faultlens.common.dto.LogEntryDto;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -18,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.PingMessage;
+import org.springframework.web.socket.SubProtocolCapable;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.ConcurrentWebSocketSessionDecorator;
@@ -25,7 +27,10 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 @Slf4j
 @Component
-public class LogWebSocketHandler extends TextWebSocketHandler implements DisposableBean {
+public class LogWebSocketHandler extends TextWebSocketHandler implements SubProtocolCapable, DisposableBean {
+    /** Application close code sent when the session's JWT has expired (4000-4999 = app-defined). */
+    static final CloseStatus TOKEN_EXPIRED = new CloseStatus(4401, "Token expired");
+
     private final ObjectMapper objectMapper;
     private final Map<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
     
@@ -50,6 +55,15 @@ public class LogWebSocketHandler extends TextWebSocketHandler implements Disposa
 
         this.heartbeatScheduler = new ScheduledThreadPoolExecutor(1);
         this.heartbeatScheduler.scheduleAtFixedRate(this::sendHeartbeats, 10, 10, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Accepts the {@code bearer} sub-protocol offered by authenticated clients
+     * ({@code ["bearer", token]}); see {@link JwtHandshakeInterceptor}.
+     */
+    @Override
+    public List<String> getSubProtocols() {
+        return List.of(JwtHandshakeInterceptor.BEARER_PROTOCOL);
     }
 
     /**
@@ -117,16 +131,28 @@ public class LogWebSocketHandler extends TextWebSocketHandler implements Disposa
     }
 
     /**
-     * Periodically pings all sessions to clean up dead connections.
+     * Periodically pings all sessions to clean up dead connections and closes sessions whose
+     * token has expired, so a revoked/expired login cannot keep streaming logs.
      */
-    private void sendHeartbeats() {
+    void sendHeartbeats() {
         if (sessions.isEmpty()) {
             return;
         }
         
         sessions.values().removeIf(session -> !session.isOpen());
         
+        long now = System.currentTimeMillis();
         for (WebSocketSession session : sessions.values()) {
+            if (isExpired(session, now)) {
+                log.info("Closing WebSocket session {}: token expired", session.getId());
+                sessions.remove(session.getId());
+                try {
+                    session.close(TOKEN_EXPIRED);
+                } catch (IOException ioEx) {
+                    // Ignore
+                }
+                continue;
+            }
             try {
                 session.sendMessage(new PingMessage(ByteBuffer.wrap(new byte[0])));
             } catch (Exception ex) {
@@ -138,6 +164,11 @@ public class LogWebSocketHandler extends TextWebSocketHandler implements Disposa
                 }
             }
         }
+    }
+
+    private static boolean isExpired(WebSocketSession session, long now) {
+        Object expiresAt = session.getAttributes().get(JwtHandshakeInterceptor.ATTR_EXPIRES_AT);
+        return expiresAt instanceof Long expiry && expiry <= now;
     }
 
     @Override

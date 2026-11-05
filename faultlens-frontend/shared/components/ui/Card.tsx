@@ -48,10 +48,9 @@ function Card({
         "rounded-xl transition-all duration-300",
         variantStyles[variant],
         paddingStyles[padding],
-        hover &&
-          "hover:-translate-y-0.5 hover:border-border-hover hover:shadow-md cursor-pointer",
+        hover && "hover:-translate-y-0.5 hover:border-border-hover hover:shadow-md cursor-pointer",
         glow && "hover:shadow-glow",
-        className
+        className,
       )}
       {...props}
     >

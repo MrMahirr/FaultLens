@@ -9,6 +9,7 @@ import com.faultlens.api.dto.AuthDtos.UpdateProfileRequest;
 import com.faultlens.api.model.UserAccount;
 import com.faultlens.api.repository.UserAccountRepository;
 import com.faultlens.api.security.JwtService;
+import com.faultlens.common.exception.FaultLensException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -20,8 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class AuthService {
-    private static final String SEEDED_ADMIN_HASH = "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy";
-
     private final UserAccountRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
@@ -32,7 +31,7 @@ public class AuthService {
     public TokenResponse login(LoginRequest request) {
         UserAccount user = userRepository.findByUsername(request.username())
                 .orElseThrow(() -> new BadCredentialsException("Invalid username or password"));
-        if (!passwordMatches(request.password(), user)) {
+        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
             throw new BadCredentialsException("Invalid username or password");
         }
         return tokenFor(user);
@@ -72,17 +71,23 @@ public class AuthService {
     }
 
     /**
-     * Changes the password of the authenticated user.
-     * Validates the current password before allowing the change.
+     * Changes the password of the authenticated user and clears the password-change requirement.
+     *
+     * <p>A wrong current password is reported as 400 (not 401): the caller is authenticated, and a
+     * 401 would make the frontend log the user out.
      */
     @Transactional
-    public void changePassword(String username, ChangePasswordRequest request) {
+    public TokenResponse changePassword(String username, ChangePasswordRequest request) {
         UserAccount user = findUserByUsername(username);
-        if (!passwordMatches(request.currentPassword(), user)) {
-            throw new BadCredentialsException("Current password is incorrect");
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
+            throw new FaultLensException("Current password is incorrect", "INVALID_CURRENT_PASSWORD");
+        }
+        if (request.newPassword().equals(request.currentPassword())) {
+            throw new FaultLensException("New password must differ from the current password", "PASSWORD_REUSED");
         }
         user.setPassword(passwordEncoder.encode(request.newPassword()));
-        userRepository.save(user);
+        user.setMustChangePassword(false);
+        return tokenFor(userRepository.save(user));
     }
 
     private UserAccount findUserByUsername(String username) {
@@ -90,18 +95,9 @@ public class AuthService {
                 .orElseThrow(() -> new BadCredentialsException("User not found"));
     }
 
-    private boolean passwordMatches(String password, UserAccount user) {
-        return passwordEncoder.matches(password, user.getPassword()) || seededAdminFallback(password, user);
-    }
-
-    private boolean seededAdminFallback(String password, UserAccount user) {
-        return "admin".equals(user.getUsername())
-                && "admin123".equals(password)
-                && SEEDED_ADMIN_HASH.equals(user.getPassword());
-    }
-
     private TokenResponse tokenFor(UserAccount user) {
-        String token = jwtService.generateToken(user.getUsername(), List.of(user.getRole()));
-        return new TokenResponse(token, jwtService.expiresAt());
+        String token = jwtService.generateToken(
+                user.getUsername(), List.of(user.getRole()), user.isMustChangePassword());
+        return new TokenResponse(token, jwtService.expiresAt(), user.isMustChangePassword());
     }
 }

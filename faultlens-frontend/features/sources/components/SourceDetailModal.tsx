@@ -17,18 +17,11 @@ export function SourceDetailModal({ isOpen, onClose, source }: SourceDetailModal
   const config = source.config ? JSON.parse(source.config) : {};
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Kaynak Detayları"
-      size="md"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Kaynak Detayları" size="md">
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-xl font-display font-semibold text-text-primary">
-              {source.name}
-            </h3>
+            <h3 className="text-xl font-display font-semibold text-text-primary">{source.name}</h3>
             <div className="flex items-center gap-2 mt-2">
               <Badge variant="outline">{SOURCE_TYPE_LABELS[source.type]}</Badge>
               {source.enabled ? (
@@ -42,13 +35,22 @@ export function SourceDetailModal({ isOpen, onClose, source }: SourceDetailModal
             <span className="text-sm text-text-muted">Bağlantı Durumu</span>
             <div className="flex items-center justify-end gap-1.5 mt-1">
               {source.status === ConnectionStatus.CONNECTED && (
-                <><CheckCircle2 size={16} className="text-success" /> <span className="text-success text-sm">Bağlı</span></>
+                <>
+                  <CheckCircle2 size={16} className="text-success" />{" "}
+                  <span className="text-success text-sm">Bağlı</span>
+                </>
               )}
               {source.status === ConnectionStatus.WARNING && (
-                <><AlertTriangle size={16} className="text-warning" /> <span className="text-warning text-sm">Uyarı</span></>
+                <>
+                  <AlertTriangle size={16} className="text-warning" />{" "}
+                  <span className="text-warning text-sm">Uyarı</span>
+                </>
               )}
               {source.status === ConnectionStatus.DISCONNECTED && (
-                <><XCircle size={16} className="text-error" /> <span className="text-error text-sm">Bağlantı Yok</span></>
+                <>
+                  <XCircle size={16} className="text-error" />{" "}
+                  <span className="text-error text-sm">Bağlantı Yok</span>
+                </>
               )}
             </div>
           </div>

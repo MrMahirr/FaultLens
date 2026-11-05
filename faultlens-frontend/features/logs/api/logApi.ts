@@ -1,12 +1,17 @@
 import { apiClient } from "@/shared/api/client";
 import { Endpoints } from "@/shared/api/endpoints";
 import { HttpMethod } from "@/shared/api/methods";
-import type { LogEntryDto, LogFilters, LogGroupDto, LogDetailDto } from "@/features/logs/types/log.types";
+import type {
+  LogEntryDto,
+  LogFilters,
+  LogGroupDto,
+  LogDetailDto,
+} from "@/features/logs/types/log.types";
 import type { PagedResponse } from "@/shared/types/api.types";
 
 export const LogApi = {
   getLogs: async (filters: LogFilters): Promise<PagedResponse<LogEntryDto>> => {
-    const params: Record<string, any> = {
+    const params: Record<string, string | number> = {
       page: filters.page ?? 0,
       size: filters.size ?? 20,
     };

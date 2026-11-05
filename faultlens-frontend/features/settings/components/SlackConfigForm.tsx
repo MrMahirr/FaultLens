@@ -2,6 +2,7 @@ import { Button } from "@/shared/components/ui/Button";
 import { apiClient } from "@/shared/api/client";
 import { Endpoints } from "@/shared/api/endpoints";
 import toast from "react-hot-toast";
+import { getApiErrorMessage } from "@/shared/api/errors";
 
 interface SlackConfigFormProps {
   webhookUrl: string | null;
@@ -17,8 +18,8 @@ export function SlackConfigForm({ webhookUrl, onChange }: SlackConfigFormProps) 
     try {
       await apiClient.post(Endpoints.SETTINGS.TEST.SLACK, { webhookUrl });
       toast.success("Test mesajı başarıyla Slack kanalına gönderildi!");
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Test mesajı gönderilemedi.");
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Test mesajı gönderilemedi."));
     }
   };
 

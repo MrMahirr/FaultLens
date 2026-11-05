@@ -1,11 +1,16 @@
 package com.faultlens.collector.service;
 
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import com.faultlens.collector.adapter.LocalFilePathPolicy;
+import com.faultlens.collector.mapper.SourceConfigSecrets;
 import com.faultlens.collector.dto.LogSourceCreateRequest;
 import com.faultlens.collector.dto.LogSourceUpdateRequest;
 import com.faultlens.collector.mapper.LogSourceMapper;
 import com.faultlens.collector.model.LogSource;
 import com.faultlens.collector.repository.LogSourceRepository;
 import com.faultlens.common.enums.LogSourceType;
+import com.faultlens.common.exception.CollectorException;
 import com.faultlens.common.exception.ResourceNotFoundException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +24,9 @@ public class LogSourceService {
     private final LogSourceRepository repository;
     private final CollectorOrchestrator orchestrator;
     private final LogSourceMapper mapper;
+    private final LocalFilePathPolicy localFilePathPolicy;
+
+    private static final ObjectMapper JSON = new ObjectMapper();
 
     /**
      * Creates a log source from a request and starts streaming when enabled.
@@ -31,6 +39,7 @@ public class LogSourceService {
      * Creates a log source and starts streaming when enabled.
      */
     public LogSource create(LogSource source) {
+        validate(source);
         LogSource saved = repository.save(source);
         if (saved.isEnabled()) {
             orchestrator.startSource(saved);
@@ -43,6 +52,8 @@ public class LogSourceService {
      */
     public LogSource update(Long id, LogSourceUpdateRequest request) {
         LogSource existing = get(id);
+        // Clients receive secrets masked; a mask sent back means "keep the stored value".
+        request.setConfig(SourceConfigSecrets.restoreMasked(request.getConfig(), existing.getConfig()));
         mapper.updateEntity(existing, request);
         return saveAndRestart(id, existing);
     }
@@ -54,7 +65,7 @@ public class LogSourceService {
         LogSource existing = get(id);
         existing.setName(source.getName());
         existing.setType(source.getType());
-        existing.setConfig(source.getConfig());
+        existing.setConfig(SourceConfigSecrets.restoreMasked(source.getConfig(), existing.getConfig()));
         existing.setEnabled(source.isEnabled());
         return saveAndRestart(id, existing);
     }
@@ -147,11 +158,34 @@ public class LogSourceService {
     }
 
     private LogSource saveAndRestart(Long id, LogSource source) {
+        validate(source);
         LogSource saved = repository.save(source);
         orchestrator.stopSource(id);
         if (saved.isEnabled()) {
             orchestrator.startSource(saved);
         }
         return saved;
+    }
+
+    /**
+     * Rejects LOCAL_FILE sources outside the allowed directories (400 LOCAL_FILE_PATH_NOT_ALLOWED).
+     */
+    private void validate(LogSource source) {
+        if (source.getType() != LogSourceType.LOCAL_FILE) {
+            return;
+        }
+        localFilePathPolicy.requireAllowed(configValue(source.getConfig(), "logFilePath"));
+    }
+
+    private static String configValue(String configJson, String key) {
+        if (configJson == null || configJson.isBlank()) {
+            return null;
+        }
+        try {
+            JsonNode value = JSON.readTree(configJson).get(key);
+            return value == null || value.isNull() ? null : value.asText();
+        } catch (Exception ex) {
+            throw new CollectorException("Invalid source config", "INVALID_SOURCE_CONFIG", ex);
+        }
     }
 }

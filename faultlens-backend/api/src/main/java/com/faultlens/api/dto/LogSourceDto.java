@@ -1,7 +1,7 @@
 package com.faultlens.api.dto;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.annotation.JsonNaming;
 import com.faultlens.common.enums.LogSourceType;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
@@ -22,4 +22,6 @@ public class LogSourceDto {
     private boolean enabled;
     private Instant createdAt;
     private Instant lastSeenAt;
+    /** Live state from the collector; set by SourceController. */
+    private SourceStatus status;
 }

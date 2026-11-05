@@ -1,0 +1,16 @@
+# Generated / installed
+.next/
+out/
+build/
+coverage/
+node_modules/
+pnpm-lock.yaml
+next-env.d.ts
+*.tsbuildinfo
+
+# Static assets
+public/
+
+# Agent notes maintained by Next.js
+AGENTS.md
+CLAUDE.md
