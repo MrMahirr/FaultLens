@@ -16,6 +16,11 @@ import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -43,7 +48,13 @@ public class KubernetesAdapter implements LogSourceAdapter {
     }
 
     /**
-     * Polls Kubernetes pod logs and emits each line as a normalized event.
+     * Polls Kubernetes pod logs and emits each <b>new</b> line as a normalized event.
+     *
+     * <p>Logs are requested with timestamps; per pod the newest timestamp already emitted is kept
+     * and the next poll asks only for lines since then ({@code sinceTime} has second precision, so
+     * boundary lines are filtered by their own timestamp). The first poll of a pod resumes from the
+     * source's {@code lastSeenAt}, so a backend restart does not replay old lines; a never-seen
+     * source reads the existing log once. Pods that disappear are forgotten.
      */
     @Override
     // 3 attempts in total, as with spring-retry's default maxAttempts before the Framework 7 move.
@@ -53,19 +64,26 @@ public class KubernetesAdapter implements LogSourceAdapter {
         running.add(sourceId);
         Map<String, String> config = parseConfig(source.getConfig());
         String namespace = config.getOrDefault("namespace", "default");
+        Map<String, Instant> lastEmittedByPod = new HashMap<>();
         try (KubernetesClient client = createClient(config)) {
             while (running.contains(sourceId) && !Thread.currentThread().isInterrupted()) {
+                Set<String> seenPods = new HashSet<>();
                 for (Pod pod : client.pods().inNamespace(namespace).list().getItems()) {
                     String podName = pod.getMetadata().getName();
-                    String logs = client.pods().inNamespace(namespace).withName(podName).getLog();
-                    if (logs == null || logs.isBlank()) {
-                        continue;
+                    seenPods.add(podName);
+                    Instant since = lastEmittedByPod.getOrDefault(podName, source.getLastSeenAt());
+                    var podLog = client.pods().inNamespace(namespace).withName(podName).usingTimestamps();
+                    // Always send sinceTime (epoch = whole log) so every poll is the same plain request.
+                    String logs = podLog.sinceTime((since == null ? Instant.EPOCH : since).toString()).getLog();
+                    for (TimedLine line : newLines(logs, since)) {
+                        onEvent.accept(toEvent(source, config, pod, line));
+                        if (line.timestamp() != null) {
+                            lastEmittedByPod.merge(podName, line.timestamp(),
+                                    (a, b) -> a.isAfter(b) ? a : b);
+                        }
                     }
-                    logs.lines()
-                            .filter(line -> !line.isBlank())
-                            .map(line -> toEvent(source, config, pod, line))
-                            .forEach(onEvent);
                 }
+                lastEmittedByPod.keySet().retainAll(seenPods);
                 Thread.sleep(properties.getK8s().getReconnectIntervalSeconds() * 1000);
             }
         } catch (InterruptedException ex) {
@@ -112,7 +130,44 @@ public class KubernetesAdapter implements LogSourceAdapter {
         return new KubernetesClientBuilder().withConfig(new ConfigBuilder().withNamespace(config.getOrDefault("namespace", "default")).build()).build();
     }
 
-    private LogEventDto toEvent(LogSource source, Map<String, String> config, Pod pod, String line) {
+    /** A log line split from the RFC 3339 timestamp Kubernetes prefixes with {@code timestamps=true}. */
+    record TimedLine(Instant timestamp, String text) {
+    }
+
+    /**
+     * Splits a timestamped log and keeps the non-blank lines newer than {@code since}. A line
+     * without a parseable timestamp is kept (and cannot advance the position).
+     */
+    static List<TimedLine> newLines(String logs, Instant since) {
+        if (logs == null || logs.isBlank()) {
+            return List.of();
+        }
+        List<TimedLine> result = new ArrayList<>();
+        for (String raw : logs.split("\\R")) {
+            if (raw.isBlank()) {
+                continue;
+            }
+            int space = raw.indexOf(' ');
+            Instant timestamp = null;
+            String text = raw;
+            if (space > 0) {
+                try {
+                    timestamp = Instant.parse(raw.substring(0, space));
+                    text = raw.substring(space + 1);
+                } catch (DateTimeParseException ignored) {
+                    // not a timestamp prefix: keep the whole line
+                }
+            }
+            if (text.isBlank() || (timestamp != null && since != null && !timestamp.isAfter(since))) {
+                continue;
+            }
+            result.add(new TimedLine(timestamp, text));
+        }
+        return result;
+    }
+
+    private LogEventDto toEvent(LogSource source, Map<String, String> config, Pod pod, TimedLine timedLine) {
+        String line = timedLine.text();
         Map<String, String> labels = new java.util.HashMap<>(
                 pod.getMetadata().getLabels() == null ? Map.of() : pod.getMetadata().getLabels());
         labels.put("sourceId", String.valueOf(source.getId()));
@@ -128,7 +183,7 @@ public class KubernetesAdapter implements LogSourceAdapter {
                 .severity(Severity.INFO)
                 .message(line)
                 .rawLine(line)
-                .timestamp(Instant.now())
+                .timestamp(timedLine.timestamp() == null ? Instant.now() : timedLine.timestamp())
                 .labels(labels)
                 .build();
     }
