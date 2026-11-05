@@ -22,10 +22,10 @@ jobs:
       run:
         working-directory: faultlens-backend
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up JDK 25
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           java-version: "25"
           distribution: temurin
@@ -42,10 +42,10 @@ jobs:
       run:
         working-directory: faultlens-backend
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up JDK 25
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           java-version: "25"
           distribution: temurin
@@ -57,7 +57,7 @@ jobs:
 
       - name: Upload failsafe reports
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: failsafe-reports
           path: faultlens-backend/api/target/failsafe-reports
@@ -69,17 +69,17 @@ jobs:
       run:
         working-directory: faultlens-frontend
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # Version comes from "packageManager" in faultlens-frontend/package.json.
       - name: Set up pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v5
         with:
           package_json_file: faultlens-frontend/package.json
 
       # Kept in line with faultlens-frontend/Dockerfile (node:26) and "engines" in package.json.
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: "26"
           cache: pnpm
@@ -119,7 +119,7 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/dependency-review-action@v4
+      - uses: actions/checkout@v7
+      - uses: actions/dependency-review-action@v5
         with:
           fail-on-severity: high
