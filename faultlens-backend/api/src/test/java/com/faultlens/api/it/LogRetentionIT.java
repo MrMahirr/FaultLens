@@ -112,7 +112,7 @@ class LogRetentionIT extends AbstractIntegrationTest {
         return Alarm.builder()
                 .ruleId("RETENTION_IT")
                 .ruleName("retention")
-                .severity("ERROR")
+                .severity(Severity.ERROR)
                 .status(status)
                 .message("retention")
                 .triggeredAt(triggeredAt)

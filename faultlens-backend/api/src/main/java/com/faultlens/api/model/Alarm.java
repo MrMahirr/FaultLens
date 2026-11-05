@@ -8,6 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import com.faultlens.common.enums.Severity;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,8 +36,13 @@ public class Alarm {
     @Column(name = "source_id")
     private Long sourceId;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "severity", nullable = false)
-    private String severity; // CRITICAL, ERROR, WARN, INFO
+    private Severity severity;
+
+    /** The rule that raised this alarm; null for built-in sources (rule_id e.g. AI_ANALYSIS). */
+    @Column(name = "alarm_rule_id")
+    private Long alarmRuleId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)

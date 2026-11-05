@@ -7,6 +7,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.HexFormat;
+import com.faultlens.processor.event.LogGroupCreatedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -18,10 +20,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class LogGroupingService {
     private final LogGroupRepository repository;
     private final LogGroupingService self;
+    private final ApplicationEventPublisher events;
 
-    public LogGroupingService(LogGroupRepository repository, @Lazy LogGroupingService self) {
+    public LogGroupingService(LogGroupRepository repository, @Lazy LogGroupingService self,
+                              ApplicationEventPublisher events) {
         this.repository = repository;
         this.self = self;
+        this.events = events;
     }
 
     /**
@@ -40,7 +45,7 @@ public class LogGroupingService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public LogGroup createGroupSafely(String fingerprint, String message, Severity severity, Long sourceId, Instant timestamp) {
         try {
-            return repository.saveAndFlush(LogGroup.builder()
+            LogGroup created = repository.saveAndFlush(LogGroup.builder()
                     .fingerprint(fingerprint)
                     .firstMessage(message)
                     .severity(severity)
@@ -49,6 +54,9 @@ public class LogGroupingService {
                     .firstSeenAt(timestamp)
                     .lastSeenAt(timestamp)
                     .build());
+            // Only the thread that really created the group announces it (NEW_GROUP rules).
+            events.publishEvent(new LogGroupCreatedEvent(created.getId(), severity, sourceId, message));
+            return created;
         } catch (DataIntegrityViolationException e) {
             // Created concurrently by another thread, fetch and update it
             return repository.findWithLockByFingerprint(fingerprint)

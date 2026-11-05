@@ -14,6 +14,7 @@ import com.faultlens.api.model.Alarm;
 import com.faultlens.api.model.AlarmStatus;
 import com.faultlens.api.repository.AlarmRepository;
 import com.faultlens.common.dto.AnalysisResultDto;
+import com.faultlens.common.enums.Severity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -56,7 +57,7 @@ class AlarmDispatcherServiceTest {
 
         ArgumentCaptor<Alarm> captor = ArgumentCaptor.forClass(Alarm.class);
         verify(alarmRepository, times(3)).save(captor.capture());
-        assertThat(captor.getAllValues()).extracting(Alarm::getSeverity).containsExactly("CRITICAL", "ERROR", "ERROR");
+        assertThat(captor.getAllValues()).extracting(Alarm::getSeverity).containsExactly(Severity.CRITICAL, Severity.ERROR, Severity.ERROR);
         assertThat(captor.getAllValues().get(2).getMessage()).contains("%0");
     }
 

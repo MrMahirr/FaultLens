@@ -1,10 +1,13 @@
 package com.faultlens.api.service;
 
+import com.faultlens.api.model.AlarmChannel;
 import com.faultlens.api.model.NotificationSettings;
 import com.faultlens.api.model.UserAccount;
 import com.faultlens.api.repository.NotificationSettingsRepository;
 import com.faultlens.api.repository.UserAccountRepository;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import lombok.extern.slf4j.Slf4j;
@@ -52,19 +55,36 @@ public class AlarmNotifier {
      */
     @Async
     public void notifyAll(String title, String message) {
-        try {
-            inAppNotificationService.broadcastAlarm(title, message);
-        } catch (Exception e) {
-            log.error("In-App alarm broadcast failed", e);
+        send(title, message, EnumSet.allOf(AlarmChannel.class));
+    }
+
+    /**
+     * Notifies only the given channels (an alarm rule's choice); runs on the async executor.
+     */
+    @Async
+    public void notifyAll(String title, String message, Set<AlarmChannel> channels) {
+        send(title, message, channels);
+    }
+
+    private void send(String title, String message, Set<AlarmChannel> channels) {
+        if (channels.contains(AlarmChannel.IN_APP)) {
+            try {
+                inAppNotificationService.broadcastAlarm(title, message);
+            } catch (Exception e) {
+                log.error("In-App alarm broadcast failed", e);
+            }
+        }
+        if (!channels.contains(AlarmChannel.SLACK) && !channels.contains(AlarmChannel.EMAIL)) {
+            return;
         }
 
         List<NotificationSettings> allSettings = settingsRepository.findAll();
         for (NotificationSettings settings : allSettings) {
-            if (settings.isSlackEnabled() && settings.getSlackWebhook() != null) {
+            if (channels.contains(AlarmChannel.SLACK) && settings.isSlackEnabled() && settings.getSlackWebhook() != null) {
                 withRetry("Slack", () -> slackNotificationService.sendNotification(
                         settings.getSlackWebhook(), title + "\n" + message));
             }
-            if (settings.isEmailEnabled() && settings.getEmailjsServiceId() != null) {
+            if (channels.contains(AlarmChannel.EMAIL) && settings.isEmailEnabled() && settings.getEmailjsServiceId() != null) {
                 Optional<UserAccount> user = findUser(settings.getUserId());
                 if (user.isPresent() && user.get().getEmail() != null) {
                     String to = user.get().getEmail();

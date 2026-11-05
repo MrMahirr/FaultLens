@@ -41,7 +41,7 @@ class ApiContractIT extends AbstractIntegrationTest {
     private static final Set<String> PAGE = Set.of("content", "page", "size", "total_elements", "total_pages");
 
     private static final Set<String> ALARM = Set.of("id", "rule_id", "rule_name", "source_id", "severity", "status",
-            "message", "triggered_at", "resolved_at");
+            "message", "triggered_at", "resolved_at", "alarm_rule_id");
     private static final Set<String> ALARM_STATS = Set.of("active", "acknowledged", "resolved", "open_critical");
     private static final Set<String> LOG_ENTRY = Set.of("id", "source_id", "group_id", "severity", "message",
             "parsed_message", "stack_trace", "namespace", "pod_name", "container_name", "service_name", "cluster",
