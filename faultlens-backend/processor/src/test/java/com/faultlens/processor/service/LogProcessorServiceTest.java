@@ -12,7 +12,6 @@ import com.faultlens.processor.parser.PatternRegistry;
 import com.faultlens.processor.event.LogProcessedEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import com.faultlens.processor.model.LogEntry;
-import com.faultlens.processor.model.LogGroup;
 import com.faultlens.processor.parser.LogParser;
 import com.faultlens.processor.parser.ParsedLog;
 import com.faultlens.processor.repository.LogEntryRepository;
@@ -64,9 +63,8 @@ class LogProcessorServiceTest {
 
         when(severityClassifier.classify(eq(event), eq(parsedLog))).thenReturn(Severity.ERROR);
 
-        LogGroup mockGroup = new LogGroup();
-        mockGroup.setId(456L);
-        when(groupingService.group(any(), any(), any(), any(), any())).thenReturn(mockGroup);
+        when(groupingService.fingerprint(any(), any(), any())).thenReturn("fp");
+        when(groupingService.groupAll(anyCollection())).thenReturn(Map.of("fp", 456L));
 
         LogEntry entry = LogEntry.builder()
                 .id(789L)
@@ -85,7 +83,11 @@ class LogProcessorServiceTest {
         assertThat(result.getGroupId()).isEqualTo(456L);
 
         verify(eventPublisher).publishEvent(any(LogProcessedEvent.class));
-        verify(entryRepository).saveAll(anyList());
+        @SuppressWarnings("unchecked")
+        org.mockito.ArgumentCaptor<List<LogEntry>> saved = org.mockito.ArgumentCaptor.forClass(List.class);
+        verify(entryRepository).saveAll(saved.capture());
+        // the group id from the batch upsert is put on the entry before it is stored
+        assertThat(saved.getValue()).extracting(LogEntry::getGroupId).containsExactly(456L);
     }
 
     @Test
@@ -100,9 +102,8 @@ class LogProcessorServiceTest {
 
         when(severityClassifier.classify(eq(event), eq(parsedLog))).thenReturn(Severity.INFO);
 
-        LogGroup mockGroup = new LogGroup();
-        mockGroup.setId(456L);
-        when(groupingService.group(any(), any(), any(), any(), any())).thenReturn(mockGroup);
+        when(groupingService.fingerprint(any(), any(), any())).thenReturn("fp");
+        when(groupingService.groupAll(anyCollection())).thenReturn(Map.of("fp", 456L));
 
         LogEntry entry = LogEntry.builder()
                 .id(789L)
