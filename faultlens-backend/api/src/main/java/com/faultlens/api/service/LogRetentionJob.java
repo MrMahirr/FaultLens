@@ -15,7 +15,8 @@ import org.springframework.stereotype.Service;
  * ({@code system_settings.log_retention_days}; 0 = keep forever).
  *
  * <ul>
- *   <li>log entries older than the cutoff (their analyses go with them: ON DELETE CASCADE)</li>
+ *   <li>log entries older than the cutoff: whole daily partitions are dropped (P08), the rest
+ *       (the default partition, the cutoff day) is deleted in batches</li>
  *   <li>analyses older than the cutoff (also those of a whole group, which have no entry)</li>
  *   <li>alarms that are RESOLVED and older than the cutoff; open alarms are kept however old</li>
  *   <li>log groups left without entries whose last occurrence is older than the cutoff</li>
@@ -41,22 +42,26 @@ public class LogRetentionJob {
 
     private final SystemSettingsService systemSettingsService;
     private final JdbcTemplate jdbcTemplate;
+    private final LogPartitionMaintenance partitions;
     private final Clock clock;
 
     @Autowired
-    public LogRetentionJob(SystemSettingsService systemSettingsService, JdbcTemplate jdbcTemplate) {
-        this(systemSettingsService, jdbcTemplate, Clock.systemUTC());
+    public LogRetentionJob(SystemSettingsService systemSettingsService, JdbcTemplate jdbcTemplate,
+                           LogPartitionMaintenance partitions) {
+        this(systemSettingsService, jdbcTemplate, partitions, Clock.systemUTC());
     }
 
-    LogRetentionJob(SystemSettingsService systemSettingsService, JdbcTemplate jdbcTemplate, Clock clock) {
+    LogRetentionJob(SystemSettingsService systemSettingsService, JdbcTemplate jdbcTemplate,
+                    LogPartitionMaintenance partitions, Clock clock) {
         this.systemSettingsService = systemSettingsService;
         this.jdbcTemplate = jdbcTemplate;
+        this.partitions = partitions;
         this.clock = clock;
     }
 
-    /** Result of one run, per table. */
-    record Result(long logEntries, long analyses, long alarms, long logGroups) {
-        static final Result NOTHING = new Result(0, 0, 0, 0);
+    /** Result of one run, per table ({@code partitions}: whole days of log entries dropped). */
+    record Result(long partitions, long logEntries, long analyses, long alarms, long logGroups) {
+        static final Result NOTHING = new Result(0, 0, 0, 0, 0);
     }
 
     /**
@@ -78,12 +83,13 @@ public class LogRetentionJob {
 
         // Order matters: entries first (frees their groups), groups last.
         Result result = new Result(
+                partitions.dropOlderThan(cutoff.toInstant()),
                 deleteInBatches(DELETE_ENTRIES, cutoff),
                 deleteInBatches(DELETE_ANALYSES, cutoff),
                 deleteInBatches(DELETE_RESOLVED_ALARMS, cutoff),
                 deleteInBatches(DELETE_EMPTY_GROUPS, cutoff));
-        log.info("Retention cleanup done: {} log entries, {} analyses, {} resolved alarms, {} empty groups removed",
-                result.logEntries(), result.analyses(), result.alarms(), result.logGroups());
+        log.info("Retention cleanup done: {} daily partitions dropped; {} log entries, {} analyses, {} resolved alarms, "
+                        + "{} empty groups removed", result.partitions(), result.logEntries(), result.analyses(), result.alarms(), result.logGroups());
         return result;
     }
 

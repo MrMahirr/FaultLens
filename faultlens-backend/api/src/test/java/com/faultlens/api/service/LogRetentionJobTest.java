@@ -25,7 +25,8 @@ class LogRetentionJobTest {
 
     private final SystemSettingsService settings = mock(SystemSettingsService.class);
     private final JdbcTemplate jdbc = mock(JdbcTemplate.class);
-    private final LogRetentionJob job = new LogRetentionJob(settings, jdbc, Clock.fixed(NOW, ZoneOffset.UTC));
+    private final LogPartitionMaintenance partitions = mock(LogPartitionMaintenance.class);
+    private final LogRetentionJob job = new LogRetentionJob(settings, jdbc, partitions, Clock.fixed(NOW, ZoneOffset.UTC));
 
     @Test
     void zeroOrNegativeDaysDisablesCleanup() {
@@ -34,7 +35,7 @@ class LogRetentionJobTest {
         job.run();
         job.run();
 
-        verifyNoInteractions(jdbc);
+        verifyNoInteractions(jdbc, partitions);
     }
 
     @Test
@@ -44,7 +45,9 @@ class LogRetentionJobTest {
 
         job.run();
 
-        InOrder order = inOrder(jdbc);
+        InOrder order = inOrder(partitions, jdbc);
+        // whole expired days first, then the rows left in the default / cutoff-day partitions
+        order.verify(partitions).dropOlderThan(cutoff.toInstant());
         order.verify(jdbc).update(LogRetentionJob.DELETE_ENTRIES, cutoff);
         order.verify(jdbc).update(LogRetentionJob.DELETE_ANALYSES, cutoff);
         order.verify(jdbc).update(LogRetentionJob.DELETE_RESOLVED_ALARMS, cutoff);

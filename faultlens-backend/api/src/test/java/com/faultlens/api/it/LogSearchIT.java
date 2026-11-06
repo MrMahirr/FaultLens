@@ -48,8 +48,11 @@ class LogSearchIT extends AbstractIntegrationTest {
             List<String> plan = jdbc.queryForList("EXPLAIN select id from log_entries where lower(message) like '%zqxw-term%' "
                     + "or lower(raw_line) like '%zqxw-term%'", String.class);
             assertThat(String.join("\n", plan))
-                    .contains("idx_log_entries_message_trgm")
-                    .contains("idx_log_entries_raw_line_trgm");
+                    // Partitions carry generated index names (log_entries_YYYYMMDD_lower_idx...).
+                    .contains("Bitmap Index Scan")
+                    .contains("Index Cond: (lower(message) ~~ '%zqxw-term%'::text)")
+                    .contains("Index Cond: (lower(raw_line) ~~ '%zqxw-term%'::text)")
+                    .doesNotContain("Seq Scan");
         } finally {
             jdbc.execute("RESET enable_seqscan");
         }
