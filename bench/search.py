@@ -26,6 +26,11 @@ SCENARIOS = [
     ("search rare 'u4242'", {"search": "u4242"}),
     ("search absent 'zzqx-not-there'", {"search": "zzqx-not-there"}),
     ("search + severity + 24h", {"search": "timeout", "severity": "ERROR", "from": "@24h"}),
+    # Since P08 the API searches the last 24 h unless told otherwise: the whole table, explicitly.
+    ("ALL TIME list", {"from": "@all"}),
+    ("ALL TIME search common", {"search": "connection refused", "from": "@all"}),
+    ("ALL TIME search rare", {"search": "u4242", "from": "@all"}),
+    ("ALL TIME search absent", {"search": "zzqx-not-there", "from": "@all"}),
 ]
 
 
@@ -50,6 +55,8 @@ def login(base):
 
 def resolve(params):
     out = dict(params, page="0", size="20")
+    if out.get("from") == "@all":
+        out["from"] = "1970-01-01T00:00:00Z"
     if out.get("from") == "@24h":
         out["from"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() - 86400))
     return out

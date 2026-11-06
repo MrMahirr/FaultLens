@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import type { LogFilters } from "@/features/logs/types/log.types";
+import { DEFAULT_LOG_TIME_RANGE, type LogFilters } from "@/features/logs/types/log.types";
 
 /**
  * Log filter state management hook.
@@ -11,6 +11,7 @@ export function useLogs() {
   const [filters, setFilters] = useState<LogFilters>({
     page: 0,
     size: 20,
+    range: DEFAULT_LOG_TIME_RANGE,
   });
 
   const [liveMode, setLiveMode] = useState(false);
@@ -25,7 +26,7 @@ export function useLogs() {
   }, []);
 
   const resetFilters = useCallback(() => {
-    setFilters({ page: 0, size: 20 });
+    setFilters({ page: 0, size: 20, range: DEFAULT_LOG_TIME_RANGE });
   }, []);
 
   const toggleLiveMode = useCallback(() => {

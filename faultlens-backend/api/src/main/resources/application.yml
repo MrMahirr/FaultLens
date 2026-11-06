@@ -37,6 +37,10 @@ spring:
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: true
+    postgresql:
+      # Session-level migration lock: the default transactional lock keeps a transaction open,
+      # and CREATE INDEX CONCURRENTLY (V18) waits for it forever.
+      transactional-lock: false
   kafka:
     bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
     consumer:

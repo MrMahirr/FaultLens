@@ -6,7 +6,12 @@ import { Input } from "@/shared/components/ui/Input";
 import { Button } from "@/shared/components/ui/Button";
 import { Badge } from "@/shared/components/ui/Badge";
 import { Severity } from "@/shared/types/common.types";
-import type { LogFilters } from "@/features/logs/types/log.types";
+import {
+  DEFAULT_LOG_TIME_RANGE,
+  LOG_TIME_RANGE_LABELS,
+  type LogFilters,
+  type LogTimeRange,
+} from "@/features/logs/types/log.types";
 import { cn } from "@/shared/lib/utils";
 import { useSourcesQuery } from "@/features/sources/api/useSourceQuery";
 import { useClearLogsMutation } from "@/features/logs/api/useLogMutation";
@@ -80,7 +85,10 @@ function LogFiltersBar({
   };
 
   const hasActiveFilters =
-    (filters.severity && filters.severity.length > 0) || filters.search || filters.source;
+    (filters.severity && filters.severity.length > 0) ||
+    filters.search ||
+    filters.source ||
+    (filters.range ?? DEFAULT_LOG_TIME_RANGE) !== DEFAULT_LOG_TIME_RANGE;
 
   return (
     <div className="flex flex-col gap-3 p-4 bg-bg-secondary border border-border-default rounded-xl">
@@ -135,6 +143,18 @@ function LogFiltersBar({
         )}
         {/* Source Dropdown & Clear Logs Button */}
         <div className="flex items-center gap-2 ml-auto">
+          <select
+            aria-label="Zaman aralığı"
+            className="px-3 py-1.5 bg-bg-primary border border-border-default rounded-lg text-sm text-text-primary focus:outline-none focus:border-accent cursor-pointer"
+            value={filters.range ?? DEFAULT_LOG_TIME_RANGE}
+            onChange={(e) => onFilterChange("range", e.target.value as LogTimeRange)}
+          >
+            {(Object.keys(LOG_TIME_RANGE_LABELS) as LogTimeRange[]).map((range) => (
+              <option key={range} value={range}>
+                {LOG_TIME_RANGE_LABELS[range]}
+              </option>
+            ))}
+          </select>
           <select
             className="px-3 py-1.5 bg-bg-primary border border-border-default rounded-lg text-sm text-text-primary focus:outline-none focus:border-accent cursor-pointer"
             value={filters.source ?? ""}
