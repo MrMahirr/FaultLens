@@ -106,15 +106,28 @@ services:
       # Empty -> generated and printed once in the backend log; must be changed at first login
       - ADMIN_INITIAL_PASSWORD=${ADMIN_INITIAL_PASSWORD:-}
       - COLLECTOR_FILE_ALLOWED_DIRS=${COLLECTOR_FILE_ALLOWED_DIRS:-/var/log}
+      # Docker sources go through the read-only socket proxy (the backend runs as non-root).
+      - DOCKER_HOST=tcp://docker-proxy:2375
     depends_on:
+      docker-proxy:
+        condition: service_started
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
       kafka:
         condition: service_healthy
+
+  # Read-only Docker API for the collector (P08): only container listing, inspect and logs;
+  # no POST/DELETE, so a compromised backend cannot start containers or reach the host.
+  docker-proxy:
+    image: tecnativa/docker-socket-proxy:v0.4.1
+    restart: unless-stopped
+    environment:
+      CONTAINERS: 1
+      POST: 0
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:ro
 
   frontend:
     build:

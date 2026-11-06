@@ -39,6 +39,7 @@ services:
       - COLLECTOR_FILE_ALLOWED_DIRS=${COLLECTOR_FILE_ALLOWED_DIRS:-/var/log}
       - AI_ENABLED=${AI_ENABLED:-false}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - DOCKER_HOST=tcp://docker-proxy:2375
     logging:
       driver: "json-file"
       options:
@@ -50,6 +51,36 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+
+  # Read-only Docker API for the collector (P08): only container listing, inspect and logs;
+  # no POST/DELETE, so a compromised backend cannot start containers or reach the host.
+  docker-proxy:
+    image: tecnativa/docker-socket-proxy:v0.4.1
+    restart: always
+    environment:
+      CONTAINERS: 1
+      POST: 0
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  # Daily pg_dump of the database (P08); dumps in the faultlens_backups volume, 14 days kept.
+  # Back up that volume (or BACKUP_DIR) off the host as well. One-off run:
+  #   docker compose -f docker-compose.prod.yml run --rm db-backup /pg-backup.sh --now
+  db-backup:
+    image: postgres:18-alpine
+    restart: always
+    entrypoint: ["/bin/sh", "/pg-backup.sh"]
+    environment:
+      - PGHOST=${DB_HOST}
+      - PGPORT=${DB_PORT:-5432}
+      - PGDATABASE=${DB_NAME:-faultlens}
+      - PGUSER=${DB_USER}
+      - PGPASSWORD=${DB_PASS}
+      - BACKUP_HOUR=${BACKUP_HOUR:-02}
+      - BACKUP_KEEP_DAYS=${BACKUP_KEEP_DAYS:-14}
+    volumes:
+      - ./deploy/backup/pg-backup.sh:/pg-backup.sh:ro
+      - ${BACKUP_DIR:-faultlens_backups}:/backups
 
   frontend:
     build:
@@ -74,3 +105,6 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+
+volumes:
+  faultlens_backups:

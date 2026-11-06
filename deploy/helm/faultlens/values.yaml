@@ -1,0 +1,54 @@
+# FaultLens on Kubernetes (P08). Postgres, Redis and Kafka are external (managed services or
+# their own charts); point the backend at them below. Secrets come from an existing Secret.
+image:
+  registry: ghcr.io/mrmahirr
+  backend: faultlens-backend
+  frontend: faultlens-frontend
+  tag: ""            # defaults to .Chart.AppVersion
+  pullPolicy: IfNotPresent
+
+backend:
+  # Several replicas are safe: each log source is collected by exactly one (Redis leases).
+  replicas: 2
+  resources:
+    requests: { cpu: 250m, memory: 768Mi }
+    limits: { memory: 1536Mi }   # heap = 75% of this (MaxRAMPercentage)
+  env:
+    DB_HOST: postgres
+    DB_PORT: "5432"
+    DB_NAME: faultlens
+    REDIS_HOST: redis
+    REDIS_PORT: "6379"
+    KAFKA_SERVERS: kafka:9092
+    CORS_ORIGINS: https://faultlens.example.com
+    APP_URL: https://faultlens.example.com
+    REFRESH_COOKIE_SECURE: "true"
+    AI_ENABLED: "false"
+    TRACING_EXPORT_ENABLED: "false"
+    OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: http://otel-collector:4318/v1/traces
+  # Existing Secret with DB_USER, DB_PASS, JWT_SECRET and optionally SMTP_*, OPENAI_API_KEY,
+  # ADMIN_INITIAL_PASSWORD. For example:
+  #   kubectl create secret generic faultlens --from-literal=DB_USER=... --from-literal=DB_PASS=... \
+  #     --from-literal=JWT_SECRET="$(openssl rand -base64 48)"
+  existingSecret: faultlens
+  # Actuator port: Prometheus scrapes it inside the cluster; the Ingress never routes it.
+  managementPort: 9464
+
+frontend:
+  replicas: 2
+  resources:
+    requests: { cpu: 100m, memory: 192Mi }
+    limits: { memory: 384Mi }
+  # NEXT_PUBLIC_* are baked into the image at build time (build it for your domain).
+
+ingress:
+  enabled: true
+  className: nginx
+  host: faultlens.example.com
+  tlsSecret: faultlens-tls
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600" # WebSocket
+
+serviceMonitor:
+  enabled: false   # true with the Prometheus Operator
+  interval: 15s
