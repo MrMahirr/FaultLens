@@ -2,11 +2,13 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { BellPlus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { useSourcesQuery } from "@/features/sources/api/useSourceQuery";
 import { Button } from "@/shared/components/ui/Button";
 import { Input } from "@/shared/components/ui/Input";
 import { Modal } from "@/shared/components/ui/Modal";
+import { useValidationMessage } from "@/shared/hooks/useValidationMessage";
 import { Severity } from "@/shared/types/common.types";
 import { useCreateAlarmRuleMutation } from "../api/useAlarmRules";
 import {
@@ -16,23 +18,18 @@ import {
   toRuleInput,
   type RuleFormValues,
 } from "../lib/ruleForm";
-import { ALARM_CHANNEL_LABELS, AlarmChannel, AlarmRuleType } from "../types/alarm.types";
+import { AlarmChannel, AlarmRuleType } from "../types/alarm.types";
 
 interface CreateRuleModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const TYPE_LABELS: Record<AlarmRuleType, string> = {
-  [AlarmRuleType.THRESHOLD]: "Eşik — belirli sürede N adet log",
-  [AlarmRuleType.PATTERN]: "Desen — mesaj düzenli ifadeyle eşleşirse",
-  [AlarmRuleType.NEW_GROUP]: "Yeni hata — daha önce görülmemiş hata grubu",
-};
-
-const selectClass =
-  "w-full bg-bg-tertiary text-text-primary rounded-lg border border-border-default px-3 py-2 text-sm focus:outline-none focus:border-border-active focus:ring-1 focus:ring-accent/30 cursor-pointer";
-
 export function CreateRuleModal({ isOpen, onClose }: CreateRuleModalProps) {
+  const t = useTranslations("alarms");
+  const tDescribe = useTranslations("alarms.rules.describe");
+  const tCommon = useTranslations("common");
+  const v = useValidationMessage();
   const createRule = useCreateAlarmRuleMutation();
   const { data: sources } = useSourcesQuery();
   const {
@@ -58,37 +55,62 @@ export function CreateRuleModal({ isOpen, onClose }: CreateRuleModalProps) {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={close} title="Yeni Alarm Kuralı Oluştur">
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-4" noValidate>
+    <Modal
+      isOpen={isOpen}
+      onClose={close}
+      title={t("form.title")}
+      footer={
+        <>
+          <Button variant="ghost" onClick={close}>
+            {tCommon("cancel")}
+          </Button>
+          <Button
+            type="submit"
+            form="create-rule-form"
+            variant="primary"
+            loading={createRule.isPending}
+            icon={<BellPlus size={16} aria-hidden="true" />}
+          >
+            {t("form.submit")}
+          </Button>
+        </>
+      }
+    >
+      <form
+        id="create-rule-form"
+        onSubmit={handleSubmit(onSubmit)}
+        className="stack gap-4"
+        noValidate
+      >
         <Input
-          label="Kural Adı"
-          placeholder="Örn: Yüksek Hata Oranı"
-          error={errors.name?.message}
+          label={t("form.name")}
+          placeholder={t("form.namePlaceholder")}
+          error={v(errors.name?.message)}
           autoFocus
           {...register("name")}
         />
 
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="rule-type" className="text-sm font-medium text-text-secondary">
-            Kural Tipi
+        <div className="field">
+          <label htmlFor="rule-type" className="label">
+            {t("form.type")}
           </label>
-          <select id="rule-type" className={selectClass} {...register("type")}>
+          <select id="rule-type" className="input" {...register("type")}>
             {Object.values(AlarmRuleType).map((value) => (
               <option key={value} value={value}>
-                {TYPE_LABELS[value]}
+                {t(`form.types.${value}`)}
               </option>
             ))}
           </select>
         </div>
 
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="rule-severity" className="text-sm font-medium text-text-secondary">
-            En Düşük Seviye
+        <div className="field">
+          <label htmlFor="rule-severity" className="label">
+            {t("form.severity")}
           </label>
-          <select id="rule-severity" className={selectClass} {...register("severity")}>
+          <select id="rule-severity" className="input" {...register("severity")}>
             {Object.values(Severity).map((value) => (
               <option key={value} value={value}>
-                {value} ve üzeri
+                {t("form.severityOption", { severity: value })}
               </option>
             ))}
           </select>
@@ -97,18 +119,18 @@ export function CreateRuleModal({ isOpen, onClose }: CreateRuleModalProps) {
         {type === AlarmRuleType.THRESHOLD && (
           <div className="grid grid-cols-2 gap-3">
             <Input
-              label="Pencere (dakika)"
+              label={t("form.window")}
               type="number"
               min={1}
               max={60}
-              error={errors.windowMinutes?.message}
+              error={v(errors.windowMinutes?.message)}
               {...register("windowMinutes")}
             />
             <Input
-              label="Eşik (adet)"
+              label={t("form.threshold")}
               type="number"
               min={1}
-              error={errors.threshold?.message}
+              error={v(errors.threshold?.message)}
               {...register("threshold")}
             />
           </div>
@@ -116,30 +138,27 @@ export function CreateRuleModal({ isOpen, onClose }: CreateRuleModalProps) {
 
         {type === AlarmRuleType.PATTERN && (
           <Input
-            label="Desen (düzenli ifade)"
-            placeholder="Örn: Connection (refused|reset)"
-            error={errors.pattern?.message}
-            hint="Mesaj veya stack trace içinde aranır"
+            label={t("form.pattern")}
+            placeholder={t("form.patternPlaceholder")}
+            error={v(errors.pattern?.message)}
+            hint={t("form.patternHint")}
+            className="mono"
             {...register("pattern")}
           />
         )}
 
-        <fieldset className="space-y-1.5">
-          <legend className="text-sm font-medium text-text-secondary">
-            Kaynaklar (seçilmezse tümü)
-          </legend>
+        <fieldset className="field">
+          <legend className="label mb-1.5">{t("form.sources")}</legend>
           <Controller
             control={control}
             name="sourceIds"
             render={({ field }) => (
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-x-4 gap-y-2">
                 {(sources ?? []).map((source) => (
-                  <label
-                    key={source.id}
-                    className="flex items-center gap-2 text-sm text-text-primary"
-                  >
+                  <label key={source.id} className="flex items-center gap-2 small">
                     <input
                       type="checkbox"
+                      className="check"
                       checked={field.value.includes(source.id)}
                       onChange={(e) =>
                         field.onChange(
@@ -153,27 +172,25 @@ export function CreateRuleModal({ isOpen, onClose }: CreateRuleModalProps) {
                   </label>
                 ))}
                 {(sources ?? []).length === 0 && (
-                  <span className="text-xs text-text-muted">Kayıtlı kaynak yok</span>
+                  <span className="help">{t("form.noSources")}</span>
                 )}
               </div>
             )}
           />
         </fieldset>
 
-        <fieldset className="space-y-1.5">
-          <legend className="text-sm font-medium text-text-secondary">Bildirim Kanalları</legend>
+        <fieldset className="field">
+          <legend className="label mb-1.5">{t("form.channels")}</legend>
           <Controller
             control={control}
             name="channels"
             render={({ field }) => (
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-x-4 gap-y-2">
                 {Object.values(AlarmChannel).map((channel) => (
-                  <label
-                    key={channel}
-                    className="flex items-center gap-2 text-sm text-text-primary"
-                  >
+                  <label key={channel} className="flex items-center gap-2 small">
                     <input
                       type="checkbox"
+                      className="check"
                       checked={field.value.includes(channel)}
                       onChange={(e) =>
                         field.onChange(
@@ -183,51 +200,44 @@ export function CreateRuleModal({ isOpen, onClose }: CreateRuleModalProps) {
                         )
                       }
                     />
-                    {ALARM_CHANNEL_LABELS[channel]}
+                    {t(`channel.${channel}`)}
                   </label>
                 ))}
               </div>
             )}
           />
           {errors.channels?.message && (
-            <p className="text-xs text-error">{errors.channels.message}</p>
+            <p className="err" role="alert">
+              {v(errors.channels.message)}
+            </p>
           )}
         </fieldset>
 
         <Input
-          label="Bekleme süresi (dakika)"
+          label={t("form.cooldown")}
           type="number"
           min={0}
           max={1440}
-          error={errors.cooldownMinutes?.message}
-          hint="Aynı kural bu süre içinde tekrar alarm üretmez"
+          error={v(errors.cooldownMinutes?.message)}
+          hint={t("form.cooldownHint")}
           {...register("cooldownMinutes")}
         />
 
-        <p className="text-xs text-text-muted" data-testid="rule-preview">
-          Koşul:{" "}
-          {describeRule({
-            type,
-            severity: values.severity ?? DEFAULT_RULE_FORM.severity,
-            windowSec: Number(values.windowMinutes ?? 0) * 60,
-            threshold: Number(values.threshold ?? 0),
-            pattern: values.pattern ?? "",
-          })}
+        <p className="help" data-testid="rule-preview" aria-live="polite">
+          {t("form.preview")}{" "}
+          <span className="mono t2">
+            {describeRule(
+              {
+                type,
+                severity: values.severity ?? DEFAULT_RULE_FORM.severity,
+                windowSec: Number(values.windowMinutes ?? 0) * 60,
+                threshold: Number(values.threshold ?? 0),
+                pattern: values.pattern ?? "",
+              },
+              tDescribe,
+            )}
+          </span>
         </p>
-
-        <div className="flex justify-end gap-3 pt-2">
-          <Button type="button" variant="ghost" onClick={close}>
-            İptal
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            loading={createRule.isPending}
-            icon={<BellPlus size={16} />}
-          >
-            Kuralı Ekle
-          </Button>
-        </div>
       </form>
     </Modal>
   );

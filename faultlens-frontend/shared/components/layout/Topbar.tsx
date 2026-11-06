@@ -1,129 +1,180 @@
 "use client";
 
-import { revokeSession } from "@/shared/api/session";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { Menu, Sun, Moon, LogOut, User } from "lucide-react";
-import { cn } from "@/shared/lib/utils";
+import { useLocale, useTranslations } from "next-intl";
+import { Menu, Sun, Moon, Monitor, LogOut, User, Bell, Languages } from "lucide-react";
+import { revokeSession } from "@/shared/api/session";
 import { useUIStore } from "@/shared/store/ui.store";
 import { useTheme } from "@/shared/hooks/useTheme";
-import { Dropdown, type DropdownItem } from "@/shared/components/ui/Dropdown";
-
+import { useChangeLocale } from "@/shared/lib/locale";
+import { LOCALES, type Locale } from "@/i18n/config";
+import { Dropdown } from "@/shared/components/ui/Dropdown";
+import { LocaleSync } from "@/shared/components/layout/LocaleSync";
 import { useAuthStore } from "@/features/auth/store/auth.store";
+import { useAlarmStatsQuery } from "@/features/alarms/api/useAlarmsQuery";
+import type { ThemePreference } from "@/shared/lib/theme";
 
-/* ── Breadcrumb Map ────────────────────────────────────────── */
+/* ── Breadcrumb ────────────────────────────────────────────── */
 
-const ROUTE_LABELS: Record<string, string> = {
-  "/dashboard": "Panel",
-  "/logs": "Loglar",
-  "/sources": "Kaynaklar",
-  "/analyses": "Analizler",
-  "/deployments": "Dağıtımlar",
-  "/alarms": "Alarmlar",
-  "/settings": "Ayarlar",
-};
+const SECTION_KEYS = {
+  dashboard: "dashboard",
+  logs: "logs",
+  sources: "sources",
+  analyses: "analyses",
+  deployments: "deployments",
+  alarms: "alarms",
+  settings: "settings",
+} as const;
 
 /* ── Component ─────────────────────────────────────────────── */
 
 function Topbar() {
-  const pathname = usePathname();
+  const t = useTranslations("shell");
+  const tNav = useTranslations("nav");
+  const pathname = usePathname() ?? "/dashboard";
   const router = useRouter();
+  const locale = useLocale();
+  const { change: changeLocale } = useChangeLocale();
   const toggleSidebar = useUIStore((state) => state.toggleSidebar);
-  const sidebarOpen = useUIStore((state) => state.sidebarOpen);
-  const { theme, toggleTheme } = useTheme();
+  const { theme, resolvedTheme, setTheme } = useTheme();
+  const user = useAuthStore((state) => state.user);
+  const { data: alarmStats } = useAlarmStatsQuery();
+  const activeAlarms = alarmStats?.active ?? 0;
 
-  // Build breadcrumb from pathname
-  const breadcrumb = pathname
-    ? (ROUTE_LABELS[pathname] ??
-      pathname
-        .split("/")
-        .filter(Boolean)
-        .map((seg) => seg.charAt(0).toUpperCase() + seg.slice(1))
-        .join(" / "))
-    : "Panel";
+  const [, section, ...rest] = pathname.split("/");
+  const sectionKey = SECTION_KEYS[section as keyof typeof SECTION_KEYS];
 
-  const userMenuItems: DropdownItem[] = [
-    { label: "Profil", value: "profile", icon: <User size={14} /> },
-    { label: "Çıkış Yap", value: "logout", icon: <LogOut size={14} />, danger: true },
-  ];
+  const themeIcon =
+    theme === "system" ? (
+      <Monitor size={16} />
+    ) : resolvedTheme === "dark" ? (
+      <Moon size={16} />
+    ) : (
+      <Sun size={16} />
+    );
 
-  const handleUserMenuSelect = (value: string) => {
-    switch (value) {
-      case "profile":
-        router.push("/settings?tab=account");
-        break;
-      case "logout":
-        revokeSession();
-        useAuthStore.getState().logout();
-        if (typeof window !== "undefined") {
-          window.location.href = "/login";
-        }
-        break;
-      default:
-        break;
+  const handleUserMenu = (value: string) => {
+    if (value === "profile") router.push("/settings?tab=account");
+    if (value === "logout") {
+      revokeSession();
+      useAuthStore.getState().logout();
+      // Full reload: drops in-memory query caches and sockets of the signed-out user.
+      window.location.assign("/login");
     }
   };
 
   return (
-    <header
-      className={cn(
-        "sticky top-0 z-30 h-16",
-        "bg-bg-primary/80 backdrop-blur-lg",
-        "border-b border-border-default",
-        "flex items-center justify-between px-4 gap-4",
-        "transition-theme",
-      )}
-    >
-      {/* Left: Hamburger + Breadcrumb */}
-      <div className="flex items-center gap-3">
+    <header className="topbar sticky top-0 z-30 bg-bg-primary/90 backdrop-blur-md">
+      <LocaleSync />
+
+      <div className="flex items-center gap-2 min-w-0">
         <button
+          type="button"
           onClick={toggleSidebar}
-          className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-tertiary transition-colors lg:hidden"
-          aria-label="Menüyü Aç/Kapat"
+          className="btn btn-ghost btn-sm btn-icon lg:hidden"
+          aria-label={t("toggleMenu")}
         >
-          <Menu size={20} />
+          <Menu size={16} aria-hidden="true" />
         </button>
 
-        <div className="hidden sm:flex items-center gap-2 text-sm">
-          <span className="text-text-muted">FaultLens</span>
-          <span className="text-text-muted">/</span>
-          <span className="text-text-primary font-medium">{breadcrumb}</span>
-        </div>
+        <nav aria-label={t("breadcrumb")} className="crumbs">
+          <span>FaultLens</span>
+          <span aria-hidden="true">/</span>
+          {sectionKey ? (
+            rest.length > 0 ? (
+              <>
+                <Link href={`/${section}`}>{tNav(sectionKey)}</Link>
+                <span aria-hidden="true">/</span>
+                <b aria-current="page" className="mono">
+                  {decodeURIComponent(rest.join("/"))}
+                </b>
+              </>
+            ) : (
+              <b aria-current="page">{tNav(sectionKey)}</b>
+            )
+          ) : (
+            <b aria-current="page">{section}</b>
+          )}
+        </nav>
       </div>
 
-      {/* Right: Theme Toggle + User */}
-      <div className="flex items-center gap-2">
-        {/* Theme Toggle */}
-        <button
-          onClick={toggleTheme}
-          className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-tertiary transition-colors"
-          aria-label={theme === "dark" ? "Açık temaya geç" : "Koyu temaya geç"}
-        >
-          <motion.div
-            key={theme}
-            initial={{ rotate: -90, opacity: 0 }}
-            animate={{ rotate: 0, opacity: 1 }}
-            exit={{ rotate: 90, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-          </motion.div>
-        </button>
-
-        {/* User Menu */}
+      <div className="flex items-center gap-1">
+        {/* Language */}
         <Dropdown
+          label={t("language")}
           trigger={
-            <button className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-bg-tertiary transition-colors">
-              <div className="w-7 h-7 rounded-full bg-accent/20 flex items-center justify-center">
-                <span className="text-xs font-bold text-accent">A</span>
-              </div>
-              {sidebarOpen && (
-                <span className="text-sm text-text-secondary hidden md:block">Admin</span>
-              )}
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm gap-1.5"
+              aria-label={t("language")}
+            >
+              <Languages size={15} aria-hidden="true" />
+              <span className="mono xs uppercase">{locale}</span>
             </button>
           }
-          items={userMenuItems}
-          onSelect={handleUserMenuSelect}
+          items={LOCALES.map((l) => ({
+            value: l,
+            label: t(`languages.${l}`),
+            checked: l === locale,
+          }))}
+          onSelect={(value) => changeLocale(value as Locale)}
+        />
+
+        {/* Theme */}
+        <Dropdown
+          label={t("theme")}
+          trigger={
+            <button type="button" className="btn btn-ghost btn-sm btn-icon" aria-label={t("theme")}>
+              <span aria-hidden="true" className="inline-flex">
+                {themeIcon}
+              </span>
+            </button>
+          }
+          items={(["system", "dark", "light"] as ThemePreference[]).map((value) => ({
+            value,
+            label: t(`themes.${value}`),
+            checked: theme === value,
+            hint: value === "system" ? t(`themes.${resolvedTheme}`) : undefined,
+          }))}
+          onSelect={(value) => setTheme(value as ThemePreference)}
+        />
+
+        {/* Alarms */}
+        <Link
+          href="/alarms"
+          className="btn btn-ghost btn-sm btn-icon relative"
+          aria-label={activeAlarms > 0 ? t("activeAlarms", { count: activeAlarms }) : t("alarms")}
+        >
+          <Bell size={16} aria-hidden="true" />
+          {activeAlarms > 0 && (
+            <span
+              className="dot absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-critical"
+              aria-hidden="true"
+            />
+          )}
+        </Link>
+
+        {/* User */}
+        <Dropdown
+          label={t("userMenu")}
+          trigger={
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm gap-2 pl-1"
+              aria-label={t("userMenu")}
+            >
+              <span className="avatar w-6 h-6 text-[10px]" aria-hidden="true">
+                {(user?.username ?? "?").slice(0, 1).toUpperCase()}
+              </span>
+              <span className="hidden md:inline small t2">{user?.username}</span>
+            </button>
+          }
+          items={[
+            { label: t("profile"), value: "profile", icon: <User size={14} /> },
+            { label: t("logout"), value: "logout", icon: <LogOut size={14} />, danger: true },
+          ]}
+          onSelect={handleUserMenu}
         />
       </div>
     </header>

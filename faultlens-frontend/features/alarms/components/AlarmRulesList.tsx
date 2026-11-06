@@ -1,146 +1,136 @@
 "use client";
 
-import { useCan } from "@/features/auth/hooks/useCan";
-import { useCallback, useMemo } from "react";
-import Swal from "sweetalert2";
+import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { Power, PowerOff, Trash2 } from "lucide-react";
+import { useCan } from "@/features/auth/hooks/useCan";
 import { DataTable, type DataTableColumnDef } from "@/shared/components/ui/Table";
 import { Badge } from "@/shared/components/ui/Badge";
 import { Button } from "@/shared/components/ui/Button";
-import { Severity } from "@/shared/types/common.types";
+import { SeverityBadge } from "@/shared/components/ui/SeverityBadge";
+import { useConfirm } from "@/shared/components/ui/ConfirmDialog";
 import {
   useAlarmRulesQuery,
   useDeleteAlarmRuleMutation,
   useToggleAlarmRuleMutation,
 } from "../api/useAlarmRules";
 import { describeRule } from "../lib/ruleForm";
-import { ALARM_CHANNEL_LABELS, type AlarmRule } from "../types/alarm.types";
-
-function severityVariant(severity: Severity): "error" | "warning" | "info" {
-  if (severity === Severity.CRITICAL || severity === Severity.ERROR) return "error";
-  if (severity === Severity.WARN) return "warning";
-  return "info";
-}
+import type { AlarmRule } from "../types/alarm.types";
 
 export function AlarmRulesList() {
+  const t = useTranslations("alarms");
+  const tDescribe = useTranslations("alarms.rules.describe");
   const { data: rules, isLoading } = useAlarmRulesQuery();
   const toggleRule = useToggleAlarmRuleMutation();
   const deleteRule = useDeleteAlarmRuleMutation();
   const canEdit = useCan("edit");
+  const { confirm, dialog } = useConfirm();
   const { mutate: toggle } = toggleRule;
-  const { mutate: remove } = deleteRule;
   const isMutating = toggleRule.isPending || deleteRule.isPending;
-
-  const confirmDelete = useCallback(
-    async (rule: AlarmRule) => {
-      const result = await Swal.fire({
-        title: "Kural silinsin mi?",
-        text: `"${rule.name}" silinir; ürettiği alarmlar geçmişte kalır.`,
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#ef4444",
-        cancelButtonColor: "#3b82f6",
-        confirmButtonText: "Evet, Sil",
-        cancelButtonText: "İptal",
-      });
-      if (result.isConfirmed) remove(rule.id);
-    },
-    [remove],
-  );
 
   const columns = useMemo<DataTableColumnDef<AlarmRule>[]>(
     () => [
       {
         accessorKey: "name",
-        header: "Kural Adı",
+        header: t("rules.columns.name"),
         cell: ({ row }) => (
           <div className="font-medium text-text-primary min-w-[8rem]">{row.original.name}</div>
         ),
       },
       {
         id: "condition",
-        header: "Koşul",
+        header: t("rules.columns.condition"),
         cell: ({ row }) => (
-          <code className="px-2 py-1 bg-bg-tertiary rounded text-xs text-text-secondary font-mono">
-            {describeRule(row.original)}
+          <code className="mono px-1.5 py-0.5 well text-text-secondary">
+            {describeRule(row.original, tDescribe)}
           </code>
         ),
       },
       {
         accessorKey: "severity",
-        header: "Seviye",
-        cell: ({ row }) => (
-          <Badge variant={severityVariant(row.original.severity)}>{row.original.severity}+</Badge>
-        ),
+        header: t("rules.columns.severity"),
+        cell: ({ row }) => <SeverityBadge severity={row.original.severity} orAbove />,
       },
       {
         id: "scope",
-        header: "Kanallar",
+        header: t("rules.columns.channels"),
         cell: ({ row }) => (
-          <span className="text-xs text-text-secondary whitespace-nowrap">
-            {row.original.channels.map((c) => ALARM_CHANNEL_LABELS[c]).join(", ")}
+          <span className="xs text-text-secondary whitespace-nowrap">
+            {row.original.channels.map((c) => t(`channel.${c}`)).join(", ")}
           </span>
         ),
       },
       {
         accessorKey: "enabled",
-        header: "Durum",
+        header: t("rules.columns.status"),
         cell: ({ row }) => (
-          <Badge variant={row.original.enabled ? "success" : "default"}>
-            {row.original.enabled ? "Aktif" : "Pasif"}
+          <Badge variant={row.original.enabled ? "success" : "default"} dot>
+            {row.original.enabled ? t("rules.active") : t("rules.inactive")}
           </Badge>
         ),
       },
       {
         id: "actions",
-        header: "Aksiyon",
+        header: t("rules.columns.actions"),
         cell: ({ row }) => {
           const rule = row.original;
           if (!canEdit) return null;
+          const toggleLabel = rule.enabled ? t("rules.deactivate") : t("rules.activate");
           return (
             <div className="flex items-center gap-1 whitespace-nowrap">
               <Button
                 variant="ghost"
                 size="sm"
-                icon={rule.enabled ? <PowerOff size={14} /> : <Power size={14} />}
+                icon={
+                  rule.enabled ? (
+                    <PowerOff size={14} aria-hidden="true" />
+                  ) : (
+                    <Power size={14} aria-hidden="true" />
+                  )
+                }
                 onClick={(e) => {
                   e.stopPropagation();
                   toggle({ id: rule.id, enabled: !rule.enabled });
                 }}
                 disabled={isMutating}
-                title={rule.enabled ? "Pasife Al" : "Aktifleştir"}
-                aria-label={rule.enabled ? "Pasife Al" : "Aktifleştir"}
-                className={rule.enabled ? "text-warning" : "text-success"}
+                title={toggleLabel}
+                aria-label={toggleLabel}
               />
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-error hover:bg-error/10 hover:text-error"
-                icon={<Trash2 size={14} />}
+                className="text-error"
+                icon={<Trash2 size={14} aria-hidden="true" />}
                 onClick={(e) => {
                   e.stopPropagation();
-                  void confirmDelete(rule);
+                  confirm({
+                    title: t("rules.deleteTitle"),
+                    description: t("rules.deleteDescription", { name: rule.name }),
+                    onConfirm: () => deleteRule.mutateAsync(rule.id),
+                  });
                 }}
                 disabled={isMutating}
-                title="Sil"
-                aria-label="Sil"
+                title={t("rules.delete")}
+                aria-label={t("rules.delete")}
               />
             </div>
           );
         },
       },
     ],
-    [toggle, confirmDelete, isMutating, canEdit],
+    [t, tDescribe, toggle, deleteRule, confirm, isMutating, canEdit],
   );
 
   return (
-    <div className="space-y-4">
+    <>
       <DataTable
+        label={t("tabs.rules")}
         data={rules ?? []}
         columns={columns}
         loading={isLoading}
-        emptyMessage="Henüz alarm kuralı yok. “Yeni Kural Ekle” ile oluşturabilirsiniz."
+        emptyMessage={t("rules.empty")}
       />
-    </div>
+      {dialog}
+    </>
   );
 }

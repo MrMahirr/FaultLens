@@ -1,4 +1,4 @@
-import { act, renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@/test/rtl";
 import { http, HttpResponse } from "msw";
 import toast from "react-hot-toast";
 import { afterEach, describe, expect, it, vi } from "vitest";

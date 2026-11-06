@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render } from "@testing-library/react";
+import { render } from "@/test/rtl";
 import type { ReactElement, ReactNode } from "react";
 import { useAuthStore } from "@/features/auth/store/auth.store";
 

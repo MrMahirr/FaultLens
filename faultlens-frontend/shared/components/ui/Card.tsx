@@ -11,24 +11,25 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
   variant?: CardVariant;
   padding?: "none" | "sm" | "md" | "lg";
   hover?: boolean;
+  /** Kept for API compatibility; Instrument has no glow (hairlines, not shadows). */
   glow?: boolean;
   children: ReactNode;
 }
 
-/* ── Style Maps ────────────────────────────────────────────── */
+/* ── Style Maps (Instrument .card / .well) ─────────────────── */
 
 const variantStyles: Record<CardVariant, string> = {
-  default: "bg-bg-secondary border border-border-default",
-  glass: "glass",
-  bordered: "bg-transparent border border-border-default",
-  flat: "bg-bg-secondary",
+  default: "card",
+  glass: "card",
+  bordered: "card bg-transparent",
+  flat: "well",
 };
 
-const paddingStyles: Record<string, string> = {
+const paddingStyles: Record<NonNullable<CardProps["padding"]>, string> = {
   none: "p-0",
   sm: "p-3",
-  md: "p-4 sm:p-5",
-  lg: "p-6 sm:p-8",
+  md: "p-4",
+  lg: "p-6",
 };
 
 /* ── Component ─────────────────────────────────────────────── */
@@ -37,19 +38,18 @@ function Card({
   variant = "default",
   padding = "md",
   hover = false,
-  glow = false,
+  glow,
   children,
   className,
   ...props
 }: CardProps) {
+  void glow; // accepted for compatibility, intentionally unused
   return (
     <div
       className={cn(
-        "rounded-xl transition-all duration-300",
         variantStyles[variant],
         paddingStyles[padding],
-        hover && "hover:-translate-y-0.5 hover:border-border-hover hover:shadow-md cursor-pointer",
-        glow && "hover:shadow-glow",
+        hover && "hov cursor-pointer",
         className,
       )}
       {...props}

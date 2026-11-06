@@ -6,12 +6,6 @@ export enum AlarmStatus {
   RESOLVED = "RESOLVED",
 }
 
-export const ALARM_STATUS_LABELS: Record<AlarmStatus, string> = {
-  [AlarmStatus.ACTIVE]: "Aktif",
-  [AlarmStatus.ACKNOWLEDGED]: "Üstlenildi",
-  [AlarmStatus.RESOLVED]: "Çözüldü",
-};
-
 /** Backend AlarmRuleType (ADR 0001). */
 export enum AlarmRuleType {
   THRESHOLD = "THRESHOLD",
@@ -25,13 +19,6 @@ export enum AlarmChannel {
   EMAIL = "EMAIL",
   WEBHOOK = "WEBHOOK",
 }
-
-export const ALARM_CHANNEL_LABELS: Record<AlarmChannel, string> = {
-  [AlarmChannel.IN_APP]: "Uygulama içi",
-  [AlarmChannel.SLACK]: "Slack",
-  [AlarmChannel.EMAIL]: "E-posta",
-  [AlarmChannel.WEBHOOK]: "Webhook",
-};
 
 /** Backend AlarmRuleResponse (camelCase via the axios interceptor). */
 export interface AlarmRule {

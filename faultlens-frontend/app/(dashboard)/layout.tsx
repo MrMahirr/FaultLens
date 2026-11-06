@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { Sidebar } from "@/shared/components/layout/Sidebar";
 import { Topbar } from "@/shared/components/layout/Topbar";
 import { useUIStore } from "@/shared/store/ui.store";
@@ -18,6 +18,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const mustChangePassword = useAuthStore((state) => state.user?.mustChangePassword ?? false);
   const router = useRouter();
   const session = useSession();
+  const t = useTranslations("shell");
 
   useEffect(() => {
     // Before hydration / while the session is restored there is no token yet — do not redirect.
@@ -39,31 +40,36 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // Prevent flash of content during initial SSR or before redirect
   if (session !== "authenticated" || !token || mustChangePassword) {
     return (
-      <div className="min-h-screen bg-bg-primary flex items-center justify-center">
-        <div className="w-10 h-10 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-bg-primary flex items-center justify-center" role="status">
+        <span className="spinner w-6 h-6 text-text-muted" aria-hidden="true" />
+        <span className="sr">{t("loadingSession")}</span>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-bg-primary bg-grid-pattern">
-      {/* Sidebar */}
+    <div className="min-h-screen bg-bg-primary">
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 btn btn-primary"
+      >
+        {t("skipToContent")}
+      </a>
+
       <Sidebar />
 
-      {/* Main Content */}
-      <motion.div
-        className="min-h-screen transition-theme"
-        animate={{ marginLeft: sidebarOpen ? 240 : 64 }}
-        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+      <div
+        className={
+          "min-h-screen flex flex-col transition-[margin] duration-200 " +
+          (sidebarOpen ? "ml-60" : "ml-16")
+        }
       >
         <GlobalNotificationListener />
-
-        {/* Topbar */}
         <Topbar />
-
-        {/* Page Content */}
-        <main className="p-4 sm:p-6 lg:p-8">{children}</main>
-      </motion.div>
+        <main id="main" tabIndex={-1} className="page mx-auto outline-none">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

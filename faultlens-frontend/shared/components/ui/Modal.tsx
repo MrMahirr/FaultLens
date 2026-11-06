@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useCallback, useRef, type ReactNode } from "react";
+import { useEffect, useId, useRef, type ReactNode, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/shared/lib/utils";
+import { useFocusTrap } from "@/shared/hooks/useFocusTrap";
+import { useIsClient } from "@/shared/hooks/useIsClient";
 
 /* ── Types ─────────────────────────────────────────────────── */
 
@@ -19,6 +22,10 @@ interface ModalProps {
   showCloseButton?: boolean;
   closeOnBackdrop?: boolean;
   closeOnEsc?: boolean;
+  /** "alertdialog" for confirmations of destructive actions. */
+  role?: "dialog" | "alertdialog";
+  /** Element focused on open (e.g. the "Cancel" button of a destructive confirmation). */
+  initialFocus?: RefObject<HTMLElement | null>;
   children: ReactNode;
   footer?: ReactNode;
   className?: string;
@@ -28,37 +35,13 @@ interface ModalProps {
 
 const sizeStyles: Record<ModalSize, string> = {
   sm: "max-w-sm",
-  md: "max-w-md",
-  lg: "max-w-lg",
+  md: "max-w-[520px]",
+  lg: "max-w-xl",
   xl: "max-w-2xl",
-  full: "max-w-[90vw] max-h-[90vh]",
+  full: "max-w-[90vw]",
 };
 
-/* ── Animation Variants ────────────────────────────────────── */
-
-const backdropVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1 },
-  exit: { opacity: 0 },
-} as const;
-
-const modalVariants = {
-  hidden: { opacity: 0, scale: 0.95, y: 20 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    y: 0,
-    transition: { type: "spring" as const, damping: 25, stiffness: 300 },
-  },
-  exit: {
-    opacity: 0,
-    scale: 0.95,
-    y: 20,
-    transition: { duration: 0.15 },
-  },
-} as const;
-
-/* ── Component ─────────────────────────────────────────────── */
+/* ── Component (Instrument .scrim / .modal) ────────────────── */
 
 function Modal({
   isOpen,
@@ -69,120 +52,95 @@ function Modal({
   showCloseButton = true,
   closeOnBackdrop = true,
   closeOnEsc = true,
+  role = "dialog",
+  initialFocus,
   children,
   footer,
   className,
 }: ModalProps) {
+  const t = useTranslations("common");
+  const isClient = useIsClient();
   const modalRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+  const descriptionId = useId();
 
-  // ESC key handler
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
+  useFocusTrap(modalRef, isOpen, initialFocus);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
       if (closeOnEsc && e.key === "Escape") {
+        e.stopPropagation();
         onClose();
       }
-    },
-    [closeOnEsc, onClose],
-  );
-
-  useEffect(() => {
-    if (isOpen) {
-      document.addEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "hidden";
-    }
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "";
     };
-  }, [isOpen, handleKeyDown]);
+    document.addEventListener("keydown", onKeyDown);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen, closeOnEsc, onClose]);
 
-  // Focus trap
-  useEffect(() => {
-    if (isOpen && modalRef.current) {
-      modalRef.current.focus();
-    }
-  }, [isOpen]);
-
-  const handleBackdropClick = () => {
-    if (closeOnBackdrop) onClose();
-  };
-
-  if (typeof window === "undefined") return null;
+  if (!isClient) return null;
 
   return createPortal(
-    <AnimatePresence mode="wait">
+    <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          initial="hidden"
-          animate="visible"
-          exit="exit"
+          className="scrim center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+          onMouseDown={(e) => {
+            if (closeOnBackdrop && e.target === e.currentTarget) onClose();
+          }}
         >
-          {/* Backdrop */}
-          <motion.div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            variants={backdropVariants}
-            onClick={handleBackdropClick}
-            aria-hidden="true"
-          />
-
-          {/* Modal Content */}
           <motion.div
             ref={modalRef}
-            role="dialog"
+            role={role}
             aria-modal="true"
-            aria-labelledby={title ? "modal-title" : undefined}
-            aria-describedby={description ? "modal-description" : undefined}
+            aria-labelledby={title ? titleId : undefined}
+            aria-describedby={description ? descriptionId : undefined}
             tabIndex={-1}
-            variants={modalVariants}
-            className={cn(
-              "relative w-full bg-bg-secondary rounded-2xl",
-              "border border-border-default shadow-lg",
-              "overflow-hidden",
-              sizeStyles[size],
-              className,
-            )}
+            initial={{ opacity: 0, y: 4, scale: 0.985 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 4, scale: 0.985 }}
+            transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
+            className={cn("modal flex flex-col outline-none", sizeStyles[size], className)}
           >
-            {/* Header */}
             {(title || showCloseButton) && (
-              <div className="flex items-start justify-between p-5 pb-0">
-                <div>
+              <div className="modal-h">
+                <div className="min-w-0">
                   {title && (
-                    <h2
-                      id="modal-title"
-                      className="text-lg font-semibold font-display text-text-primary"
-                    >
+                    <h2 id={titleId} className="h2">
                       {title}
                     </h2>
                   )}
                   {description && (
-                    <p id="modal-description" className="mt-1 text-sm text-text-secondary">
+                    <p id={descriptionId} className="small t3 mt-1">
                       {description}
                     </p>
                   )}
                 </div>
                 {showCloseButton && (
                   <button
+                    type="button"
                     onClick={onClose}
-                    className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-tertiary transition-colors"
-                    aria-label="Kapat"
+                    className="btn btn-ghost btn-sm btn-icon shrink-0"
+                    aria-label={t("close")}
                   >
-                    <X size={18} />
+                    <X size={16} aria-hidden="true" />
                   </button>
                 )}
               </div>
             )}
 
-            {/* Body */}
-            <div className="p-5 overflow-y-auto max-h-[60vh]">{children}</div>
+            <div className="modal-b overflow-y-auto">{children}</div>
 
-            {/* Footer */}
-            {footer && (
-              <div className="flex items-center justify-end gap-3 p-5 pt-0 border-t border-border-default mt-2 pt-4">
-                {footer}
-              </div>
-            )}
+            {footer && <div className="modal-f">{footer}</div>}
           </motion.div>
         </motion.div>
       )}

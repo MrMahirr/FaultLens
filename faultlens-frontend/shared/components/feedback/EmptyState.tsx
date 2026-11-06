@@ -1,15 +1,17 @@
 "use client";
 
 import { type ReactNode } from "react";
-import { cn } from "@/shared/lib/utils";
 import { Inbox } from "lucide-react";
+import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/components/ui/Button";
 
 /* ── Types ─────────────────────────────────────────────────── */
 
 interface EmptyStateProps {
   icon?: ReactNode;
+  /** Why it is empty. */
   title: string;
+  /** What to do next ("Widen the filter", "Add a source"). */
   description?: string;
   action?: {
     label: string;
@@ -18,23 +20,21 @@ interface EmptyStateProps {
   className?: string;
 }
 
-/* ── Component ─────────────────────────────────────────────── */
+/* ── Component (Instrument .empty) ─────────────────────────── */
 
 function EmptyState({ icon, title, description, action, className }: EmptyStateProps) {
   return (
-    <div
-      className={cn("flex flex-col items-center justify-center py-16 px-4 text-center", className)}
-    >
-      <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-bg-tertiary text-text-muted mb-4">
-        {icon ?? <Inbox size={28} />}
+    <div className={cn("empty", className)} role="status">
+      <div
+        className="flex items-center justify-center w-10 h-10 rounded-md well text-text-muted mb-1"
+        aria-hidden="true"
+      >
+        {icon ?? <Inbox size={18} />}
       </div>
-
-      <h3 className="text-lg font-semibold font-display text-text-primary mb-1">{title}</h3>
-
-      {description && <p className="text-sm text-text-secondary max-w-sm mb-4">{description}</p>}
-
+      <h3 className="h3 text-text-primary">{title}</h3>
+      {description && <p className="small max-w-sm">{description}</p>}
       {action && (
-        <Button variant="primary" size="sm" onClick={action.onClick}>
+        <Button variant="secondary" size="sm" onClick={action.onClick} className="mt-2">
           {action.label}
         </Button>
       )}

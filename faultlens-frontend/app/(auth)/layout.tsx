@@ -22,8 +22,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   // If already authenticated, show empty loader during transition
   if (token) {
     return (
-      <div className="min-h-screen bg-bg-primary flex items-center justify-center">
-        <div className="w-10 h-10 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-bg-primary flex items-center justify-center" role="status">
+        <span className="spinner w-6 h-6 text-text-muted" aria-hidden="true" />
       </div>
     );
   }

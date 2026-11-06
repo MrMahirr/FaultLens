@@ -1,0 +1,115 @@
+{
+  "alarms": {
+    "title": "Alarmlar ve kurallar",
+    "subtitle": "Açık alarmları üstlenin, çözün; tetikleyici kuralları yönetin.",
+    "newRule": "Yeni kural",
+    "tabs": { "alarms": "Alarmlar", "rules": "Kurallar", "label": "Alarm görünümü" },
+    "stats": {
+      "active": "Aktif",
+      "openCritical": "Açık kritik",
+      "acknowledged": "Üstlenilen",
+      "resolved": "Çözülen"
+    },
+    "status": { "ACTIVE": "Aktif", "ACKNOWLEDGED": "Üstlenildi", "RESOLVED": "Çözüldü" },
+    "channel": {
+      "IN_APP": "Uygulama içi",
+      "SLACK": "Slack",
+      "EMAIL": "E-posta",
+      "WEBHOOK": "Webhook"
+    },
+    "list": {
+      "title": "Alarm geçmişi",
+      "allStatuses": "Tüm durumlar",
+      "allSeverities": "Tüm seviyeler",
+      "statusFilter": "Durum",
+      "severityFilter": "Seviye",
+      "empty": "Bu filtrelerle alarm yok.",
+      "columns": {
+        "name": "Alarm",
+        "severity": "Seviye",
+        "message": "Mesaj",
+        "status": "Durum",
+        "triggeredAt": "Tetiklenme",
+        "actions": "Eylemler"
+      },
+      "acknowledge": "Üstlen",
+      "acknowledgeHint": "Üstlen (ilgileniyorum)",
+      "resolve": "Çöz",
+      "resolveHint": "Çözüldü olarak işaretle",
+      "delete": "Sil",
+      "deleteTitle": "Alarm silinsin mi?",
+      "deleteDescription": "Alarm kaydı kalıcı olarak silinir. Yalnızca kapatmak için “Çöz”ü kullanın."
+    },
+    "detail": {
+      "title": "Alarm ayrıntıları",
+      "triggeredAt": "Tetiklenme",
+      "resolvedAt": "Çözülme",
+      "severity": "Seviye",
+      "message": "Mesaj",
+      "ruleId": "Kural ID",
+      "status": "Durum"
+    },
+    "rules": {
+      "empty": "Henüz alarm kuralı yok. “Yeni kural” ile oluşturabilirsiniz.",
+      "columns": {
+        "name": "Kural",
+        "condition": "Koşul",
+        "severity": "Seviye",
+        "channels": "Kanallar",
+        "status": "Durum",
+        "actions": "Eylemler"
+      },
+      "active": "Aktif",
+      "inactive": "Pasif",
+      "deactivate": "Pasife Al",
+      "activate": "Aktifleştir",
+      "delete": "Sil",
+      "deleteTitle": "Kural silinsin mi?",
+      "deleteDescription": "“{name}” silinir; ürettiği alarmlar geçmişte kalır.",
+      "describe": {
+        "THRESHOLD": "{minutes} dk içinde ≥ {threshold} adet {severity}+ log",
+        "PATTERN": "{severity}+ log /{pattern}/ ile eşleşirse",
+        "NEW_GROUP": "Yeni {severity}+ hata grubu oluşursa"
+      }
+    },
+    "form": {
+      "title": "Yeni alarm kuralı",
+      "name": "Kural Adı",
+      "namePlaceholder": "Örn. Yüksek hata oranı",
+      "type": "Kural Tipi",
+      "types": {
+        "THRESHOLD": "Eşik — belirli sürede N adet log",
+        "PATTERN": "Desen — mesaj düzenli ifadeyle eşleşirse",
+        "NEW_GROUP": "Yeni hata — daha önce görülmemiş hata grubu"
+      },
+      "severity": "En Düşük Seviye",
+      "severityOption": "{severity} ve üzeri",
+      "window": "Pencere (dakika)",
+      "threshold": "Eşik (adet)",
+      "pattern": "Desen (düzenli ifade)",
+      "patternPlaceholder": "Örn. Connection (refused|reset)",
+      "patternHint": "Mesaj veya stack trace içinde aranır",
+      "sources": "Kaynaklar (seçilmezse tümü)",
+      "noSources": "Kayıtlı kaynak yok",
+      "channels": "Bildirim kanalları",
+      "cooldown": "Bekleme süresi (dakika)",
+      "cooldownHint": "Aynı kural bu süre içinde tekrar alarm üretmez",
+      "preview": "Koşul:",
+      "submit": "Kuralı ekle"
+    }
+  },
+  "validation": {
+    "required": "Bu alan gereklidir",
+    "ruleNameRequired": "Kural adı gereklidir",
+    "max200": "En fazla 200 karakter",
+    "max500": "En fazla 500 karakter",
+    "minOneMinute": "En az 1 dakika",
+    "maxSixtyMinutes": "En fazla 60 dakika",
+    "minOne": "En az 1",
+    "maxDay": "En fazla 1440 dakika",
+    "channelRequired": "En az bir kanal seçin",
+    "patternRequired": "Desen gereklidir",
+    "patternInvalid": "Geçersiz düzenli ifade",
+    "number": "Geçerli bir sayı girin"
+  }
+}

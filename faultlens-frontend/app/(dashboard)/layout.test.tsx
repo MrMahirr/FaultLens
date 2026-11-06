@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@/test/rtl";
 import { http, HttpResponse } from "msw";
 import { API, fail, ok, server } from "@/test/msw/server";
 import { fakeToken } from "@/test/utils";

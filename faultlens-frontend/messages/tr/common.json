@@ -1,0 +1,52 @@
+{
+  "meta": {
+    "title": "FaultLens — Gerçek zamanlı log analizi",
+    "description": "Kubernetes, SSH ve Docker ortamlarındaki uzak sunucu loglarını gerçek zamanlı izleyen, hata analizi yapan ve deployment korelasyonu sunan log analiz platformu."
+  },
+  "common": {
+    "close": "Kapat",
+    "cancel": "Vazgeç",
+    "confirm": "Onayla",
+    "delete": "Sil",
+    "save": "Kaydet",
+    "saving": "Kaydediliyor…",
+    "edit": "Düzenle",
+    "create": "Oluştur",
+    "add": "Ekle",
+    "back": "Geri",
+    "next": "İleri",
+    "refresh": "Yenile",
+    "retry": "Tekrar dene",
+    "loading": "Yükleniyor…",
+    "noData": "Veri bulunamadı",
+    "search": "Ara",
+    "all": "Tümü",
+    "yes": "Evet",
+    "no": "Hayır",
+    "enabled": "Etkin",
+    "disabled": "Devre dışı",
+    "enable": "Etkinleştir",
+    "disable": "Devre dışı bırak",
+    "details": "Ayrıntılar",
+    "unknown": "Bilinmiyor",
+    "none": "—",
+    "pagination": "Sayfalama",
+    "previousPage": "Önceki sayfa",
+    "nextPage": "Sonraki sayfa",
+    "page": "Sayfa {page}",
+    "copy": "Kopyala",
+    "copied": "Kopyalandı",
+    "clearFilters": "Filtreleri temizle",
+    "noPermission": "Bu işlem için yetkiniz yok",
+    "adminOnly": "Yalnızca yöneticiler"
+  },
+  "errors": {
+    "pageTitle": "Bu sayfa yüklenemedi",
+    "pageDescription": "Beklenmeyen bir hata oluştu. Tekrar deneyin; sorun sürerse sayfayı yenileyin.",
+    "retry": "Tekrar dene",
+    "notFoundTitle": "Sayfa bulunamadı",
+    "notFoundDescription": "Aradığınız sayfa taşınmış ya da hiç var olmamış olabilir.",
+    "backToDashboard": "Genel bakışa dön",
+    "generic": "Bir hata oluştu."
+  }
+}

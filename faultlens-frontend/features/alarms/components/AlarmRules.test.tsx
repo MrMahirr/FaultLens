@@ -1,15 +1,12 @@
-import { screen, waitFor, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@/test/rtl";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import toast from "react-hot-toast";
-import Swal from "sweetalert2";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { API, ok, server } from "@/test/msw/server";
 import { renderWithQuery, signInAs } from "@/test/utils";
 import { AlarmRulesList } from "./AlarmRulesList";
 import { CreateRuleModal } from "./CreateRuleModal";
-
-vi.mock("sweetalert2", () => ({ default: { fire: vi.fn() } }));
 
 const storedRule = {
   id: 4,
@@ -30,7 +27,6 @@ const storedRule = {
 
 beforeEach(() => {
   signInAs("EDITOR");
-  vi.mocked(Swal.fire).mockReset();
   vi.spyOn(toast, "success").mockImplementation(() => "");
   vi.spyOn(toast, "error").mockImplementation(() => "");
   server.use(
@@ -130,13 +126,17 @@ describe("AlarmRulesList", () => {
     renderWithQuery(<AlarmRulesList />);
     const row = (await screen.findByText("Hata patlaması")).closest("tr")!;
 
-    vi.mocked(Swal.fire).mockResolvedValueOnce({ isConfirmed: false } as never);
     await user.click(within(row).getByRole("button", { name: "Sil" }));
-    await waitFor(() => expect(Swal.fire).toHaveBeenCalledTimes(1));
+    const dialog = await screen.findByRole("alertdialog", { name: "Kural silinsin mi?" });
+    // Destructive confirmations focus "Vazgeç" first.
+    expect(within(dialog).getByRole("button", { name: "Vazgeç" })).toHaveFocus();
+    await user.click(within(dialog).getByRole("button", { name: "Vazgeç" }));
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument());
     expect(deleted).toBe(0);
 
-    vi.mocked(Swal.fire).mockResolvedValueOnce({ isConfirmed: true } as never);
     await user.click(within(row).getByRole("button", { name: "Sil" }));
+    const again = await screen.findByRole("alertdialog");
+    await user.click(within(again).getByRole("button", { name: "Sil" }));
     await waitFor(() => expect(deleted).toBe(1));
   });
 });

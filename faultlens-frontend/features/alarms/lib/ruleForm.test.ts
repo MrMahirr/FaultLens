@@ -1,4 +1,6 @@
+import { createTranslator } from "next-intl";
 import { describe, expect, it } from "vitest";
+import { MESSAGES } from "@/messages";
 import { Severity } from "@/shared/types/common.types";
 import { AlarmChannel, AlarmRuleType } from "../types/alarm.types";
 import { DEFAULT_RULE_FORM, describeRule, ruleFormSchema, toRuleInput } from "./ruleForm";
@@ -18,7 +20,7 @@ describe("ruleFormSchema", () => {
     ]);
     expect(
       ruleFormSchema.safeParse({ ...base, pattern: "(unclosed" }).error?.issues[0].message,
-    ).toBe("Geçersiz düzenli ifade");
+    ).toBe("patternInvalid");
     expect(
       ruleFormSchema.safeParse({ ...base, pattern: "Connection (refused|reset)" }).success,
     ).toBe(true);
@@ -36,8 +38,8 @@ describe("ruleFormSchema", () => {
     expect(issues({ windowMinutes: 61 })[0].path).toEqual(["windowMinutes"]);
     expect(issues({ threshold: 0 })[0].path).toEqual(["threshold"]);
     expect(issues({ cooldownMinutes: 1441 })[0].path).toEqual(["cooldownMinutes"]);
-    expect(issues({ channels: [] })[0].message).toBe("En az bir kanal seçin");
-    expect(issues({ name: "   " })[0].message).toBe("Kural adı gereklidir");
+    expect(issues({ channels: [] })[0].message).toBe("channelRequired");
+    expect(issues({ name: "   " })[0].message).toBe("ruleNameRequired");
   });
 });
 
@@ -75,33 +77,48 @@ describe("toRuleInput", () => {
 });
 
 describe("describeRule", () => {
+  const t = createTranslator({
+    locale: "tr",
+    messages: MESSAGES.tr,
+    namespace: "alarms.rules.describe",
+  });
+
   it("summarises each rule type", () => {
     expect(
-      describeRule({
-        type: AlarmRuleType.THRESHOLD,
-        severity: Severity.ERROR,
-        windowSec: 300,
-        threshold: 50,
-        pattern: null,
-      }),
+      describeRule(
+        {
+          type: AlarmRuleType.THRESHOLD,
+          severity: Severity.ERROR,
+          windowSec: 300,
+          threshold: 50,
+          pattern: null,
+        },
+        t,
+      ),
     ).toBe("5 dk içinde ≥ 50 adet ERROR+ log");
     expect(
-      describeRule({
-        type: AlarmRuleType.PATTERN,
-        severity: Severity.WARN,
-        windowSec: null,
-        threshold: null,
-        pattern: "refused",
-      }),
+      describeRule(
+        {
+          type: AlarmRuleType.PATTERN,
+          severity: Severity.WARN,
+          windowSec: null,
+          threshold: null,
+          pattern: "refused",
+        },
+        t,
+      ),
     ).toBe("WARN+ log /refused/ ile eşleşirse");
     expect(
-      describeRule({
-        type: AlarmRuleType.NEW_GROUP,
-        severity: Severity.CRITICAL,
-        windowSec: null,
-        threshold: null,
-        pattern: null,
-      }),
+      describeRule(
+        {
+          type: AlarmRuleType.NEW_GROUP,
+          severity: Severity.CRITICAL,
+          windowSec: null,
+          threshold: null,
+          pattern: null,
+        },
+        t,
+      ),
     ).toBe("Yeni CRITICAL+ hata grubu oluşursa");
   });
 });

@@ -1,11 +1,13 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+import toast from "react-hot-toast";
+import { AlertTriangle, X } from "lucide-react";
 import { useIsClient } from "@/shared/hooks/useIsClient";
 import { useWebSocket } from "@/shared/hooks/useWebSocket";
 import { Endpoints } from "@/shared/api/endpoints";
 import { useAuthStore } from "@/features/auth/store/auth.store";
-import toast from "react-hot-toast";
-import { AlertTriangle } from "lucide-react";
+import { useUIStore } from "@/shared/store/ui.store";
 
 /** In-app alarm broadcast sent over /ws/logs (InAppNotificationService). */
 interface AlarmSocketMessage {
@@ -14,79 +16,69 @@ interface AlarmSocketMessage {
   message?: string;
 }
 
+/** Short two-tone chime (Web Audio); silent where audio is unavailable. */
+function playNotificationSound() {
+  try {
+    const Ctx =
+      window.AudioContext ||
+      (window as Window & { webkitAudioContext?: typeof window.AudioContext }).webkitAudioContext;
+    if (!Ctx) return;
+    const audioCtx = new Ctx();
+    const oscillator = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.1);
+    gain.gain.setValueAtTime(0, audioCtx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 0.05);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+    oscillator.connect(gain);
+    gain.connect(audioCtx.destination);
+    oscillator.start(audioCtx.currentTime);
+    oscillator.stop(audioCtx.currentTime + 0.5);
+  } catch (e) {
+    console.error("Audio playback failed", e);
+  }
+}
+
 export function GlobalNotificationListener() {
+  const t = useTranslations("shell");
   const mounted = useIsClient();
   const token = useAuthStore((state) => state.token);
 
-  // Play a soft chime sound using Web Audio API
-  const playNotificationSound = () => {
-    try {
-      const AudioContext =
-        window.AudioContext ||
-        (window as Window & { webkitAudioContext?: typeof window.AudioContext }).webkitAudioContext;
-      if (!AudioContext) return;
-
-      const audioCtx = new AudioContext();
-      const oscillator = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-
-      oscillator.type = "sine";
-      oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5 note
-      oscillator.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.1); // Drop to A4
-
-      gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 0.05); // Fade in quickly
-      gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5); // Fade out smoothly
-
-      oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-
-      oscillator.start(audioCtx.currentTime);
-      oscillator.stop(audioCtx.currentTime + 0.5);
-    } catch (e) {
-      console.error("Audio playback failed", e);
-    }
-  };
-
   const handleMessage = (raw: unknown) => {
     const data = raw as AlarmSocketMessage | null;
-    if (data?.type === "ALARM") {
-      playNotificationSound();
-      toast.custom(
-        (t) => (
-          <div
-            className={`${
-              t.visible ? "animate-enter" : "animate-leave"
-            } max-w-md w-full bg-error text-white shadow-2xl rounded-2xl pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
-          >
-            <div className="flex-1 w-0 p-4">
-              <div className="flex items-start">
-                <div className="flex-shrink-0 pt-0.5">
-                  <AlertTriangle className="h-10 w-10 text-white/90" />
-                </div>
-                <div className="ml-3 flex-1">
-                  <p className="text-sm font-bold text-white uppercase tracking-wider">
-                    {data.title || "Sistem Uyarısı"}
-                  </p>
-                  <p className="mt-1 text-sm text-white/90">
-                    {data.message || "Bilinmeyen bir hata oluştu."}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="flex border-l border-white/20">
-              <button
-                onClick={() => toast.dismiss(t.id)}
-                className="w-full border border-transparent rounded-none rounded-r-2xl p-4 flex items-center justify-center text-sm font-medium hover:bg-white/10 focus:outline-none transition-colors"
-              >
-                Kapat
-              </button>
-            </div>
+    if (data?.type !== "ALARM") return;
+    playNotificationSound();
+    const reduced = useUIStore.getState().motion === "off";
+    toast.custom(
+      (item) => (
+        <div
+          role="alert"
+          className="card flex items-start gap-3 w-[min(420px,calc(100vw-32px))] p-3 pl-3.5"
+          style={{
+            boxShadow: "var(--pop), inset 3px 0 0 var(--crit)",
+            opacity: item.visible || reduced ? 1 : 0,
+            transition: "opacity var(--t-2) var(--ease)",
+          }}
+        >
+          <AlertTriangle size={16} className="text-critical mt-0.5 shrink-0" aria-hidden="true" />
+          <div className="flex-1 min-w-0">
+            <p className="small font-medium">{data.title || t("alarmToastTitle")}</p>
+            <p className="xs t2 mt-0.5 break-words">{data.message || t("alarmToastFallback")}</p>
           </div>
-        ),
-        { duration: 8000, position: "top-right" },
-      );
-    }
+          <button
+            type="button"
+            onClick={() => toast.dismiss(item.id)}
+            className="btn btn-ghost btn-sm btn-icon -mr-1 -mt-1"
+            aria-label={t("dismiss")}
+          >
+            <X size={14} aria-hidden="true" />
+          </button>
+        </div>
+      ),
+      { duration: 8000, position: "top-right" },
+    );
   };
 
   useWebSocket({
@@ -96,5 +88,5 @@ export function GlobalNotificationListener() {
     enabled: mounted && !!token,
   });
 
-  return null; // This component doesn't render anything
+  return null;
 }

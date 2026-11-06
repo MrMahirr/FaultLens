@@ -1,0 +1,34 @@
+{
+  "nav": {
+    "label": "Kenar çubuğu",
+    "main": "Ana gezinme",
+    "groups": { "observe": "Gözlem", "infra": "Altyapı", "respond": "Yanıt" },
+    "dashboard": "Genel bakış",
+    "logs": "Loglar",
+    "analyses": "Analizler",
+    "sources": "Kaynaklar",
+    "deployments": "Deployments",
+    "alarms": "Alarmlar",
+    "settings": "Ayarlar",
+    "collapse": "Daralt",
+    "expand": "Genişlet"
+  },
+  "shell": {
+    "toggleMenu": "Menüyü aç/kapat",
+    "breadcrumb": "Konum",
+    "language": "Dil",
+    "languages": { "tr": "Türkçe", "en": "English" },
+    "theme": "Tema",
+    "themes": { "system": "Sistem", "dark": "Koyu", "light": "Açık" },
+    "alarms": "Alarmlar",
+    "activeAlarms": "{count, plural, one {# aktif alarm} other {# aktif alarm}}",
+    "userMenu": "Kullanıcı menüsü",
+    "profile": "Profil",
+    "logout": "Çıkış yap",
+    "skipToContent": "İçeriğe geç",
+    "loadingSession": "Oturum yükleniyor…",
+    "alarmToastTitle": "Sistem uyarısı",
+    "alarmToastFallback": "Ayrıntı içermeyen bir alarm tetiklendi.",
+    "dismiss": "Kapat"
+  }
+}
