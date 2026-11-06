@@ -4,5 +4,3 @@
 *.sh text eol=lf
 mvnw text eol=lf
 faultlens-frontend/.husky/* text eol=lf
-# Shell scripts run inside Linux containers: always LF.
-*.sh text eol=lf
