@@ -50,6 +50,7 @@ public class AlarmDispatcherService {
                 .build();
 
         alarmRepository.save(alarm);
+        countFired("analysis", alarm.getSeverity());
         notifier.notifyAll(TITLE, alarm.getMessage());
     }
 
@@ -72,8 +73,15 @@ public class AlarmDispatcherService {
                 .message(message)
                 .triggeredAt(Instant.now())
                 .build());
+        countFired("rule", alarm.getSeverity());
         notifier.notifyAll("Alarm: " + rule.getName(), message, alarm.getSeverity().name(), java.util.EnumSet.copyOf(
                 rule.getChannels().isEmpty() ? java.util.List.of(AlarmChannel.IN_APP) : rule.getChannels()));
         return alarm;
+    }
+
+    /** {@code faultlens_alarms_fired_total{kind,severity}} (P08). */
+    private static void countFired(String kind, Severity severity) {
+        io.micrometer.core.instrument.Metrics.counter("faultlens.alarms.fired",
+                "kind", kind, "severity", severity == null ? "UNKNOWN" : severity.name()).increment();
     }
 }

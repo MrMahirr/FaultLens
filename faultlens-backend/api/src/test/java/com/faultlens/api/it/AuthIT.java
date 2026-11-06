@@ -136,6 +136,8 @@ class AuthIT extends AbstractIntegrationTest {
     @Test
     void actuatorHealthIsPublicButMetricsNeedAdmin() {
         assertThat(get("/actuator/health", null).getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(get("/readyz", null).getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(get("/livez", null).getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(get("/actuator/metrics", null).getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(get("/actuator/metrics", adminToken()).getStatusCode()).isEqualTo(HttpStatus.OK);
     }

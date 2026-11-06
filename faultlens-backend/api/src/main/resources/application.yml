@@ -14,7 +14,7 @@ spring:
   lifecycle:
     timeout-per-shutdown-phase: 30s
   application:
-    name: faultlens-api9
+    name: faultlens-api
   threads:
     virtual:
       enabled: true
@@ -63,14 +63,54 @@ server:
   shutdown: graceful
 
 management:
+  # Optional separate port for actuator (P08). Prometheus scrapes /actuator/prometheus there
+  # without credentials, so publish this port only to the monitoring network, never publicly.
+  # Empty -> actuator stays on the main port and /actuator/prometheus needs an ADMIN token.
+  server:
+    port: ${MANAGEMENT_PORT:}
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info,metrics,prometheus
+  metrics:
+    tags:
+      application: faultlens
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+        faultlens.analysis.duration: true
+  otlp:
+    metrics:
+      export:
+        enabled: false # metrics go to Prometheus
+  logging:
+    export:
+      otlp:
+        enabled: false
+  tracing:
+    sampling:
+      probability: ${TRACING_SAMPLING_PROBABILITY:0.1}
+    export:
+      otlp:
+        # Traces (log-raw -> processing -> analysis -> alarm) to an OTLP collector, e.g. Jaeger
+        # from docker-compose.observability.yml. Off unless TRACING_EXPORT_ENABLED=true.
+        enabled: ${TRACING_EXPORT_ENABLED:false}
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:http://localhost:4318/v1/traces}
   health:
     # An unreachable or unset SMTP server must not mark the API DOWN (e-mail is one optional channel).
     mail:
       enabled: false
+  endpoint:
+    health:
+      probes:
+        # /livez and /readyz on the main port, also when actuator moved to MANAGEMENT_PORT:
+        # container health checks keep working either way.
+        enabled: true
+        add-additional-paths: true
 
 faultlens:
   jwt:

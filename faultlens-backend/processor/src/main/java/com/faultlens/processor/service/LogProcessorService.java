@@ -66,6 +66,7 @@ public class LogProcessorService {
             } catch (Exception ex) {
                 log.error("Failed to process event, sending to DLQ: {}", event, ex);
                 dlqTemplate.send("log-raw-dlq", event);
+                io.micrometer.core.instrument.Metrics.counter("faultlens.logs.dlq").increment();
             }
         }
 
@@ -98,10 +99,25 @@ public class LogProcessorService {
             toPublish.add(dto);
         }
 
+        countIngested(savedEntries);
+
         // Publish event so listeners can dispatch (e.g. Kafka, WebSocket) after commit
         eventPublisher.publishEvent(new LogProcessedEvent(toErrorQueue, toPublish));
 
         return dtos;
+    }
+
+    /** {@code faultlens_logs_ingested_total{source,severity}} (P08), one increment per pair per batch. */
+    private static void countIngested(List<LogEntry> entries) {
+        Map<String, Map<Severity, Long>> counts = new java.util.HashMap<>();
+        for (LogEntry entry : entries) {
+            counts.computeIfAbsent(entry.getSourceId() == null ? "none" : entry.getSourceId().toString(),
+                            key -> new java.util.EnumMap<>(Severity.class))
+                    .merge(entry.getSeverity(), 1L, Long::sum);
+        }
+        counts.forEach((source, bySeverity) -> bySeverity.forEach((severity, count) ->
+                io.micrometer.core.instrument.Metrics.counter("faultlens.logs.ingested",
+                        "source", source, "severity", severity.name()).increment(count)));
     }
 
     private PendingLogEntry toPendingEntry(LogEventDto event) {

@@ -38,6 +38,7 @@ public class AnalyzerService {
     public AnalysisResultDto analyze(LogEntryDto entry) {
         LogGroup group = logGroupRepository.findById(entry.getGroupId())
                 .orElseThrow(() -> new ResourceNotFoundException("Log group not found: " + entry.getGroupId()));
+        long started = System.nanoTime();
         AnalysisResult result = selectBestResult(
                 ruleBasedEngine.analyze(entry, group),
                 aiAnalysisEngine
@@ -45,6 +46,11 @@ public class AnalyzerService {
                         .filter(engine -> enginePreference.map(EnginePreference::preferAi).orElse(true))
                         .map(engine -> engine.analyze(entry, group))
                         .orElse(null));
+        // faultlens_analysis_duration_seconds{engine} (P08): engines incl. the AI round trip
+        io.micrometer.core.instrument.Timer.builder("faultlens.analysis.duration")
+                .tag("engine", result.engineType() == null ? "unknown" : result.engineType())
+                .register(io.micrometer.core.instrument.Metrics.globalRegistry)
+                .record(System.nanoTime() - started, java.util.concurrent.TimeUnit.NANOSECONDS);
         result = applyDeploymentCorrelation(entry, result);
         Analysis saved = analysisRepository.save(Analysis.builder()
                 .logGroupId(group.getId())

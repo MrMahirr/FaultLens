@@ -82,6 +82,7 @@ public class AiAnalysisEngine implements AnalysisEngine {
 
     private AnalysisResult parseResponse(String responseBody) throws Exception {
         JsonNode root = objectMapper.readTree(responseBody);
+        countTokens(root.path("usage"));
         String content = root.path("choices").path(0).path("message").path("content").asText("{}");
         JsonNode result = objectMapper.readTree(stripJsonFence(content));
         return new AnalysisResult(
@@ -92,6 +93,17 @@ public class AiAnalysisEngine implements AnalysisEngine {
                 "AI",
                 "AiAnalysisEngine"
         );
+    }
+
+    /** {@code faultlens_ai_tokens_total{type,model}} (P08) from the OpenAI usage block. */
+    private void countTokens(JsonNode usage) {
+        for (String type : List.of("prompt", "completion")) {
+            long tokens = usage.path(type + "_tokens").asLong(0);
+            if (tokens > 0) {
+                io.micrometer.core.instrument.Metrics.counter("faultlens.ai.tokens", "type", type, "model", model)
+                        .increment(tokens);
+            }
+        }
     }
 
     private String stripJsonFence(String content) {

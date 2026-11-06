@@ -12,6 +12,11 @@
     <packaging>jar</packaging>
 
     <dependencies>
+        <!-- Application metrics (Metrics.globalRegistry; exported by the api module) -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-core</artifactId>
+        </dependency>
         <dependency>
             <groupId>tools.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
