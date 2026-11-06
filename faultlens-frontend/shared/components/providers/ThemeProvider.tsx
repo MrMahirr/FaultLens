@@ -1,19 +1,28 @@
 "use client";
 
 import { useEffect, type ReactNode } from "react";
+import { MotionConfig } from "framer-motion";
 import { useTheme } from "@/shared/hooks/useTheme";
+import { useUIStore } from "@/shared/store/ui.store";
 
-interface ThemeProviderProps {
-  children: ReactNode;
-}
+/**
+ * Writes data-theme / data-motion on <html> (the bootstrap script in the root layout does
+ * the same before first paint) and turns framer-motion animations off when the user chose
+ * "reduce motion" in Settings, or the OS asks for reduced motion.
+ */
+export function ThemeProvider({ children }: { children: ReactNode }) {
+  const { resolvedTheme } = useTheme();
+  const motion = useUIStore((state) => state.motion);
 
-export function ThemeProvider({ children }: ThemeProviderProps) {
-  const { theme } = useTheme();
-
-  // Sync theme on mount (handles SSR → client hydration)
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-  }, [theme]);
+    document.documentElement.setAttribute("data-theme", resolvedTheme);
+  }, [resolvedTheme]);
 
-  return <>{children}</>;
+  useEffect(() => {
+    document.documentElement.setAttribute("data-motion", motion);
+  }, [motion]);
+
+  return (
+    <MotionConfig reducedMotion={motion === "off" ? "always" : "user"}>{children}</MotionConfig>
+  );
 }

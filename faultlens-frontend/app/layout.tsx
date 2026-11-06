@@ -1,28 +1,21 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import { QueryProvider } from "@/shared/components/providers/QueryProvider";
 import { ThemeProvider } from "@/shared/components/providers/ThemeProvider";
+import { AppToaster } from "@/shared/components/feedback/AppToaster";
+import { THEME_BOOTSTRAP_SCRIPT } from "@/shared/lib/theme";
 import "./globals.css";
 
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-display",
-  subsets: ["latin"],
-  display: "swap",
-  weight: ["300", "400", "500", "600", "700"],
-});
-
 const inter = Inter({
-  variable: "--font-body",
-  subsets: ["latin"],
+  variable: "--font-inter",
+  subsets: ["latin", "latin-ext"],
   display: "swap",
-  weight: ["300", "400", "500", "600", "700"],
 });
 
 const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-mono",
-  subsets: ["latin"],
+  variable: "--font-jetbrains",
+  subsets: ["latin", "latin-ext"],
   display: "swap",
-  weight: ["300", "400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -38,8 +31,6 @@ export const metadata: Metadata = {
   ],
 };
 
-import { Toaster } from "react-hot-toast";
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -49,32 +40,19 @@ export default function RootLayout({
     <html
       lang="tr"
       data-theme="dark"
-      className={`${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable}`}
+      data-motion="on"
+      className={`${inter.variable} ${jetbrainsMono.variable}`}
       suppressHydrationWarning
     >
+      <head>
+        {/* Applies the stored theme/motion before first paint (no light/dark flash). */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP_SCRIPT }} />
+      </head>
       <body className="min-h-screen bg-bg-primary text-text-primary font-body antialiased">
         <QueryProvider>
           <ThemeProvider>
             {children}
-            <Toaster
-              position="bottom-right"
-              toastOptions={{
-                className:
-                  "!bg-bg-tertiary !text-text-primary !border !border-border-default !rounded-xl !shadow-lg",
-                success: {
-                  iconTheme: {
-                    primary: "var(--color-success)",
-                    secondary: "var(--color-bg-tertiary)",
-                  },
-                },
-                error: {
-                  iconTheme: {
-                    primary: "var(--color-error)",
-                    secondary: "var(--color-bg-tertiary)",
-                  },
-                },
-              }}
-            />
+            <AppToaster />
           </ThemeProvider>
         </QueryProvider>
       </body>

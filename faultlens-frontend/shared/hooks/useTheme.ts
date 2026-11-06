@@ -1,46 +1,35 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { useUIStore } from "@/shared/store/ui.store";
+import { resolveTheme } from "@/shared/lib/theme";
+
+const LIGHT_QUERY = "(prefers-color-scheme: light)";
+
+function subscribe(onChange: () => void) {
+  const mq = window.matchMedia(LIGHT_QUERY);
+  mq.addEventListener("change", onChange);
+  return () => mq.removeEventListener("change", onChange);
+}
+
+const getSnapshot = () => window.matchMedia(LIGHT_QUERY).matches;
+const getServerSnapshot = () => false;
 
 /**
- * Theme hook — Zustand'dan tema okur ve DOM'u günceller.
- * data-theme attribute'unu HTML element'ine set eder.
+ * Theme preference (dark / light / system) and the theme actually in effect. "system"
+ * follows the OS setting live. The DOM attribute itself is written by ThemeProvider.
  */
 export function useTheme() {
   const theme = useUIStore((state) => state.theme);
   const setTheme = useUIStore((state) => state.setTheme);
-  const toggleTheme = useUIStore((state) => state.toggleTheme);
-
-  const [resolvedTheme, setResolvedTheme] = useState<"dark" | "light">("dark");
-
-  useEffect(() => {
-    const applyTheme = (currentTheme: string) => {
-      if (currentTheme === "system") {
-        const isSystemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-        document.documentElement.setAttribute("data-theme", isSystemDark ? "dark" : "light");
-        setResolvedTheme(isSystemDark ? "dark" : "light");
-      } else {
-        document.documentElement.setAttribute("data-theme", currentTheme);
-        setResolvedTheme(currentTheme as "dark" | "light");
-      }
-    };
-
-    applyTheme(theme);
-
-    if (theme === "system") {
-      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-      const handleChange = () => applyTheme("system");
-
-      mediaQuery.addEventListener("change", handleChange);
-      return () => mediaQuery.removeEventListener("change", handleChange);
-    }
-  }, [theme]);
+  const systemPrefersLight = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const resolvedTheme = resolveTheme(theme, systemPrefersLight);
 
   return {
     theme,
+    resolvedTheme,
     setTheme,
-    toggleTheme,
+    toggleTheme: () => setTheme(resolvedTheme === "dark" ? "light" : "dark"),
     isDark: resolvedTheme === "dark",
     isLight: resolvedTheme === "light",
   };
