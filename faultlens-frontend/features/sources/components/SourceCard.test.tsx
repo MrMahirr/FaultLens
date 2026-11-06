@@ -1,15 +1,12 @@
-import { screen, waitFor } from "@/test/rtl";
+import { screen, waitFor, within } from "@/test/rtl";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import toast from "react-hot-toast";
-import Swal from "sweetalert2";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { API, server } from "@/test/msw/server";
 import { renderWithQuery, signInAs } from "@/test/utils";
 import type { LogSourceDto } from "../types/source.types";
 import { SourceCard } from "./SourceCard";
-
-vi.mock("sweetalert2", () => ({ default: { fire: vi.fn() } }));
 
 const source = {
   id: 7,
@@ -20,7 +17,6 @@ const source = {
 } as unknown as LogSourceDto;
 
 beforeEach(() => {
-  vi.mocked(Swal.fire).mockReset();
   vi.spyOn(toast, "success").mockImplementation(() => "");
   vi.spyOn(toast, "error").mockImplementation(() => "");
 });
@@ -54,12 +50,13 @@ describe("SourceCard roles (P07)", () => {
         return new HttpResponse(null, { status: 204 });
       }),
     );
-    vi.mocked(Swal.fire).mockResolvedValueOnce({ isConfirmed: true } as never);
     const user = userEvent.setup();
     renderWithQuery(<SourceCard source={source} index={0} />);
 
     await user.click(screen.getByRole("button", { name: "Kaynak işlemleri" }));
-    await user.click(screen.getByText("Sil"));
+    await user.click(screen.getByRole("menuitem", { name: "Sil" }));
+    const dialog = await screen.findByRole("alertdialog");
+    await user.click(within(dialog).getByRole("button", { name: "Kaynağı sil" }));
     await waitFor(() => expect(deleted).toBe(1));
   });
 

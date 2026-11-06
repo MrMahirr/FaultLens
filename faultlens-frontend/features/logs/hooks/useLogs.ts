@@ -15,13 +15,27 @@ import {
 export const LOG_PAGE_SIZE = 100;
 const SEARCH_DEBOUNCE_MS = 300;
 
-/** Query-string keys: /logs?q=timeout&sev=ERROR&src=3&range=7d&page=2 */
-const KEYS = { search: "q", severity: "sev", source: "src", range: "range", page: "page" } as const;
+/** Query-string keys: /logs?q=timeout&sev=ERROR&src=3&range=7d&page=2 (group=12: one error group) */
+const KEYS = {
+  search: "q",
+  severity: "sev",
+  source: "src",
+  range: "range",
+  page: "page",
+  groupId: "group",
+  startDate: "from",
+} as const;
 
 function parseSeverity(value: string | null): Severity | undefined {
   return value && (Object.values(Severity) as string[]).includes(value)
     ? (value as Severity)
     : undefined;
+}
+
+function parseIso(value: string | null): string | undefined {
+  if (!value) return undefined;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? undefined : d.toISOString();
 }
 
 function parseRange(value: string | null): LogTimeRange {
@@ -39,7 +53,11 @@ export function useLogs() {
 
   const filters = useMemo<LogFilters>(() => {
     const page = Number(params.get(KEYS.page));
+    const group = Number(params.get(KEYS.groupId));
     return {
+      groupId: Number.isInteger(group) && group > 0 ? group : undefined,
+      // ISO start (e.g. a deployment time); overrides the range window.
+      startDate: parseIso(params.get(KEYS.startDate)),
       search: params.get(KEYS.search) ?? undefined,
       severity: parseSeverity(params.get(KEYS.severity)),
       source: params.get(KEYS.source) ?? undefined,

@@ -1,9 +1,18 @@
 import { apiClient } from "@/shared/api/client";
 import { Endpoints } from "@/shared/api/endpoints";
-import type { DashboardStats, ChartPoint } from "../types/dashboard.types";
+import type { DashboardStats, SeverityCount } from "../types/dashboard.types";
 import { HttpMethod } from "@/shared/api/methods";
 import type { LogSourceDto } from "@/features/sources/types/source.types";
-import { ConnectionStatus } from "@/shared/types/common.types";
+import { ConnectionStatus, Severity } from "@/shared/types/common.types";
+
+const SEVERITY_ORDER = [
+  Severity.CRITICAL,
+  Severity.ERROR,
+  Severity.WARN,
+  Severity.INFO,
+  Severity.DEBUG,
+  Severity.TRACE,
+];
 
 export const DashboardApi = {
   getStats: async (): Promise<DashboardStats> => {
@@ -28,38 +37,31 @@ export const DashboardApi = {
     const criticalCount = Number(statsData["CRITICAL"] || 0);
     const errorCount = Number(statsData["ERROR"] || 0);
     const warnCount = Number(statsData["WARN"] || 0);
+    const analysesPage = analysesRes.data?.data;
 
     return {
       totalErrors: criticalCount + errorCount + warnCount,
-      totalErrorsChange: 0,
       activeSources,
       totalSources,
       openGroups: groupsPage.totalElements || groupsPage.content?.length || 0,
-      analysesToday: analysesList.length,
+      // The list is paged: totalElements is the real count (not the length of page 1).
+      analysesTotal:
+        typeof analysesPage?.totalElements === "number"
+          ? analysesPage.totalElements
+          : analysesList.length,
     };
   },
 
-  getSeverityChart: async (): Promise<ChartPoint[]> => {
+  /** Per-severity log counts of the last hour (real counts from /logs/stats). */
+  getSeverityCounts: async (): Promise<SeverityCount[]> => {
     const statsRes = await apiClient({
       method: HttpMethod.GET,
       url: `${Endpoints.LOGS.STATS}?windowMinutes=60`,
     });
     const statsData = statsRes.data?.data || {};
-
-    const critical = Number(statsData["CRITICAL"] || 0);
-    const error = Number(statsData["ERROR"] || 0);
-    const warn = Number(statsData["WARN"] || 0);
-    const info = Number(statsData["INFO"] || 0);
-
-    return Array.from({ length: 6 }, (_, i) => {
-      const factor = (i + 1) / 6;
-      return {
-        time: `${30 - i * 5}m`,
-        critical: Math.max(0, Math.floor(critical * factor * 0.4)),
-        error: Math.max(0, Math.floor(error * factor * 0.4)),
-        warn: Math.max(0, Math.floor(warn * factor * 0.4)),
-        info: Math.max(0, Math.floor(info * factor * 0.4)),
-      };
-    }).reverse();
+    return SEVERITY_ORDER.map((severity) => ({
+      severity,
+      count: Number(statsData[severity] || 0),
+    }));
   },
 };

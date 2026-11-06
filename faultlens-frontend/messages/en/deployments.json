@@ -1,0 +1,41 @@
+{
+  "deployments": {
+    "title": "Deployments",
+    "subtitle": "Deployment history and the errors that started after it.",
+    "add": "New deployment",
+    "addFirst": "Add a deployment",
+    "ci": {
+      "title": "CI/CD integration",
+      "description": "To record deployments automatically, add this request to your CI/CD pipeline (GitHub Actions etc.). Define FAULTLENS_TOKEN as a CI secret.",
+      "copy": "Copy command",
+      "copied": "Command copied"
+    },
+    "search": "Search services",
+    "searchPlaceholder": "Search by service name…",
+    "environment": "Environment",
+    "allEnvironments": "All environments",
+    "chooseEnvironment": "Choose an environment",
+    "status": {
+      "SUCCESS": "Succeeded",
+      "FAILED": "Failed",
+      "ROLLED_BACK": "Rolled back",
+      "IN_PROGRESS": "In progress"
+    },
+    "env": { "PRODUCTION": "Production", "STAGING": "Staging", "DEVELOPMENT": "Development" },
+    "by": "by {user}",
+    "errors": "{count, plural, one {# error} other {# errors}}",
+    "viewLogs": "Logs since this deploy",
+    "emptyTitle": "No deployments yet",
+    "emptyDescription": "Send them from CI or create the first record by hand.",
+    "emptyFiltered": "No deployments match these filters.",
+    "timeline": "Deployment timeline",
+    "form": {
+      "title": "Record a deployment",
+      "service": "Service name",
+      "version": "Version",
+      "save": "Save",
+      "saved": "Deployment recorded.",
+      "saveFailed": "The deployment could not be recorded."
+    }
+  }
+}

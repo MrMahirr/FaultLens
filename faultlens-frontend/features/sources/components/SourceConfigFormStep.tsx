@@ -1,4 +1,6 @@
-import { motion } from "framer-motion";
+"use client";
+
+import { useTranslations } from "next-intl";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Input } from "@/shared/components/ui/Input";
 import { Button } from "@/shared/components/ui/Button";
@@ -39,56 +41,65 @@ export function SourceConfigFormStep({
   onBack,
   onNext,
 }: SourceConfigFormStepProps) {
+  const t = useTranslations("sources.wizard");
+
   return (
-    <motion.div
-      key="step2"
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      className="space-y-4"
+    <form
+      className="stack gap-4 swA"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (name) onNext();
+      }}
     >
       <Input
-        label="Kaynak Adı"
-        placeholder="prod-k8s-cluster"
+        label={t("name")}
+        placeholder={t("namePlaceholder")}
         value={name}
         onChange={(e) => setName(e.target.value)}
+        required
+        autoFocus
       />
 
       {selectedType === LogSourceType.KUBERNETES && (
         <Input
-          label="Namespace"
+          label={t("namespace")}
           placeholder="default"
           value={namespace}
           onChange={(e) => setNamespace(e.target.value)}
+          className="mono"
         />
       )}
 
       {selectedType === LogSourceType.SSH && (
         <>
           <Input
-            label="Host (IP:Port)"
+            label={t("host")}
             placeholder="127.0.0.1:22"
             value={host}
             onChange={(e) => setHost(e.target.value)}
+            className="mono"
           />
           <Input
-            label="Username"
+            label={t("username")}
             placeholder="root"
+            autoComplete="off"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
           <Input
-            label="Password"
+            label={t("password")}
             type="password"
-            placeholder="***"
+            autoComplete="new-password"
+            hint={t("passwordHint")}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
           <Input
-            label="Log File Path"
+            label={t("logFilePath")}
             placeholder="/var/log/syslog"
             value={logFilePath}
             onChange={(e) => setLogFilePath(e.target.value)}
+            className="mono"
           />
         </>
       )}
@@ -96,44 +107,51 @@ export function SourceConfigFormStep({
       {selectedType === LogSourceType.DOCKER && (
         <>
           <Input
-            label="Container ID veya İsmi"
+            label={t("container")}
             placeholder="faultlens-frontend"
             value={logFilePath}
             onChange={(e) => setLogFilePath(e.target.value)}
+            className="mono"
           />
           <Input
-            label="Docker Host (Opsiyonel)"
-            placeholder="Boş bırakırsan lokal bilgisayarı kullanır"
+            label={t("dockerHost")}
+            placeholder={t("dockerHostPlaceholder")}
             value={host}
             onChange={(e) => setHost(e.target.value)}
+            className="mono"
           />
         </>
       )}
 
       {selectedType === LogSourceType.LOCAL_FILE && (
         <Input
-          label="Log Dosyası Yolu (Absolute Path)"
-          placeholder="C:\logs\app.log veya /var/log/syslog"
+          label={t("localPath")}
+          placeholder={t("localPathPlaceholder")}
           value={logFilePath}
           onChange={(e) => setLogFilePath(e.target.value)}
+          className="mono"
         />
       )}
 
       <div className="flex gap-2 pt-2">
-        <Button variant="secondary" icon={<ArrowLeft size={14} />} onClick={onBack}>
-          Geri
+        <Button
+          variant="secondary"
+          icon={<ArrowLeft size={14} aria-hidden="true" />}
+          onClick={onBack}
+        >
+          {t("back")}
         </Button>
         <Button
+          type="submit"
           variant="primary"
-          icon={<ArrowRight size={14} />}
+          icon={<ArrowRight size={14} aria-hidden="true" />}
           iconPosition="right"
-          onClick={onNext}
           disabled={!name}
           fullWidth
         >
-          Test & Kaydet
+          {t("next")}
         </Button>
       </div>
-    </motion.div>
+    </form>
   );
 }

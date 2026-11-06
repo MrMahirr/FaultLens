@@ -1,322 +1,336 @@
 "use client";
 
-import { useCan } from "@/features/auth/hooks/useCan";
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { Plus, Rocket, AlertCircle, Search, Terminal, ExternalLink } from "lucide-react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
+import toast from "react-hot-toast";
+import { Plus, Rocket, Terminal, ExternalLink, Copy, Search } from "lucide-react";
+import { useCan } from "@/features/auth/hooks/useCan";
+import { useAuthStore } from "@/features/auth/store/auth.store";
 import { PageHeader } from "@/shared/components/layout/PageHeader";
-import { Card } from "@/shared/components/ui/Card";
 import { Badge } from "@/shared/components/ui/Badge";
 import { Button } from "@/shared/components/ui/Button";
 import { Modal } from "@/shared/components/ui/Modal";
 import { Input } from "@/shared/components/ui/Input";
-import { DropdownSelect, type DropdownItem } from "@/shared/components/ui/Dropdown";
+import { DropdownSelect } from "@/shared/components/ui/Dropdown";
 import { EmptyState } from "@/shared/components/feedback/EmptyState";
 import { SkeletonCard } from "@/shared/components/ui/Skeleton";
+import { useDateFormat } from "@/shared/hooks/useDateFormat";
+import { useUrlState } from "@/shared/hooks/useUrlState";
+import { useDebounce } from "@/shared/hooks/useDebounce";
 import { useDeploymentsQuery } from "@/features/deployments/api/useDeploymentQuery";
 import { useCreateDeploymentMutation } from "@/features/deployments/api/useDeploymentMutation";
 import { DeploymentStatus, DeploymentEnvironment } from "@/shared/types/common.types";
-import { formatDate } from "@/shared/lib/utils";
+import { getApiErrorMessage } from "@/shared/api/errors";
 import { Endpoints } from "@/shared/api/endpoints";
 import { cn } from "@/shared/lib/utils";
 
 /**
- * Example CI step shown on the page (kept as a string so quotes need no JSX escaping).
- * Mirrors what the API accepts: snake_case fields, `deployed_at` is required and the endpoint
- * needs a bearer token (FAULTLENS_TOKEN as a CI secret).
+ * Example CI step shown on the page. Mirrors what the API accepts: snake_case fields,
+ * `deployed_at` is required and the endpoint needs a bearer token (FAULTLENS_TOKEN).
  */
 const CI_WEBHOOK_EXAMPLE = `curl -X POST ${Endpoints.DEPLOYMENTS.CREATE} \\
   -H "Content-Type: application/json" \\
   -H "Authorization: Bearer $FAULTLENS_TOKEN" \\
   -d '{"service_name":"my-service","version":"v1.0.0","environment":"PRODUCTION","deployed_at":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'","deployed_by":"ci"}'`;
 
-/* ── Status Badge Variant Map ──────────────────────────────── */
+const STATUS_BADGE: Record<DeploymentStatus, "success" | "error" | "warning" | "info"> = {
+  [DeploymentStatus.SUCCESS]: "success",
+  [DeploymentStatus.FAILED]: "error",
+  [DeploymentStatus.ROLLED_BACK]: "warning",
+  [DeploymentStatus.IN_PROGRESS]: "info",
+};
 
-function getStatusVariant(status: DeploymentStatus) {
-  switch (status) {
-    case DeploymentStatus.SUCCESS:
-      return "success" as const;
-    case DeploymentStatus.FAILED:
-      return "error" as const;
-    case DeploymentStatus.ROLLED_BACK:
-      return "warning" as const;
-    case DeploymentStatus.IN_PROGRESS:
-      return "info" as const;
-  }
-}
+const STATUS_DOT: Record<DeploymentStatus, string> = {
+  [DeploymentStatus.SUCCESS]: "var(--ok)",
+  [DeploymentStatus.FAILED]: "var(--crit)",
+  [DeploymentStatus.ROLLED_BACK]: "var(--warn)",
+  [DeploymentStatus.IN_PROGRESS]: "var(--info)",
+};
 
-function getStatusLabel(status: DeploymentStatus) {
-  switch (status) {
-    case DeploymentStatus.SUCCESS:
-      return "Başarılı";
-    case DeploymentStatus.FAILED:
-      return "Başarısız";
-    case DeploymentStatus.ROLLED_BACK:
-      return "Geri Alındı";
-    case DeploymentStatus.IN_PROGRESS:
-      return "Devam Ediyor";
-  }
-}
+const ENVIRONMENTS = Object.values(DeploymentEnvironment);
+const EMPTY_FORM = { serviceName: "", version: "", environment: "" };
 
-function getEnvLabel(env: DeploymentEnvironment) {
-  switch (env) {
-    case DeploymentEnvironment.PRODUCTION:
-      return "Production";
-    case DeploymentEnvironment.STAGING:
-      return "Staging";
-    case DeploymentEnvironment.DEVELOPMENT:
-      return "Development";
-  }
-}
-
-/* ── Component ─────────────────────────────────────────────── */
-
-export default function DeploymentsPage() {
-  const { data: deployments, isLoading, error } = useDeploymentsQuery();
+function DeploymentsView() {
+  const t = useTranslations("deployments");
+  const tCommon = useTranslations("common");
+  const dates = useDateFormat();
+  const { data: deployments, isLoading } = useDeploymentsQuery();
   const createDeployment = useCreateDeploymentMutation();
   const canEdit = useCan("edit");
+  const username = useAuthStore((state) => state.user?.username);
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({
-    serviceName: "",
-    version: "",
-    environment: "",
-  });
+  const [formData, setFormData] = useState(EMPTY_FORM);
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [envFilter, setEnvFilter] = useState<DeploymentEnvironment | "ALL">("ALL");
+  // Filters in the URL (?q=payments&env=PRODUCTION) — shareable.
+  const { params, update } = useUrlState();
+  const urlQuery = params.get("q") ?? "";
+  const [searchQuery, setSearchQuery] = useState(urlQuery);
+  const debouncedQuery = useDebounce(searchQuery, 300);
+  useEffect(() => {
+    if (debouncedQuery !== urlQuery) update({ q: debouncedQuery });
+  }, [debouncedQuery, urlQuery, update]);
+  const envParam = params.get("env");
+  const envFilter = ENVIRONMENTS.includes(envParam as DeploymentEnvironment)
+    ? (envParam as DeploymentEnvironment)
+    : undefined;
 
-  const envOptions: DropdownItem[] = [
-    { label: "Production", value: DeploymentEnvironment.PRODUCTION },
-    { label: "Staging", value: DeploymentEnvironment.STAGING },
-    { label: "Development", value: DeploymentEnvironment.DEVELOPMENT },
-  ];
+  const filteredDeployments = deployments?.filter(
+    (d) =>
+      d.serviceName.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      (!envFilter || d.environment === envFilter),
+  );
 
-  const filteredDeployments = deployments?.filter((d) => {
-    const matchesSearch = d.serviceName.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesEnv = envFilter === "ALL" || d.environment === envFilter;
-    return matchesSearch && matchesEnv;
-  });
+  const envOptions = ENVIRONMENTS.map((env) => ({ label: t(`env.${env}`), value: env }));
 
   const handleCreate = async () => {
-    await createDeployment.mutateAsync({
-      serviceName: formData.serviceName,
-      version: formData.version,
-      environment: formData.environment as DeploymentEnvironment,
-      status: DeploymentStatus.SUCCESS,
-      deployedBy: "admin",
-      deployedAt: new Date().toISOString(),
-      errorCount: 0,
-    });
-    setShowModal(false);
-    setFormData({ serviceName: "", version: "", environment: "" });
+    try {
+      await createDeployment.mutateAsync({
+        serviceName: formData.serviceName.trim(),
+        version: formData.version.trim(),
+        environment: formData.environment as DeploymentEnvironment,
+        status: DeploymentStatus.SUCCESS,
+        deployedBy: username ?? "ui",
+        deployedAt: new Date().toISOString(),
+        errorCount: 0,
+      });
+      toast.success(t("form.saved"));
+      setShowModal(false);
+      setFormData(EMPTY_FORM);
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, t("form.saveFailed")));
+    }
   };
 
+  const copyCommand = async () => {
+    try {
+      await navigator.clipboard.writeText(CI_WEBHOOK_EXAMPLE);
+      toast.success(t("ci.copied"));
+    } catch {
+      // Clipboard unavailable (insecure context); the command is selectable on the page.
+    }
+  };
+
+  const hasFilters = !!searchQuery || !!envFilter;
+
   return (
-    <div className="space-y-6">
+    <>
       <PageHeader
-        title="Dağıtımlar"
-        description="Deployment geçmişi ve hata korelasyonları"
+        title={t("title")}
+        description={t("subtitle")}
         action={
-          canEdit ? (
-            <Button variant="primary" icon={<Plus size={16} />} onClick={() => setShowModal(true)}>
-              Yeni Deployment
+          canEdit && (
+            <Button
+              variant="primary"
+              icon={<Plus size={16} aria-hidden="true" />}
+              onClick={() => setShowModal(true)}
+            >
+              {t("add")}
             </Button>
-          ) : undefined
+          )
         }
       />
 
-      {/* Webhook Integration Guide */}
-      <Card variant="bordered" className="bg-accent/5 border-accent/20">
-        <div className="flex flex-col sm:flex-row items-start gap-4">
-          <div className="p-3 bg-accent/10 rounded-xl text-accent shrink-0">
-            <Terminal size={22} />
-          </div>
-          <div className="flex-1 w-full min-w-0">
-            <h3 className="font-semibold text-text-primary mb-1">CI/CD Entegrasyonu</h3>
-            <p className="text-sm text-text-secondary mb-4 leading-relaxed">
-              Deployment&apos;larınızı otomatik takip etmek için CI/CD pipeline&apos;ınıza (GitHub
-              Actions, vb.) aşağıdaki webhook isteğini ekleyin.
-            </p>
-            <div className="bg-bg-primary p-4 rounded-xl border border-border-default overflow-x-auto w-full shadow-inner">
-              <code className="text-[13px] text-text-primary font-mono whitespace-pre block">
-                {CI_WEBHOOK_EXAMPLE}
-              </code>
-            </div>
-          </div>
+      <section className="card" aria-labelledby="ci-title">
+        <div className="panel-h">
+          <h2 id="ci-title" className="h3 row">
+            <Terminal size={15} className="t3" aria-hidden="true" />
+            {t("ci.title")}
+          </h2>
+          <Button
+            variant="ghost"
+            size="sm"
+            icon={<Copy size={13} aria-hidden="true" />}
+            onClick={copyCommand}
+          >
+            {t("ci.copy")}
+          </Button>
         </div>
-      </Card>
+        <div className="p-4 stack gap-3">
+          <p className="small t2">{t("ci.description")}</p>
+          <pre className="code">{CI_WEBHOOK_EXAMPLE}</pre>
+        </div>
+      </section>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-bg-secondary p-2 rounded-2xl border border-border-default">
-        <div className="w-full sm:max-w-md">
-          <Input
-            placeholder="Servis adı ile ara..."
+      <div className="flex flex-col sm:flex-row gap-2" role="search" aria-label={t("search")}>
+        <label className="search grow max-w-md">
+          <Search size={15} aria-hidden="true" />
+          <span className="sr-only">{t("search")}</span>
+          <input
+            type="search"
+            placeholder={t("searchPlaceholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            icon={<Search size={18} />}
-            className="border-transparent bg-transparent hover:bg-bg-tertiary focus:bg-bg-tertiary transition-colors shadow-none"
           />
-        </div>
-        <div className="w-full sm:w-56 shrink-0 pl-0 sm:pl-3 sm:border-l border-border-default">
-          <DropdownSelect
-            value={envFilter}
-            options={[{ label: "Tüm Ortamlar", value: "ALL" }, ...envOptions]}
-            onChange={(v) => setEnvFilter(v as DeploymentEnvironment | "ALL")}
-            placeholder="Ortam Filtresi"
-          />
-        </div>
+        </label>
+        <DropdownSelect
+          label={t("environment")}
+          value={envFilter ?? ""}
+          options={[{ label: t("allEnvironments"), value: "" }, ...envOptions]}
+          onChange={(v) => update({ env: v })}
+          className="sm:w-56 [&_.label]:sr-only"
+        />
       </div>
 
       {isLoading ? (
-        <div className="space-y-4">
+        <div className="stack" aria-busy="true">
           {Array.from({ length: 3 }, (_, i) => (
             <SkeletonCard key={i} />
           ))}
         </div>
       ) : filteredDeployments && filteredDeployments.length > 0 ? (
-        /* Timeline */
-        <div className="relative">
-          {/* Timeline Line */}
-          <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-accent via-border-default to-transparent" />
+        <ol className="relative m-0 p-0 list-none stack gap-3" aria-label={t("timeline")}>
+          {/* Timeline rail */}
+          <span
+            className="absolute left-[11px] top-2 bottom-2 w-px bg-border-strong"
+            aria-hidden="true"
+          />
 
-          <div className="space-y-4">
-            {filteredDeployments.map((deployment, index) => (
-              <motion.div
-                key={deployment.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1, duration: 0.3 }}
-                className="relative pl-14"
+          {filteredDeployments.map((deployment, index) => (
+            <li key={deployment.id} className={`relative pl-9 in d${Math.min(index + 1, 8)}`}>
+              <span
+                className="absolute left-[6px] top-5 w-[11px] h-[11px] rounded-full border-2 border-bg-primary"
+                style={{ background: STATUS_DOT[deployment.status] }}
+                aria-hidden="true"
+              />
+
+              <article
+                className={cn(
+                  "card hov p-4 flex flex-col sm:flex-row sm:items-start justify-between gap-4",
+                )}
+                style={
+                  deployment.errorCount > 10
+                    ? { boxShadow: "inset 2px 0 0 var(--crit)" }
+                    : undefined
+                }
               >
-                {/* Timeline Dot */}
-                <div
-                  className={cn(
-                    "absolute left-[18px] top-6 w-3 h-3 rounded-full border-2 border-bg-primary z-10",
-                    deployment.status === DeploymentStatus.SUCCESS
-                      ? "bg-success"
-                      : deployment.status === DeploymentStatus.FAILED
-                        ? "bg-error"
-                        : "bg-warning",
-                  )}
-                />
-
-                <Card
-                  variant="default"
-                  hover
-                  className={cn(
-                    "transition-all duration-300",
-                    deployment.errorCount > 10 &&
-                      "shadow-[0_0_15px_rgba(239,68,68,0.15)] border-error/50",
-                  )}
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold font-display text-text-primary">
-                          {deployment.serviceName}
-                        </h3>
-                        <Badge variant="accent" size="sm">
-                          {deployment.version}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-3 text-xs text-text-muted">
-                        <span>{formatDate(deployment.deployedAt)}</span>
-                        <span>by {deployment.deployedBy}</span>
-                      </div>
-                      {deployment.description && (
-                        <p className="text-sm text-text-secondary mt-2">{deployment.description}</p>
-                      )}
-                    </div>
-
-                    <div className="flex flex-col items-start sm:items-end gap-3 shrink-0 mt-5 sm:mt-0 w-full sm:w-auto">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant={getStatusVariant(deployment.status)} size="sm">
-                          {getStatusLabel(deployment.status)}
-                        </Badge>
-                        <Badge variant="outline" size="sm">
-                          {getEnvLabel(deployment.environment)}
-                        </Badge>
-                        {deployment.errorCount > 0 && (
-                          <Badge
-                            variant="error"
-                            size="sm"
-                            className={cn(deployment.errorCount > 10 && "animate-pulse")}
-                          >
-                            <AlertCircle size={10} />
-                            {deployment.errorCount} Hata
-                          </Badge>
-                        )}
-                      </div>
-
-                      <Link
-                        href={`/logs?service=${deployment.serviceName}&from=${new Date(deployment.deployedAt).getTime()}`}
-                        className="text-[13px] font-medium flex items-center gap-1.5 text-accent hover:text-accent-hover transition-colors px-3 py-1.5 bg-accent/10 hover:bg-accent/20 rounded-lg"
-                      >
-                        <ExternalLink size={14} />
-                        Logları İncele
-                      </Link>
-                    </div>
+                <div className="min-w-0">
+                  <div className="row mb-1">
+                    <h3 className="h3 text-[15px]">{deployment.serviceName}</h3>
+                    <span className="badge mono c-signal">{deployment.version}</span>
                   </div>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+                  <p className="xs t3 row gap-3">
+                    <time dateTime={deployment.deployedAt}>
+                      {dates.dateTime(deployment.deployedAt)}
+                    </time>
+                    {deployment.deployedBy && (
+                      <span>{t("by", { user: deployment.deployedBy })}</span>
+                    )}
+                  </p>
+                  {deployment.description && (
+                    <p className="small t2 mt-2">{deployment.description}</p>
+                  )}
+                </div>
+
+                <div className="flex flex-col items-start sm:items-end gap-2.5 shrink-0">
+                  <div className="row">
+                    <Badge variant={STATUS_BADGE[deployment.status]} dot>
+                      {t(`status.${deployment.status}`)}
+                    </Badge>
+                    <Badge variant="outline">{t(`env.${deployment.environment}`)}</Badge>
+                    {deployment.errorCount > 0 && (
+                      <Badge variant="error" mono>
+                        {t("errors", { count: deployment.errorCount })}
+                      </Badge>
+                    )}
+                  </div>
+                  <Link
+                    href={`/logs?from=${encodeURIComponent(deployment.deployedAt)}&range=all`}
+                    className="btn btn-sm"
+                  >
+                    <ExternalLink size={13} aria-hidden="true" />
+                    {t("viewLogs")}
+                  </Link>
+                </div>
+              </article>
+            </li>
+          ))}
+        </ol>
       ) : (
-        <EmptyState
-          icon={<Rocket size={28} />}
-          title="Henüz deployment yok"
-          description="İlk deployment kaydını oluşturun"
-          action={
-            canEdit ? { label: "Deployment Ekle", onClick: () => setShowModal(true) } : undefined
-          }
-        />
+        <div className="card">
+          <EmptyState
+            icon={<Rocket size={18} />}
+            title={hasFilters ? t("emptyFiltered") : t("emptyTitle")}
+            description={hasFilters ? undefined : t("emptyDescription")}
+            action={
+              hasFilters
+                ? {
+                    label: tCommon("clearFilters"),
+                    onClick: () => {
+                      setSearchQuery("");
+                      update({ q: undefined, env: undefined });
+                    },
+                  }
+                : canEdit
+                  ? { label: t("addFirst"), onClick: () => setShowModal(true) }
+                  : undefined
+            }
+          />
+        </div>
       )}
 
-      {/* Add Deployment Modal */}
       <Modal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
-        title="Yeni Deployment Kaydet"
+        title={t("form.title")}
         footer={
           <>
             <Button variant="secondary" onClick={() => setShowModal(false)}>
-              İptal
+              {tCommon("cancel")}
             </Button>
             <Button
+              type="submit"
+              form="deployment-form"
               variant="primary"
-              onClick={handleCreate}
               loading={createDeployment.isPending}
-              disabled={!formData.serviceName || !formData.version}
+              disabled={!formData.serviceName || !formData.version || !formData.environment}
             >
-              Kaydet
+              {t("form.save")}
             </Button>
           </>
         }
       >
-        <div className="space-y-4">
+        <form
+          id="deployment-form"
+          className="stack gap-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void handleCreate();
+          }}
+        >
           <Input
-            label="Servis Adı"
+            label={t("form.service")}
             placeholder="payment-service"
             value={formData.serviceName}
             onChange={(e) => setFormData((prev) => ({ ...prev, serviceName: e.target.value }))}
+            required
+            autoFocus
           />
           <Input
-            label="Versiyon"
+            label={t("form.version")}
             placeholder="v2.3.1"
+            className="mono"
             value={formData.version}
             onChange={(e) => setFormData((prev) => ({ ...prev, version: e.target.value }))}
+            required
           />
           <DropdownSelect
-            label="Ortam"
+            label={t("environment")}
             value={formData.environment}
             options={envOptions}
             onChange={(value) => setFormData((prev) => ({ ...prev, environment: value }))}
-            placeholder="Ortam seçin"
+            placeholder={t("chooseEnvironment")}
           />
-        </div>
+        </form>
       </Modal>
-    </div>
+    </>
+  );
+}
+
+export default function DeploymentsPage() {
+  return (
+    <Suspense>
+      <DeploymentsView />
+    </Suspense>
   );
 }

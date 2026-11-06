@@ -1,0 +1,100 @@
+{
+  "sources": {
+    "title": "Kaynaklar",
+    "subtitle": "Logların toplandığı Kubernetes, SSH, Docker ve dosya kaynakları.",
+    "add": "Yeni kaynak",
+    "addFirst": "İlk kaynağı ekle",
+    "emptyTitle": "Henüz kaynak yok",
+    "emptyDescription": "Bir kaynak ekleyin; toplayıcı loglarını hemen akıtmaya başlar.",
+    "list": "Kaynak listesi",
+    "types": {
+      "KUBERNETES": "Kubernetes",
+      "SSH": "SSH",
+      "DOCKER": "Docker",
+      "CICD": "CI/CD",
+      "LOCAL_FILE": "Yerel dosya"
+    },
+    "typeDescriptions": {
+      "KUBERNETES": "Cluster içindeki pod loglarını izleyin",
+      "SSH": "Uzak sunucudaki bir log dosyasını izleyin",
+      "DOCKER": "Container loglarını izleyin",
+      "LOCAL_FILE": "Bu makinedeki bir log dosyasını izleyin"
+    },
+    "status": {
+      "CONNECTED": "Bağlı",
+      "WARNING": "Uyarı",
+      "DISCONNECTED": "Bağlı değil"
+    },
+    "actions": "Kaynak işlemleri",
+    "enable": "Etkinleştir",
+    "disable": "Devre Dışı Bırak",
+    "delete": "Sil",
+    "test": "Test",
+    "testHint": "Bağlantıyı test et",
+    "deleteTitle": "“{name}” silinsin mi?",
+    "deleteDescription": "Kaynak silinir; toplanmış loglar saklama süresi dolana kadar kalır.",
+    "deleteConfirm": "Kaynağı sil",
+    "namespace": "Namespace",
+    "host": "Host",
+    "lastLog": "Son log: {time}",
+    "lastError": "Hata ({time}): {error}",
+    "lastErrorNoTime": "Hata: {error}",
+    "collector": "Toplayan: <m>{instance}</m>",
+    "enabled": "Etkin",
+    "disabledBadge": "Devre dışı",
+    "toast": {
+      "enabled": "Kaynak etkinleştirildi.",
+      "disabled": "Kaynak devre dışı bırakıldı.",
+      "updateFailed": "Kaynak güncellenemedi.",
+      "deleted": "Kaynak silindi.",
+      "deleteFailed": "Kaynak silinemedi.",
+      "connectFailed": "Bağlantı kurulamadı",
+      "testOk": "Bağlantı başarılı.",
+      "saveFailed": "Kaynak kaydedilemedi.",
+      "saved": "Kaynak eklendi."
+    },
+    "detail": {
+      "title": "Kaynak ayrıntıları",
+      "connection": "Bağlantı durumu",
+      "times": "Zaman bilgileri",
+      "createdAt": "Oluşturulma",
+      "lastSeen": "Son görülme",
+      "config": "Yapılandırma",
+      "health": "Toplayıcı sağlığı",
+      "collector": "Toplayan örnek"
+    },
+    "wizard": {
+      "title": "Yeni kaynak",
+      "step": "Adım {step}/3",
+      "steps": {
+        "1": "Tür",
+        "2": "Ayarlar",
+        "3": "Test ve kaydet"
+      },
+      "chooseType": "Kaynak türü",
+      "name": "Kaynak Adı",
+      "namePlaceholder": "prod-k8s-cluster",
+      "namespace": "Namespace",
+      "host": "Host (IP:Port)",
+      "username": "Kullanıcı adı",
+      "password": "Parola",
+      "passwordHint": "Şifreli saklanır ve bir daha gösterilmez.",
+      "logFilePath": "Log dosyası yolu",
+      "container": "Container ID veya adı",
+      "dockerHost": "Docker host (isteğe bağlı)",
+      "dockerHostPlaceholder": "Boş bırakılırsa bu makinedeki Docker kullanılır",
+      "localPath": "Log dosyası yolu (mutlak yol)",
+      "localPathPlaceholder": "C:\\logs\\app.log veya /var/log/syslog",
+      "back": "Geri",
+      "next": "Test ve kaydet",
+      "source": "Kaynak",
+      "type": "Tür: {type}",
+      "test": "Bağlantıyı test et",
+      "testing": "Bağlantı deneniyor…",
+      "testOk": "Bağlantı başarılı",
+      "testFailed": "Bağlantı başarısız",
+      "save": "Kaydet",
+      "saveHint": "Kaydetmeden önce bağlantıyı test edin."
+    }
+  }
+}

@@ -67,6 +67,10 @@
       "back": "Loglara dön",
       "loading": "Log yükleniyor…",
       "logNumber": "Log #{id}"
-    }
+    },
+    "groupFilter": "Grup #{id}",
+    "removeGroupFilter": "Grup filtresini kaldır",
+    "sinceFilter": "Başlangıç: {time}",
+    "removeSinceFilter": "Başlangıç filtresini kaldır"
   }
 }

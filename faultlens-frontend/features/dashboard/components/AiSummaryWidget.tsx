@@ -1,91 +1,60 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Sparkles, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/shared/components/ui/Button";
+import { useTranslations } from "next-intl";
+import { Sparkles, ArrowRight } from "lucide-react";
 import { useAnalysesQuery } from "@/features/analyses/api/useAnalysisQuery";
 import { AnalysisType } from "@/shared/types/common.types";
 
 function AiSummaryWidget() {
+  const t = useTranslations("dashboard.summary");
   const { data: analysisData, isLoading } = useAnalysesQuery({ page: 0, size: 1 });
 
-  const totalElements = analysisData?.totalElements || 0;
-  const latestAnalysis = analysisData?.content?.[0];
+  const totalElements = analysisData?.totalElements ?? 0;
+  const latest = analysisData?.content?.[0];
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-accent/20 via-bg-secondary to-bg-secondary border border-accent/20 p-6"
+    <section
+      className="card p-4 flex flex-col md:flex-row md:items-center justify-between gap-4"
+      style={{ boxShadow: "inset 2px 0 0 var(--ai)" }}
+      aria-labelledby="ai-summary-title"
     >
-      {/* Background Glow */}
-      <div className="absolute top-0 left-0 w-64 h-64 bg-accent/20 rounded-full blur-[80px] -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
-
-      <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-xl bg-accent/20 flex items-center justify-center shrink-0 border border-accent/30 shadow-[0_0_15px_rgba(var(--accent-rgb),0.3)]">
-            <Sparkles size={24} className="text-accent animate-pulse" />
-          </div>
-          <div>
-            <h2 className="text-lg font-bold font-display text-text-primary mb-1">
-              FaultLens Analiz Özeti
-            </h2>
-            {isLoading ? (
-              <div className="space-y-2 mt-2">
-                <div className="h-4 w-64 bg-bg-tertiary rounded animate-pulse" />
-                <div className="h-4 w-48 bg-bg-tertiary rounded animate-pulse" />
-              </div>
-            ) : totalElements > 0 ? (
-              <p className="text-sm text-text-secondary leading-relaxed max-w-2xl">
-                Sistemde toplam{" "}
-                <strong className="text-text-primary">{totalElements} hata analizi</strong>{" "}
-                gerçekleştirildi.
-                {latestAnalysis && (
-                  <>
-                    {" "}
-                    En son yapılan analiz
-                    {latestAnalysis.affectedDeployment ? (
-                      <>
-                        {" "}
-                        <strong className="text-text-primary">
-                          {latestAnalysis.affectedDeployment}
-                        </strong>{" "}
-                        deployment&apos;ı ile
-                      </>
-                    ) : (
-                      " genel sistem hataları ile"
-                    )}{" "}
-                    ilişkili.{" "}
-                    {latestAnalysis.engineType === AnalysisType.AI
-                      ? "Yapay zeka kök neden analizini tamamladı."
-                      : "Kök neden kural tabanlı motorla belirlendi."}
-                  </>
-                )}
-              </p>
-            ) : (
-              <p className="text-sm text-text-secondary leading-relaxed max-w-2xl">
-                Şu an için sistemde analiz edilmiş bir hata veya anomali bulunmuyor. Sistem durumu
-                stabil.
-              </p>
-            )}
-          </div>
-        </div>
-
-        <div className="shrink-0 flex items-center gap-3">
-          <Link href="/analyses">
-            <Button
-              variant="primary"
-              size="md"
-              icon={<ArrowRight size={16} />}
-              iconPosition="right"
-            >
-              {totalElements > 0 ? "Analizi İncele" : "Analiz Sayfasına Git"}
-            </Button>
-          </Link>
+      <div className="flex items-start gap-3">
+        <span
+          className="w-8 h-8 rounded-md well grid place-items-center text-ai shrink-0"
+          aria-hidden="true"
+        >
+          <Sparkles size={16} />
+        </span>
+        <div className="min-w-0">
+          <h2 id="ai-summary-title" className="h3 mb-1">
+            {t("title")}
+          </h2>
+          {isLoading ? (
+            <div className="stack gap-2 mt-1" aria-hidden="true">
+              <div className="skel h-3.5 w-72 max-w-full" />
+              <div className="skel h-3.5 w-52 max-w-full" />
+            </div>
+          ) : totalElements > 0 ? (
+            <p className="small t2 max-w-3xl">
+              {t("total", { count: totalElements })}{" "}
+              {latest &&
+                (latest.affectedDeployment
+                  ? t("latestDeployment", { deployment: latest.affectedDeployment })
+                  : t("latestGeneral"))}{" "}
+              {latest && (latest.engineType === AnalysisType.AI ? t("engineAi") : t("engineRule"))}
+            </p>
+          ) : (
+            <p className="small t2 max-w-3xl">{t("none")}</p>
+          )}
         </div>
       </div>
-    </motion.div>
+
+      <Link href="/analyses" className="btn shrink-0">
+        {totalElements > 0 ? t("open") : t("goTo")}
+        <ArrowRight size={14} aria-hidden="true" />
+      </Link>
+    </section>
   );
 }
 

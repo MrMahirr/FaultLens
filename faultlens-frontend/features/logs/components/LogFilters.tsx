@@ -9,6 +9,7 @@ import { useConfirm } from "@/shared/components/ui/ConfirmDialog";
 import { SEVERITY_TONE } from "@/shared/components/ui/SeverityBadge";
 import { Severity } from "@/shared/types/common.types";
 import { cn } from "@/shared/lib/utils";
+import { useDateFormat } from "@/shared/hooks/useDateFormat";
 import {
   DEFAULT_LOG_TIME_RANGE,
   LOG_TIME_RANGES,
@@ -50,6 +51,7 @@ function LogFiltersBar({
   onToggleLive,
 }: LogFiltersBarProps) {
   const t = useTranslations("logs");
+  const dates = useDateFormat();
   const { data: sources } = useSourcesQuery();
   const clearLogs = useClearLogsMutation();
   const canDelete = useCan("delete");
@@ -86,6 +88,8 @@ function LogFiltersBar({
   };
 
   const hasActiveFilters =
+    !!filters.startDate ||
+    !!filters.groupId ||
     !!filters.severity ||
     !!searchInput ||
     !!filters.source ||
@@ -188,6 +192,32 @@ function LogFiltersBar({
             );
           })}
         </div>
+
+        {filters.groupId && (
+          <button
+            type="button"
+            className="chip mono"
+            aria-pressed="true"
+            onClick={() => onFilterChange("groupId", undefined)}
+            aria-label={t("removeGroupFilter")}
+          >
+            {t("groupFilter", { id: filters.groupId })}
+            <X size={12} aria-hidden="true" />
+          </button>
+        )}
+
+        {filters.startDate && (
+          <button
+            type="button"
+            className="chip"
+            aria-pressed="true"
+            onClick={() => onFilterChange("startDate", undefined)}
+            aria-label={t("removeSinceFilter")}
+          >
+            {t("sinceFilter", { time: dates.dateTime(filters.startDate) })}
+            <X size={12} aria-hidden="true" />
+          </button>
+        )}
 
         <div className="row ml-auto">
           {hasActiveFilters && (

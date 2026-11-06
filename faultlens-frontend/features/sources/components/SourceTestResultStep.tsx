@@ -1,6 +1,7 @@
-import { motion } from "framer-motion";
+"use client";
+
+import { useTranslations } from "next-intl";
 import { CheckCircle2, XCircle, ArrowLeft } from "lucide-react";
-import { Card } from "@/shared/components/ui/Card";
 import { Button } from "@/shared/components/ui/Button";
 import { LogSourceType } from "@/shared/types/common.types";
 
@@ -25,71 +26,75 @@ export function SourceTestResultStep({
   onBack,
   onSave,
 }: SourceTestResultStepProps) {
-  return (
-    <motion.div
-      key="step3"
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      className="space-y-4"
-    >
-      <Card variant="bordered" padding="md">
-        <p className="text-sm text-text-secondary mb-1">Kaynak:</p>
-        <p className="font-mono text-text-primary">{name}</p>
-        <p className="text-xs text-text-muted mt-1">Tür: {selectedType}</p>
-      </Card>
+  const t = useTranslations("sources.wizard");
+  const tSources = useTranslations("sources");
 
-      <div className="flex flex-col items-center gap-4 py-4">
+  return (
+    <div className="stack gap-4 swA">
+      <dl className="kv well p-3">
+        <dt>{t("source")}</dt>
+        <dd className="mono">{name}</dd>
+        {selectedType && (
+          <>
+            <dt>{t("chooseType")}</dt>
+            <dd>{tSources(`types.${selectedType}`)}</dd>
+          </>
+        )}
+      </dl>
+
+      <div className="flex flex-col items-center gap-3 py-4" aria-live="polite">
         {testResult === null && !isTesting && (
-          <Button variant="primary" onClick={onTest}>
-            Bağlantıyı Test Et
+          <Button variant="secondary" onClick={onTest}>
+            {t("test")}
           </Button>
         )}
 
         {isTesting && (
-          <div className="flex items-center gap-2 text-text-secondary">
-            <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
-            <span className="text-sm">Bağlantı analiz ediliyor...</span>
-          </div>
+          <p className="row small t2" role="status">
+            <span className="spinner" aria-hidden="true" />
+            {t("testing")}
+          </p>
         )}
 
         {testResult === "success" && (
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            className="flex flex-col items-center gap-2"
-          >
-            <CheckCircle2 size={48} className="text-success" />
-            <p className="text-sm text-success font-medium">Bağlantı başarılı!</p>
-          </motion.div>
+          <p className="row small text-success font-medium">
+            <CheckCircle2 size={18} aria-hidden="true" />
+            {t("testOk")}
+          </p>
         )}
 
         {testResult === "error" && (
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            className="flex flex-col items-center gap-2"
-          >
-            <XCircle size={48} className="text-error" />
-            <p className="text-sm text-error font-medium">Bağlantı başarısız</p>
-          </motion.div>
+          <div className="stack items-center gap-2">
+            <p className="row small text-error font-medium">
+              <XCircle size={18} aria-hidden="true" />
+              {t("testFailed")}
+            </p>
+            <Button variant="ghost" size="sm" onClick={onTest}>
+              {t("test")}
+            </Button>
+          </div>
         )}
       </div>
 
       <div className="flex gap-2">
-        <Button variant="secondary" icon={<ArrowLeft size={14} />} onClick={onBack}>
-          Geri
+        <Button
+          variant="secondary"
+          icon={<ArrowLeft size={14} aria-hidden="true" />}
+          onClick={onBack}
+        >
+          {t("back")}
         </Button>
         <Button
-          variant="success"
+          variant="primary"
           fullWidth
           onClick={onSave}
           loading={isSaving}
           disabled={testResult !== "success"}
+          title={testResult !== "success" ? t("saveHint") : undefined}
         >
-          Kaydet
+          {t("save")}
         </Button>
       </div>
-    </motion.div>
+    </div>
   );
 }

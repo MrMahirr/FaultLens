@@ -1,0 +1,56 @@
+{
+  "dashboard": {
+    "title": "Genel bakış",
+    "subtitle": "Son bir saatin hata hacmi, canlı akış ve kaynak sağlığı.",
+    "summary": {
+      "title": "Analiz özeti",
+      "none": "Henüz analiz edilmiş bir hata yok. ERROR ve CRITICAL loglar geldikçe kök neden analizleri burada özetlenir.",
+      "total": "{count, plural, one {Toplam # hata analizi yapıldı.} other {Toplam # hata analizi yapıldı.}}",
+      "latestDeployment": "En son analiz {deployment} deployment'ı ile ilişkili.",
+      "latestGeneral": "En son analiz belirli bir deployment ile ilişkilendirilmedi.",
+      "engineAi": "Kök nedeni yapay zeka belirledi.",
+      "engineRule": "Kök neden kural tabanlı motorla belirlendi.",
+      "open": "Analizleri incele",
+      "goTo": "Analizlere git"
+    },
+    "stats": {
+      "errors": "Hata · son 1 saat",
+      "errorsHint": "WARN + ERROR + CRITICAL",
+      "sources": "Bağlı kaynak",
+      "sourcesHint": "Bağlı / toplam",
+      "groups": "Hata grubu",
+      "groupsHint": "Gruplanmış benzersiz hata",
+      "analyses": "Analiz",
+      "analysesHint": "Toplam kök neden analizi"
+    },
+    "severity": {
+      "title": "Seviye dağılımı",
+      "subtitle": "Son 1 saatteki log sayıları",
+      "empty": "Son bir saatte log yok.",
+      "count": "{severity}: {count}"
+    },
+    "feed": {
+      "title": "Canlı akış",
+      "subtitle": "Son ERROR / CRITICAL loglar",
+      "live": "Canlı",
+      "offline": "Bağlantı yok",
+      "empty": "Henüz log yok."
+    },
+    "topErrors": {
+      "title": "En çok tekrarlayan hatalar",
+      "subtitle": "Gruplanmış hatalar",
+      "empty": "Kayıtlı hata grubu yok.",
+      "lastSeen": "Son: {time}",
+      "occurrences": "{count, plural, one {# kez} other {# kez}}"
+    },
+    "health": {
+      "title": "Kaynak sağlığı",
+      "subtitle": "Toplayıcı bağlantı durumu",
+      "empty": "Bağlı kaynak yok.",
+      "addSource": "Kaynak ekle",
+      "lastLog": "Son log: {time}",
+      "status": { "CONNECTED": "Bağlı", "WARNING": "Uyarı", "DISCONNECTED": "Bağlı değil" },
+      "viewAll": "Tüm kaynaklar"
+    }
+  }
+}

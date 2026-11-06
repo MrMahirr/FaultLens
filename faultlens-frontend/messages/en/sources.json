@@ -1,0 +1,100 @@
+{
+  "sources": {
+    "title": "Sources",
+    "subtitle": "The Kubernetes, SSH, Docker and file sources logs are collected from.",
+    "add": "New source",
+    "addFirst": "Add the first source",
+    "emptyTitle": "No sources yet",
+    "emptyDescription": "Add a source and the collector starts streaming its logs right away.",
+    "list": "Source list",
+    "types": {
+      "KUBERNETES": "Kubernetes",
+      "SSH": "SSH",
+      "DOCKER": "Docker",
+      "CICD": "CI/CD",
+      "LOCAL_FILE": "Local file"
+    },
+    "typeDescriptions": {
+      "KUBERNETES": "Follow pod logs in a cluster",
+      "SSH": "Follow a log file on a remote server",
+      "DOCKER": "Follow container logs",
+      "LOCAL_FILE": "Follow a log file on this machine"
+    },
+    "status": {
+      "CONNECTED": "Connected",
+      "WARNING": "Warning",
+      "DISCONNECTED": "Disconnected"
+    },
+    "actions": "Source actions",
+    "enable": "Enable",
+    "disable": "Disable",
+    "delete": "Delete",
+    "test": "Test",
+    "testHint": "Test the connection",
+    "deleteTitle": "Delete “{name}”?",
+    "deleteDescription": "The source is deleted; collected logs stay until the retention period ends.",
+    "deleteConfirm": "Delete source",
+    "namespace": "Namespace",
+    "host": "Host",
+    "lastLog": "Last log: {time}",
+    "lastError": "Error ({time}): {error}",
+    "lastErrorNoTime": "Error: {error}",
+    "collector": "Collected by: <m>{instance}</m>",
+    "enabled": "Enabled",
+    "disabledBadge": "Disabled",
+    "toast": {
+      "enabled": "Source enabled.",
+      "disabled": "Source disabled.",
+      "updateFailed": "The source could not be updated.",
+      "deleted": "Source deleted.",
+      "deleteFailed": "The source could not be deleted.",
+      "connectFailed": "Could not connect",
+      "testOk": "Connection successful.",
+      "saveFailed": "The source could not be saved.",
+      "saved": "Source added."
+    },
+    "detail": {
+      "title": "Source details",
+      "connection": "Connection status",
+      "times": "Timestamps",
+      "createdAt": "Created",
+      "lastSeen": "Last seen",
+      "config": "Configuration",
+      "health": "Collector health",
+      "collector": "Collector instance"
+    },
+    "wizard": {
+      "title": "New source",
+      "step": "Step {step}/3",
+      "steps": {
+        "1": "Type",
+        "2": "Settings",
+        "3": "Test and save"
+      },
+      "chooseType": "Source type",
+      "name": "Source name",
+      "namePlaceholder": "prod-k8s-cluster",
+      "namespace": "Namespace",
+      "host": "Host (IP:Port)",
+      "username": "Username",
+      "password": "Password",
+      "passwordHint": "Stored encrypted and never shown again.",
+      "logFilePath": "Log file path",
+      "container": "Container ID or name",
+      "dockerHost": "Docker host (optional)",
+      "dockerHostPlaceholder": "Leave empty to use Docker on this machine",
+      "localPath": "Log file path (absolute)",
+      "localPathPlaceholder": "C:\\logs\\app.log or /var/log/syslog",
+      "back": "Back",
+      "next": "Test and save",
+      "source": "Source",
+      "type": "Type: {type}",
+      "test": "Test connection",
+      "testing": "Trying the connection…",
+      "testOk": "Connection successful",
+      "testFailed": "Connection failed",
+      "save": "Save",
+      "saveHint": "Test the connection before saving."
+    }
+  }
+}

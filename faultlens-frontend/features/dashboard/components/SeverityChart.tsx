@@ -1,150 +1,68 @@
 "use client";
 
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from "recharts";
-import { Card } from "@/shared/components/ui/Card";
-import { Skeleton } from "@/shared/components/ui/Skeleton";
-import { useSeverityChartQuery } from "@/features/dashboard/api/useDashboardQuery";
+import { useTranslations } from "next-intl";
+import { SeverityBadge, SEVERITY_TONE } from "@/shared/components/ui/SeverityBadge";
+import { useDateFormat } from "@/shared/hooks/useDateFormat";
+import { useSeverityCountsQuery } from "@/features/dashboard/api/useDashboardQuery";
 
-/* ── Custom Tooltip ────────────────────────────────────────── */
-
-interface ChartTooltipProps {
-  active?: boolean;
-  payload?: Array<{
-    name: string;
-    value: number;
-    color: string;
-  }>;
-  label?: string;
-}
-
-function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
-  if (!active || !payload) return null;
-
-  return (
-    <div className="bg-bg-secondary border border-border-default rounded-xl px-4 py-3 shadow-lg">
-      <p className="text-xs text-text-muted mb-2 font-mono">{label} ago</p>
-      {payload.map((entry) => (
-        <div key={entry.name} className="flex items-center justify-between gap-4 text-xs">
-          <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
-            <span className="text-text-secondary capitalize">{entry.name}</span>
-          </div>
-          <span className="font-mono font-medium text-text-primary">{entry.value}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* ── Component ─────────────────────────────────────────────── */
-
+/**
+ * Last-hour log counts per severity as labelled bars (the API returns counts for the window,
+ * not a time series, so the chart shows exactly that). Each bar has its number and label —
+ * colour is never the only cue.
+ */
 function SeverityChart() {
-  const { data: chartData, isLoading } = useSeverityChartQuery();
+  const t = useTranslations("dashboard.severity");
+  const { number } = useDateFormat();
+  const { data, isLoading } = useSeverityCountsQuery();
+  const max = Math.max(1, ...(data ?? []).map((d) => d.count));
+  const total = (data ?? []).reduce((sum, d) => sum + d.count, 0);
 
   return (
-    <Card variant="default">
-      <div className="flex items-center justify-between mb-4">
+    <section className="card h-full" aria-labelledby="severity-chart-title">
+      <div className="panel-h">
         <div>
-          <h3 className="text-sm font-semibold font-display text-text-primary">
-            Severity Dağılımı
-          </h3>
-          <p className="text-xs text-text-muted mt-0.5">Son 1 saat</p>
+          <h2 id="severity-chart-title" className="h3">
+            {t("title")}
+          </h2>
+          <p className="xs t3">{t("subtitle")}</p>
         </div>
+        {!isLoading && <span className="num text-[20px]">{number(total)}</span>}
       </div>
 
-      {isLoading ? (
-        <Skeleton variant="rectangular" className="w-full h-[280px]" />
-      ) : (
-        <ResponsiveContainer width="100%" height={280}>
-          <AreaChart data={chartData}>
-            <defs>
-              <linearGradient id="gradCritical" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#DC2626" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#DC2626" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="gradError" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#EF4444" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#EF4444" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="gradWarn" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#F59E0B" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="gradInfo" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-            <XAxis
-              dataKey="time"
-              tick={{ fill: "var(--text-muted)", fontSize: 11 }}
-              axisLine={false}
-              tickLine={false}
-            />
-            <YAxis
-              tick={{ fill: "var(--text-muted)", fontSize: 11 }}
-              axisLine={false}
-              tickLine={false}
-              width={30}
-            />
-            <Tooltip content={<ChartTooltip />} />
-            <Legend
-              iconType="circle"
-              iconSize={8}
-              wrapperStyle={{ fontSize: 11, color: "var(--text-secondary)" }}
-            />
-
-            <Area
-              type="monotone"
-              dataKey="critical"
-              stroke="#DC2626"
-              fill="url(#gradCritical)"
-              strokeWidth={2}
-              dot={false}
-              name="Critical"
-            />
-            <Area
-              type="monotone"
-              dataKey="error"
-              stroke="#EF4444"
-              fill="url(#gradError)"
-              strokeWidth={2}
-              dot={false}
-              name="Error"
-            />
-            <Area
-              type="monotone"
-              dataKey="warn"
-              stroke="#F59E0B"
-              fill="url(#gradWarn)"
-              strokeWidth={2}
-              dot={false}
-              name="Warning"
-            />
-            <Area
-              type="monotone"
-              dataKey="info"
-              stroke="#3B82F6"
-              fill="url(#gradInfo)"
-              strokeWidth={2}
-              dot={false}
-              name="Info"
-            />
-          </AreaChart>
-        </ResponsiveContainer>
-      )}
-    </Card>
+      <div className="p-4">
+        {isLoading ? (
+          <div className="stack gap-3" aria-hidden="true">
+            {Array.from({ length: 6 }, (_, i) => (
+              <div key={i} className="skel h-5" />
+            ))}
+          </div>
+        ) : total === 0 ? (
+          <p className="empty">{t("empty")}</p>
+        ) : (
+          <ul className="stack gap-2.5 m-0 p-0 list-none">
+            {data?.map(({ severity, count }, i) => (
+              <li
+                key={severity}
+                className="grid grid-cols-[96px_1fr_64px] items-center gap-3"
+                aria-label={t("count", { severity, count })}
+              >
+                <SeverityBadge severity={severity} />
+                <div className={`bar h-2 ${SEVERITY_TONE[severity]}`} aria-hidden="true">
+                  <i
+                    style={{
+                      width: `${(count / max) * 100}%`,
+                      background: "var(--c)",
+                      animationDelay: `${i * 18}ms`,
+                    }}
+                  />
+                </div>
+                <span className="mono small text-right">{number(count)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </section>
   );
 }
 

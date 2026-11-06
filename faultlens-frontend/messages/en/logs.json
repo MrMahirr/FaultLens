@@ -67,6 +67,10 @@
       "back": "Back to logs",
       "loading": "Loading log…",
       "logNumber": "Log #{id}"
-    }
+    },
+    "groupFilter": "Group #{id}",
+    "removeGroupFilter": "Remove group filter",
+    "sinceFilter": "Since {time}",
+    "removeSinceFilter": "Remove start filter"
   }
 }
