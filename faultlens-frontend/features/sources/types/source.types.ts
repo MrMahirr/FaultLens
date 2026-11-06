@@ -9,4 +9,11 @@ export interface LogSourceDto {
   enabled: boolean;
   lastSeenAt: string;
   createdAt: string;
+  /** Collector health shared by all backend instances (P08). */
+  health?: "CONNECTED" | "ERROR" | "IDLE";
+  /** Last adapter error; kept after recovery for context. */
+  lastError?: string | null;
+  lastErrorAt?: string | null;
+  /** Backend instance collecting (or last collecting) this source. */
+  collectorInstance?: string | null;
 }

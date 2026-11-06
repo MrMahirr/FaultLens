@@ -49,6 +49,22 @@ public class LogSource {
     private Instant createdAt;
     private Instant lastSeenAt;
 
+    /*
+     * Collector health (P08, V20). Written only by SourceHealthReporter with targeted UPDATEs,
+     * never by save(entity): an edit of the source must not overwrite a newer health state.
+     */
+    @Column(insertable = false, updatable = false)
+    private String status;
+
+    @Column(insertable = false, updatable = false)
+    private String lastError;
+
+    @Column(insertable = false, updatable = false)
+    private Instant lastErrorAt;
+
+    @Column(insertable = false, updatable = false)
+    private String collectorInstance;
+
     /**
      * Initializes UTC timestamps before insert.
      */

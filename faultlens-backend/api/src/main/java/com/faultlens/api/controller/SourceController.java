@@ -109,7 +109,9 @@ public class SourceController {
 
     private LogSourceDto toDto(LogSource source) {
         LogSourceDto dto = mapper.toLogSourceDto(source);
-        dto.setStatus(SourceStatus.of(source.isEnabled(), orchestrator.isStreaming(source.getId())));
+        // Any instance may be collecting it (P08 leases); a failing adapter is not "connected".
+        boolean collecting = orchestrator.isCollectedAnywhere(source.getId()) && !"ERROR".equals(source.getStatus());
+        dto.setStatus(SourceStatus.of(source.isEnabled(), collecting));
         return dto;
     }
 }

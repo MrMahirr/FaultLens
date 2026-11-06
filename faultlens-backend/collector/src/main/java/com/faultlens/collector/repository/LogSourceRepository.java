@@ -29,4 +29,19 @@ public interface LogSourceRepository extends JpaRepository<LogSource, Long> {
     @Transactional
     @Query("update LogSource s set s.lastSeenAt = :seenAt where s.id = :id and (s.lastSeenAt is null or s.lastSeenAt < :seenAt)")
     int touchLastSeenAt(@Param("id") Long id, @Param("seenAt") Instant seenAt);
+
+    /** Health transition without an error (CONNECTED / IDLE); keeps the last error for display. */
+    @Modifying
+    @Transactional
+    @Query(value = "update log_sources set status = :status, collector_instance = :instance where id = :id",
+            nativeQuery = true)
+    int updateStatus(@Param("id") Long id, @Param("status") String status, @Param("instance") String instance);
+
+    /** The adapter failed. */
+    @Modifying
+    @Transactional
+    @Query(value = "update log_sources set status = 'ERROR', last_error = :error, last_error_at = :at, "
+            + "collector_instance = :instance where id = :id", nativeQuery = true)
+    int recordError(@Param("id") Long id, @Param("error") String error, @Param("at") Instant at,
+                    @Param("instance") String instance);
 }

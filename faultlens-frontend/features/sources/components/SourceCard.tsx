@@ -157,6 +157,25 @@ function SourceCard({ source, index }: SourceCardProps) {
           <p className="text-xs text-text-muted">
             Son log: {formatRelativeTime(source.lastSeenAt)}
           </p>
+          {source.enabled && source.health === "ERROR" && source.lastError && (
+            <p
+              className="text-xs text-error break-words"
+              title={
+                source.lastErrorAt
+                  ? new Date(source.lastErrorAt).toLocaleString("tr-TR")
+                  : undefined
+              }
+              data-testid="source-last-error"
+            >
+              Hata{source.lastErrorAt ? ` (${formatRelativeTime(source.lastErrorAt)})` : ""}:{" "}
+              {source.lastError}
+            </p>
+          )}
+          {source.enabled && source.collectorInstance && (
+            <p className="text-xs text-text-muted truncate" title={source.collectorInstance}>
+              Toplayan: <span className="font-mono">{source.collectorInstance}</span>
+            </p>
+          )}
         </div>
 
         {/* Actions */}

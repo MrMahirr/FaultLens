@@ -25,6 +25,8 @@ class CollectorOrchestratorTest {
     private LogEventProducer producer;
     private LogSourceAdapter mockAdapter;
     private CollectorOrchestrator orchestrator;
+    private SourceLeaseManager leases;
+    private SourceHealthReporter health;
 
     @BeforeEach
     void setUp() {
@@ -33,7 +35,11 @@ class CollectorOrchestratorTest {
         mockAdapter = mock(LogSourceAdapter.class);
         when(mockAdapter.getType()).thenReturn(LogSourceType.SSH);
         
-        orchestrator = new CollectorOrchestrator(repository, producer, List.of(mockAdapter));
+        leases = mock(SourceLeaseManager.class);
+        health = mock(SourceHealthReporter.class);
+        when(leases.tryAcquire(anyLong())).thenReturn(true);
+        when(leases.renew(anyLong())).thenReturn(true);
+        orchestrator = new CollectorOrchestrator(repository, producer, List.of(mockAdapter), leases, health);
     }
 
     @Test
@@ -107,23 +113,80 @@ class CollectorOrchestratorTest {
         verify(mockAdapter).testConnection(source);
     }
 
+    // ── P08: leases, so several instances never collect the same source ──
+
+    /** Adapter that blocks like a real stream until it is stopped. */
+    private void adapterBlocksUntilStopped() {
+        doAnswer(inv -> {
+            try {
+                Thread.sleep(60_000);
+            } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+            }
+            return null;
+        }).when(mockAdapter).startStreaming(any(), any());
+    }
+
     @Test
-    void startEnabledSourcesStartsOnlyActiveSources() {
-        LogSource source1 = new LogSource();
-        source1.setId(1L);
-        source1.setEnabled(true);
-        source1.setType(LogSourceType.SSH);
+    void reconcileStartsOnlyTheSourcesThisInstanceWinsTheLeaseFor() {
+        adapterBlocksUntilStopped();
+        LogSource mine = enabledSource(1L);
+        LogSource theirs = enabledSource(2L);
+        when(repository.findByEnabledTrue()).thenReturn(List.of(mine, theirs));
+        when(leases.tryAcquire(2L)).thenReturn(false); // another instance collects it
 
-        LogSource source2 = new LogSource();
-        source2.setId(2L);
-        source2.setEnabled(true);
-        source2.setType(LogSourceType.SSH);
+        orchestrator.reconcile();
 
-        when(repository.findByEnabledTrue()).thenReturn(List.of(source1, source2));
+        verify(mockAdapter, timeout(1000)).startStreaming(eq(mine), any());
+        verify(mockAdapter, after(200).never()).startStreaming(eq(theirs), any());
+        assertThat(orchestrator.isStreaming(1L)).isTrue();
+        assertThat(orchestrator.isStreaming(2L)).isFalse();
+        orchestrator.shutdown();
+    }
 
-        orchestrator.startEnabledSources();
+    @Test
+    void aSourceWhoseLeaseWasTakenOverStopsHere() {
+        adapterBlocksUntilStopped();
+        LogSource source = enabledSource(1L);
+        when(repository.findById(1L)).thenReturn(Optional.of(source));
+        orchestrator.startSource(source);
+        verify(leases).takeOver(1L);
 
-        verify(repository).findByEnabledTrue();
+        when(leases.renew(1L)).thenReturn(false); // edited on another instance
+        orchestrator.heartbeat();
+
+        verify(mockAdapter).stopStreaming("1");
+        assertThat(orchestrator.isStreaming(1L)).isFalse();
+    }
+
+    @Test
+    void reconcileStopsSourcesDisabledElsewhereAndHandsBackTheLease() {
+        adapterBlocksUntilStopped();
+        LogSource source = enabledSource(1L);
+        when(repository.findById(1L)).thenReturn(Optional.of(source));
+        when(repository.findByEnabledTrue()).thenReturn(List.of(source));
+        orchestrator.reconcile();
+        verify(mockAdapter, timeout(1000)).startStreaming(eq(source), any());
+
+        when(repository.findByEnabledTrue()).thenReturn(List.of());
+        orchestrator.reconcile();
+
+        verify(mockAdapter).stopStreaming("1");
+        verify(leases).release(1L);
+    }
+
+    @Test
+    void adapterErrorsAreReportedAsSourceHealth() {
+        doAnswer(inv -> {
+            com.faultlens.collector.adapter.SourceSink sink = inv.getArgument(1);
+            sink.error("connection refused");
+            throw new IllegalStateException("gave up");
+        }).when(mockAdapter).startStreaming(any(), any());
+
+        orchestrator.startSource(enabledSource(1L));
+
+        verify(health, timeout(1000)).error(1L, "connection refused");
+        verify(health, timeout(1000)).error(eq(1L), any(IllegalStateException.class));
     }
 
     // ── lastSeenAt is batched (P06): no write per log line, no whole-entity save ──

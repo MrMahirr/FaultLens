@@ -13,6 +13,18 @@ public class CollectorProperties {
     private K8s k8s = new K8s();
     private Ssh ssh = new Ssh();
     private FileSource file = new FileSource();
+    private Lease lease = new Lease();
+
+    /**
+     * Per-source leases in Redis (P08): only the holder collects a source. A crashed holder's
+     * sources move to another instance once its lease expires.
+     */
+    @Data
+    public static class Lease {
+        private long ttlMs = 30_000;
+        private long heartbeatMs = 10_000;
+        private long reconcileMs = 15_000;
+    }
 
     @Data
     public static class K8s {

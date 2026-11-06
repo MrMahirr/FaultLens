@@ -79,6 +79,9 @@ services:
       - ADMIN_INITIAL_PASSWORD=bench-admin-initial-1
       - REFRESH_COOKIE_SECURE=false
       - AI_ENABLED=false
+      - COLLECTOR_FILE_ALLOWED_DIRS=/var/log/bench
+    volumes:
+      - bench_logs:/var/log/bench
     depends_on:
       postgres:
         condition: service_healthy
@@ -88,5 +91,40 @@ services:
         condition: service_healthy
     # No docker.sock: the collector must not pick up the host's containers.
 
+  # Second instance for the multi-instance test (P08): same DB/Kafka/Redis and log directory.
+  #   docker compose -p faultlens-bench -f bench/docker-compose.yml --profile multi up -d backend2
+  backend2:
+    profiles: ["multi"]
+    build:
+      context: ../faultlens-backend
+      dockerfile: Dockerfile
+    ports:
+      - "3601:3500"
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=faultlens
+      - DB_USER=faultlens
+      - DB_PASS=faultlens
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - KAFKA_SERVERS=kafka:29092
+      - PORT=3500
+      - JWT_SECRET=bench-only-jwt-secret-not-for-production-0123456789
+      - ADMIN_INITIAL_PASSWORD=bench-admin-initial-1
+      - REFRESH_COOKIE_SECURE=false
+      - AI_ENABLED=false
+      - COLLECTOR_FILE_ALLOWED_DIRS=/var/log/bench
+    volumes:
+      - bench_logs:/var/log/bench
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
 volumes:
   bench_pg:
+  bench_logs:

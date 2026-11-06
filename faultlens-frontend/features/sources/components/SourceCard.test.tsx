@@ -62,4 +62,27 @@ describe("SourceCard roles (P07)", () => {
     await user.click(screen.getByText("Sil"));
     await waitFor(() => expect(deleted).toBe(1));
   });
+
+  it("shows the collector's last error while the source is failing", () => {
+    signInAs("VIEWER");
+    renderWithQuery(
+      <SourceCard
+        source={
+          {
+            ...source,
+            health: "ERROR",
+            lastError: "Dosya izin verilen dizinlerin dışında (COLLECTOR_FILE_ALLOWED_DIRS)",
+            lastErrorAt: new Date().toISOString(),
+            collectorInstance: "api-1-ab12cd34",
+          } as LogSourceDto
+        }
+        index={0}
+      />,
+    );
+
+    expect(screen.getByTestId("source-last-error")).toHaveTextContent(
+      "izin verilen dizinlerin dışında",
+    );
+    expect(screen.getByText("api-1-ab12cd34")).toBeInTheDocument();
+  });
 });

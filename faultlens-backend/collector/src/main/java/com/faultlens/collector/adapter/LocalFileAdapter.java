@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -36,7 +35,7 @@ public class LocalFileAdapter implements LogSourceAdapter {
     }
 
     @Override
-    public void startStreaming(LogSource source, Consumer<LogEventDto> onEvent) {
+    public void startStreaming(LogSource source, SourceSink onEvent) {
         String sourceId = String.valueOf(source.getId());
         running.add(sourceId);
         
@@ -44,12 +43,14 @@ public class LocalFileAdapter implements LogSourceAdapter {
         String path = config.get("logFilePath");
         if (path == null || path.isBlank()) {
             log.error("Local file path is missing for source {}", sourceId);
+            onEvent.error("Log dosyası yolu (logFilePath) tanımlı değil");
             running.remove(sourceId);
             return;
         }
         // Re-checked here too: sources stored before the allow-list existed must not keep reading.
         if (!pathPolicy.isAllowed(path)) {
             log.error("Local file source {} points outside faultlens.collector.file.allowed-dirs; not streaming", sourceId);
+            onEvent.error("Dosya izin verilen dizinlerin dışında (COLLECTOR_FILE_ALLOWED_DIRS)");
             running.remove(sourceId);
             return;
         }
@@ -86,6 +87,7 @@ public class LocalFileAdapter implements LogSourceAdapter {
                 Thread.sleep(1000);
             } catch (Exception ex) {
                 log.warn("LocalFileAdapter streaming error for source {}", sourceId, ex);
+                onEvent.error(ex);
                 sleep(5);
             }
         }

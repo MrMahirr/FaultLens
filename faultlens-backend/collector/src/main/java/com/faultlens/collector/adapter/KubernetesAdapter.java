@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.resilience.annotation.Retryable;
@@ -59,7 +58,7 @@ public class KubernetesAdapter implements LogSourceAdapter {
     @Override
     // 3 attempts in total, as with spring-retry's default maxAttempts before the Framework 7 move.
     @Retryable(includes = CollectorException.class, maxRetries = 2, delay = 5000, multiplier = 2.0)
-    public void startStreaming(LogSource source, Consumer<LogEventDto> onEvent) {
+    public void startStreaming(LogSource source, SourceSink onEvent) {
         String sourceId = String.valueOf(source.getId());
         running.add(sourceId);
         Map<String, String> config = parseConfig(source.getConfig());
@@ -89,6 +88,7 @@ public class KubernetesAdapter implements LogSourceAdapter {
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         } catch (Exception ex) {
+            onEvent.error(ex);
             throw new CollectorException("Kubernetes log streaming failed", "K8S_STREAM_FAILED", ex);
         } finally {
             running.remove(sourceId);
