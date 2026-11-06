@@ -1,17 +1,20 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
+import toast from "react-hot-toast";
+import { Save, Shield } from "lucide-react";
 import { Input } from "@/shared/components/ui/Input";
 import { Button } from "@/shared/components/ui/Button";
 import { useAuthStore } from "@/features/auth/store/auth.store";
 import { apiClient } from "@/shared/api/client";
 import { Endpoints } from "@/shared/api/endpoints";
-import { Save, Shield } from "lucide-react";
-import toast from "react-hot-toast";
 import { getApiErrorMessage } from "@/shared/api/errors";
 
 export function AccountSettings() {
-  const { user, updateUser } = useAuthStore();
+  const t = useTranslations("settings.account");
+  const user = useAuthStore((state) => state.user);
+  const updateUser = useAuthStore((state) => state.updateUser);
 
   // Profile state
   const [username, setUsername] = useState(user?.username || "");
@@ -53,10 +56,7 @@ export function AccountSettings() {
   const handleSaveProfile = async () => {
     setIsSaving(true);
     try {
-      const response = await apiClient.put(Endpoints.AUTH.PROFILE, {
-        username,
-        email,
-      });
+      const response = await apiClient.put(Endpoints.AUTH.PROFILE, { username, email });
       const profile = response.data?.data;
       const { user: currentUser, login } = useAuthStore.getState();
       if (profile?.token && currentUser) {
@@ -65,9 +65,9 @@ export function AccountSettings() {
       } else if (profile) {
         updateUser({ username: profile.username, email: profile.email });
       }
-      toast.success("Profil bilgileri başarıyla kaydedildi!");
+      toast.success(t("profileSaved"));
     } catch (err) {
-      toast.error(getApiErrorMessage(err, "Profil güncellenirken bir hata oluştu."));
+      toast.error(getApiErrorMessage(err, t("profileFailed")));
     } finally {
       setIsSaving(false);
     }
@@ -89,110 +89,128 @@ export function AccountSettings() {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-      toast.success("Şifre başarıyla güncellendi!");
+      toast.success(t("passwordSaved"));
     } catch (err) {
-      toast.error(getApiErrorMessage(err, "Şifre değiştirilirken bir hata oluştu."));
+      toast.error(getApiErrorMessage(err, t("passwordFailed")));
     } finally {
       setIsPasswordSaving(false);
     }
   };
 
+  const passwordTooShort = newPassword.length > 0 && newPassword.length < 8;
+  const mismatch = !!newPassword && !!confirmPassword && newPassword !== confirmPassword;
+
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div>
-        <h2 className="text-lg font-semibold text-text-primary">Hesap Ayarları</h2>
-        <p className="text-sm text-text-muted mt-1">
-          Profil bilgilerinizi ve şifrenizi güncelleyin.
-        </p>
-      </div>
+    <div className="stack gap-4">
+      <header>
+        <h2 className="h2">{t("title")}</h2>
+        <p className="small t3 mt-1">{t("subtitle")}</p>
+      </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Profile Info */}
-        <div className="bg-bg-tertiary/30 p-6 rounded-2xl border border-border-default space-y-5">
-          <h3 className="text-sm font-medium text-text-secondary border-b border-border-default pb-3">
-            Kişisel Bilgiler
-          </h3>
-          {isProfileLoading ? (
-            <div className="space-y-4">
-              <div className="h-10 bg-bg-tertiary rounded animate-pulse" />
-              <div className="h-10 bg-bg-tertiary rounded animate-pulse" />
-            </div>
-          ) : (
-            <>
-              <Input
-                label="Kullanıcı Adı"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-              />
-              <Input
-                label="E-posta Adresi"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-              <div className="pt-2 flex items-center gap-3">
-                <Button
-                  variant="primary"
-                  onClick={handleSaveProfile}
-                  loading={isSaving}
-                  icon={<Save size={16} />}
-                >
-                  Bilgileri Kaydet
-                </Button>
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Change Password */}
-        <div className="bg-bg-tertiary/30 p-6 rounded-2xl border border-border-default space-y-5">
-          <h3 className="text-sm font-medium text-text-secondary border-b border-border-default pb-3 flex items-center gap-2">
-            <Shield size={16} /> Güvenlik
-          </h3>
-          <Input
-            label="Mevcut Şifre"
-            type="password"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            placeholder="••••••••"
-          />
-          <Input
-            label="Yeni Şifre"
-            type="password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            placeholder="••••••••"
-            error={
-              newPassword && newPassword.length < 8
-                ? "Yeni şifre en az 8 karakter olmalıdır"
-                : undefined
-            }
-          />
-          <Input
-            label="Yeni Şifre (Tekrar)"
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="••••••••"
-            error={
-              newPassword && confirmPassword && newPassword !== confirmPassword
-                ? "Şifreler eşleşmiyor"
-                : undefined
-            }
-          />
-          <div className="pt-2 flex items-center gap-3">
-            <Button
-              variant="primary"
-              onClick={handleSavePassword}
-              loading={isPasswordSaving}
-              disabled={
-                !currentPassword || newPassword.length < 8 || newPassword !== confirmPassword
-              }
-            >
-              Şifreyi Güncelle
-            </Button>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <form
+          className="card"
+          aria-labelledby="profile-title"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void handleSaveProfile();
+          }}
+        >
+          <div className="panel-h">
+            <h3 id="profile-title" className="h3">
+              {t("profile")}
+            </h3>
           </div>
-        </div>
+          <div className="p-4 stack gap-4">
+            {isProfileLoading ? (
+              <div className="stack" aria-hidden="true">
+                <div className="skel h-[58px]" />
+                <div className="skel h-[58px]" />
+              </div>
+            ) : (
+              <>
+                <Input
+                  label={t("username")}
+                  autoComplete="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+                <Input
+                  label={t("email")}
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                <div>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    loading={isSaving}
+                    icon={<Save size={15} aria-hidden="true" />}
+                  >
+                    {t("saveProfile")}
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        </form>
+
+        <form
+          className="card"
+          aria-labelledby="security-title"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void handleSavePassword();
+          }}
+        >
+          <div className="panel-h">
+            <h3 id="security-title" className="h3 row">
+              <Shield size={15} className="t3" aria-hidden="true" />
+              {t("security")}
+            </h3>
+          </div>
+          <div className="p-4 stack gap-4">
+            {/* Hidden username helps password managers pair the new password with the account. */}
+            <input type="text" autoComplete="username" value={username} readOnly hidden />
+            <Input
+              label={t("currentPassword")}
+              type="password"
+              autoComplete="current-password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+            />
+            <Input
+              label={t("newPassword")}
+              type="password"
+              autoComplete="new-password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              error={passwordTooShort ? t("passwordTooShort") : undefined}
+            />
+            <Input
+              label={t("confirmPassword")}
+              type="password"
+              autoComplete="new-password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              error={mismatch ? t("passwordMismatch") : undefined}
+            />
+            <div>
+              <Button
+                type="submit"
+                variant="primary"
+                loading={isPasswordSaving}
+                disabled={
+                  !currentPassword || newPassword.length < 8 || newPassword !== confirmPassword
+                }
+              >
+                {t("savePassword")}
+              </Button>
+            </div>
+          </div>
+        </form>
       </div>
     </div>
   );

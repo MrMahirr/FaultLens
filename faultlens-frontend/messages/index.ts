@@ -8,6 +8,8 @@ import trAnalyses from "./tr/analyses.json";
 import trDashboard from "./tr/dashboard.json";
 import trSources from "./tr/sources.json";
 import trDeployments from "./tr/deployments.json";
+import trSettings from "./tr/settings.json";
+import trAuth from "./tr/auth.json";
 
 import enCommon from "./en/common.json";
 import enShell from "./en/shell.json";
@@ -17,6 +19,8 @@ import enAnalyses from "./en/analyses.json";
 import enDashboard from "./en/dashboard.json";
 import enSources from "./en/sources.json";
 import enDeployments from "./en/deployments.json";
+import enSettings from "./en/settings.json";
+import enAuth from "./en/auth.json";
 
 /**
  * UI messages per locale, one JSON file per area (messages/<locale>/<area>.json); each file
@@ -32,6 +36,8 @@ const tr = {
   ...trDashboard,
   ...trSources,
   ...trDeployments,
+  ...trSettings,
+  ...trAuth,
 };
 const en = {
   ...enCommon,
@@ -42,6 +48,8 @@ const en = {
   ...enDashboard,
   ...enSources,
   ...enDeployments,
+  ...enSettings,
+  ...enAuth,
 };
 
 export type Messages = typeof tr;

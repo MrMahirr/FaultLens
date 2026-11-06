@@ -1,106 +1,135 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
+import { Moon, Sun, Monitor } from "lucide-react";
 import { useUIStore } from "@/shared/store/ui.store";
-import { Button } from "@/shared/components/ui/Button";
-import { Moon, Sun, MonitorSmartphone } from "lucide-react";
+import { useTheme } from "@/shared/hooks/useTheme";
+import { useChangeLocale } from "@/shared/lib/locale";
+import { LOCALES, type Locale } from "@/i18n/config";
+import { Switch } from "@/shared/components/ui/Switch";
+import type { ThemePreference } from "@/shared/lib/theme";
+
+const THEMES: { value: ThemePreference; icon: React.ReactNode }[] = [
+  { value: "system", icon: <Monitor size={14} /> },
+  { value: "dark", icon: <Moon size={14} /> },
+  { value: "light", icon: <Sun size={14} /> },
+];
+
+/** One labelled settings row: text on the left, control on the right. */
+function Row({
+  id,
+  label,
+  hint,
+  children,
+}: {
+  id: string;
+  label: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="between py-4 border-b border-border-default last:border-b-0">
+      <div className="min-w-0 max-w-xl">
+        <p id={id} className="small font-medium">
+          {label}
+        </p>
+        {hint && (
+          <p id={`${id}-hint`} className="xs t3 mt-0.5">
+            {hint}
+          </p>
+        )}
+      </div>
+      {children}
+    </div>
+  );
+}
 
 export function AppearanceSettings() {
-  const { theme, setTheme, compactMode, setCompactMode } = useUIStore();
+  const t = useTranslations("settings.appearance");
+  const tShell = useTranslations("shell");
+  const { theme, resolvedTheme, setTheme } = useTheme();
+  const locale = useLocale();
+  const { change: changeLocale, pending } = useChangeLocale();
+  const motion = useUIStore((state) => state.motion);
+  const setMotion = useUIStore((state) => state.setMotion);
+  const compactMode = useUIStore((state) => state.compactMode);
+  const setCompactMode = useUIStore((state) => state.setCompactMode);
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div>
-        <h2 className="text-lg font-semibold text-text-primary">Görünüm</h2>
-        <p className="text-sm text-text-muted mt-1">
-          Arayüz temasını ve görüntü tercihlerini ayarlayın.
-        </p>
-      </div>
+    <div className="stack gap-4">
+      <header>
+        <h2 className="h2">{t("title")}</h2>
+        <p className="small t3 mt-1">{t("subtitle")}</p>
+      </header>
 
-      <div className="bg-bg-tertiary/30 p-6 rounded-2xl border border-border-default space-y-6">
-        {/* Theme Selection */}
-        <div>
-          <h3 className="text-sm font-medium text-text-secondary mb-4">Tema Seçimi</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {/* Light Mode */}
-            <button
-              onClick={() => setTheme("light")}
-              className={`flex flex-col items-center justify-center p-6 rounded-xl border-2 transition-all duration-200 cursor-pointer ${
-                theme === "light"
-                  ? "border-accent bg-accent/5"
-                  : "border-border-default hover:border-accent/40 bg-bg-primary"
-              }`}
-            >
-              <Sun size={28} className={theme === "light" ? "text-accent" : "text-text-muted"} />
-              <span
-                className={`mt-3 font-medium ${
-                  theme === "light" ? "text-accent" : "text-text-secondary"
-                }`}
+      <div className="card px-4">
+        <Row
+          id="pref-theme"
+          label={t("theme")}
+          hint={
+            theme === "system"
+              ? t("systemResolved", { theme: t(`themes.${resolvedTheme}`) })
+              : undefined
+          }
+        >
+          <div className="seg" role="radiogroup" aria-labelledby="pref-theme">
+            {THEMES.map(({ value, icon }) => (
+              <button
+                key={value}
+                type="button"
+                role="radio"
+                aria-checked={theme === value}
+                onClick={() => setTheme(value)}
+                className="inline-flex items-center gap-1.5"
               >
-                Açık (Light)
-              </span>
-            </button>
-
-            {/* Dark Mode */}
-            <button
-              onClick={() => setTheme("dark")}
-              className={`flex flex-col items-center justify-center p-6 rounded-xl border-2 transition-all duration-200 cursor-pointer ${
-                theme === "dark"
-                  ? "border-accent bg-accent/5"
-                  : "border-border-default hover:border-accent/40 bg-bg-primary"
-              }`}
-            >
-              <Moon size={28} className={theme === "dark" ? "text-accent" : "text-text-muted"} />
-              <span
-                className={`mt-3 font-medium ${
-                  theme === "dark" ? "text-accent" : "text-text-secondary"
-                }`}
-              >
-                Koyu (Dark)
-              </span>
-            </button>
-
-            {/* System Mode */}
-            <button
-              onClick={() => setTheme("system")}
-              className={`flex flex-col items-center justify-center p-6 rounded-xl border-2 transition-all duration-200 cursor-pointer ${
-                theme === "system"
-                  ? "border-accent bg-accent/5"
-                  : "border-border-default hover:border-accent/40 bg-bg-primary"
-              }`}
-            >
-              <MonitorSmartphone
-                size={28}
-                className={theme === "system" ? "text-accent" : "text-text-muted"}
-              />
-              <span
-                className={`mt-3 font-medium ${
-                  theme === "system" ? "text-accent" : "text-text-secondary"
-                }`}
-              >
-                Sistem (Otomatik)
-              </span>
-            </button>
+                <span aria-hidden="true" className="inline-flex">
+                  {icon}
+                </span>
+                {t(`themes.${value}`)}
+              </button>
+            ))}
           </div>
-        </div>
+        </Row>
 
-        <hr className="border-border-default" />
-
-        {/* Compact View */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-medium text-text-primary">Kompakt Görünüm</h3>
-            <p className="text-xs text-text-muted mt-1">
-              Tablolarda daha dar satır aralıkları kullanarak daha fazla veri görün.
-            </p>
-          </div>
-          <Button
-            variant={compactMode ? "primary" : "secondary"}
-            size="sm"
-            onClick={() => setCompactMode(!compactMode)}
+        <Row id="pref-language" label={t("language")} hint={t("languageHint")}>
+          <div
+            className="seg"
+            role="radiogroup"
+            aria-labelledby="pref-language"
+            aria-busy={pending || undefined}
           >
-            {compactMode ? "Kapat" : "Etkinleştir"}
-          </Button>
-        </div>
+            {LOCALES.map((l) => (
+              <button
+                key={l}
+                type="button"
+                role="radio"
+                aria-checked={locale === l}
+                lang={l}
+                onClick={() => changeLocale(l as Locale)}
+              >
+                {tShell(`languages.${l}`)}
+              </button>
+            ))}
+          </div>
+        </Row>
+
+        <Row id="pref-motion" label={t("motion")} hint={t("motionHint")}>
+          <Switch
+            checked={motion === "on"}
+            onCheckedChange={(on) => setMotion(on ? "on" : "off")}
+            aria-labelledby="pref-motion"
+            aria-describedby="pref-motion-hint"
+          />
+        </Row>
+
+        <Row id="pref-compact" label={t("compact")} hint={t("compactHint")}>
+          <Switch
+            checked={compactMode}
+            onCheckedChange={setCompactMode}
+            aria-labelledby="pref-compact"
+            aria-describedby="pref-compact-hint"
+          />
+        </Row>
       </div>
     </div>
   );

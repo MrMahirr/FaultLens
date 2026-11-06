@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { KeyRound, Trash2, UserPlus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
-import Swal from "sweetalert2";
 import { z } from "zod";
 import type { Role } from "@/features/auth/hooks/useCan";
 import { useAuthStore } from "@/features/auth/store/auth.store";
@@ -15,47 +15,114 @@ import {
   useResetPasswordMutation,
   useUsersQuery,
 } from "@/features/users/api/useUsers";
-import {
-  ROLE_DESCRIPTIONS,
-  ROLE_LABELS,
-  type ManagedUser,
-} from "@/features/users/types/user.types";
+import type { ManagedUser } from "@/features/users/types/user.types";
 import { Badge } from "@/shared/components/ui/Badge";
 import { Button } from "@/shared/components/ui/Button";
 import { Input } from "@/shared/components/ui/Input";
+import { Modal } from "@/shared/components/ui/Modal";
+import { useConfirm } from "@/shared/components/ui/ConfirmDialog";
 import { DataTable, type DataTableColumnDef } from "@/shared/components/ui/Table";
+import { useValidationMessage } from "@/shared/hooks/useValidationMessage";
 
 const ROLES: Role[] = ["ADMIN", "EDITOR", "VIEWER"];
 
+/** Messages are keys of the "validation" namespace. */
 export const createUserSchema = z.object({
-  username: z.string().trim().min(1, "Kullanıcı adı gereklidir").max(100),
-  email: z.union([z.literal(""), z.email("Geçersiz e-posta")]),
+  username: z.string().trim().min(1, "usernameRequired").max(100),
+  email: z.union([z.literal(""), z.email("emailInvalid")]),
   role: z.enum(["ADMIN", "EDITOR", "VIEWER"]),
-  password: z.string().min(8, "Şifre en az 8 karakter olmalı").max(128),
+  password: z.string().min(8, "passwordMin").max(128),
 });
 type CreateUserForm = z.infer<typeof createUserSchema>;
 
 const EMPTY_FORM: CreateUserForm = { username: "", email: "", role: "VIEWER", password: "" };
 
-const selectClass =
-  "bg-bg-tertiary text-text-primary rounded-lg border border-border-default px-3 py-2 text-sm focus:outline-none focus:border-border-active focus:ring-1 focus:ring-accent/30 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60";
+const ROLE_BADGE: Record<Role, "error" | "warning" | "info"> = {
+  ADMIN: "error",
+  EDITOR: "warning",
+  VIEWER: "info",
+};
 
-function roleVariant(role: Role): "error" | "warning" | "info" {
-  if (role === "ADMIN") return "error";
-  if (role === "EDITOR") return "warning";
-  return "info";
+/** Temporary password for another user (replaces the old SweetAlert prompt). */
+function ResetPasswordDialog({
+  user,
+  onClose,
+  onSubmit,
+  busy,
+}: {
+  user: ManagedUser | null;
+  onClose: () => void;
+  onSubmit: (password: string) => void;
+  busy: boolean;
+}) {
+  const t = useTranslations("settings.users");
+  const v = useValidationMessage();
+  const tCommon = useTranslations("common");
+  const [password, setPassword] = useState("");
+  const [touched, setTouched] = useState(false);
+  const invalid = password.length < 8;
+
+  const close = () => {
+    setPassword("");
+    setTouched(false);
+    onClose();
+  };
+
+  return (
+    <Modal
+      isOpen={user !== null}
+      onClose={close}
+      title={user ? t("resetTitle", { user: user.username }) : ""}
+      description={t("resetDescription")}
+      size="sm"
+      footer={
+        <>
+          <Button variant="secondary" onClick={close}>
+            {tCommon("cancel")}
+          </Button>
+          <Button type="submit" form="reset-password-form" variant="primary" loading={busy}>
+            {t("resetConfirm")}
+          </Button>
+        </>
+      }
+    >
+      <form
+        id="reset-password-form"
+        noValidate
+        onSubmit={(e) => {
+          e.preventDefault();
+          setTouched(true);
+          if (invalid) return;
+          onSubmit(password);
+          close();
+        }}
+      >
+        <Input
+          label={t("tempPassword")}
+          type="password"
+          autoComplete="new-password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          error={touched && invalid ? v("passwordMin") : undefined}
+          autoFocus
+        />
+      </form>
+    </Modal>
+  );
 }
 
 export function UserManagement() {
+  const t = useTranslations("settings.users");
+  const v = useValidationMessage();
   const currentUsername = useAuthStore((state) => state.user?.username);
   const { data: users, isLoading } = useUsersQuery();
   const createUser = useCreateUserMutation();
   const changeRole = useChangeRoleMutation();
   const resetPassword = useResetPasswordMutation();
   const deleteUser = useDeleteUserMutation();
+  const { confirm, dialog } = useConfirm();
+  const [resetTarget, setResetTarget] = useState<ManagedUser | null>(null);
   const { mutate: setRole } = changeRole;
-  const { mutate: reset } = resetPassword;
-  const { mutate: remove } = deleteUser;
   const isMutating = changeRole.isPending || resetPassword.isPending || deleteUser.isPending;
 
   const {
@@ -75,80 +142,46 @@ export function UserManagement() {
     );
   };
 
-  const confirmDelete = useCallback(
-    async (user: ManagedUser) => {
-      const result = await Swal.fire({
-        title: "Kullanıcı silinsin mi?",
-        text: `"${user.username}" ve bildirim ayarları kalıcı olarak silinir.`,
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#ef4444",
-        cancelButtonColor: "#3b82f6",
-        confirmButtonText: "Evet, Sil",
-        cancelButtonText: "İptal",
-      });
-      if (result.isConfirmed) remove(user.id);
-    },
-    [remove],
-  );
-
-  const promptReset = useCallback(
-    async (user: ManagedUser) => {
-      const result = await Swal.fire({
-        title: `${user.username} için yeni geçici şifre`,
-        input: "password",
-        inputPlaceholder: "En az 8 karakter",
-        inputValidator: (value) =>
-          !value || value.length < 8 ? "Şifre en az 8 karakter olmalı" : undefined,
-        showCancelButton: true,
-        confirmButtonText: "Sıfırla",
-        cancelButtonText: "İptal",
-      });
-      if (result.isConfirmed && typeof result.value === "string") {
-        reset({ id: user.id, password: result.value });
-      }
-    },
-    [reset],
-  );
-
   const columns = useMemo<DataTableColumnDef<ManagedUser>[]>(
     () => [
       {
         accessorKey: "username",
-        header: "Kullanıcı",
+        header: t("columns.user"),
         cell: ({ row }) => (
           <div className="min-w-[8rem]">
             <div className="font-medium text-text-primary">
               {row.original.username}
               {row.original.username === currentUsername && (
-                <span className="ml-2 text-xs text-text-muted">(siz)</span>
+                <span className="ml-2 xs t3">{t("you")}</span>
               )}
             </div>
-            {row.original.email && (
-              <div className="text-xs text-text-muted">{row.original.email}</div>
-            )}
+            {row.original.email && <div className="xs t3">{row.original.email}</div>}
           </div>
         ),
       },
       {
         accessorKey: "role",
-        header: "Rol",
+        header: t("columns.role"),
         cell: ({ row }) => {
           const user = row.original;
           if (user.username === currentUsername) {
-            return <Badge variant={roleVariant(user.role)}>{ROLE_LABELS[user.role]}</Badge>;
+            return (
+              <Badge variant={ROLE_BADGE[user.role]} mono>
+                {user.role}
+              </Badge>
+            );
           }
           return (
             <select
-              aria-label={`${user.username} rolü`}
-              className={selectClass}
+              aria-label={t("roleOf", { user: user.username })}
+              className="input w-auto h-[30px]"
               value={user.role}
               disabled={isMutating}
               onChange={(e) => setRole({ id: user.id, role: e.target.value as Role })}
             >
               {ROLES.map((role) => (
                 <option key={role} value={role}>
-                  {ROLE_LABELS[role]}
+                  {t(`roles.${role}`)}
                 </option>
               ))}
             </select>
@@ -157,17 +190,21 @@ export function UserManagement() {
       },
       {
         accessorKey: "mustChangePassword",
-        header: "Durum",
+        header: t("columns.status"),
         cell: ({ row }) =>
           row.original.mustChangePassword ? (
-            <Badge variant="warning">Şifre değişikliği bekliyor</Badge>
+            <Badge variant="warning" dot>
+              {t("pendingPassword")}
+            </Badge>
           ) : (
-            <Badge variant="success">Aktif</Badge>
+            <Badge variant="success" dot>
+              {t("active")}
+            </Badge>
           ),
       },
       {
         id: "actions",
-        header: "Aksiyon",
+        header: t("columns.actions"),
         cell: ({ row }) => {
           const user = row.original;
           if (user.username === currentUsername) return null;
@@ -176,87 +213,110 @@ export function UserManagement() {
               <Button
                 variant="ghost"
                 size="sm"
-                icon={<KeyRound size={14} />}
-                onClick={() => void promptReset(user)}
+                icon={<KeyRound size={14} aria-hidden="true" />}
+                onClick={() => setResetTarget(user)}
                 disabled={isMutating}
-                title="Şifreyi Sıfırla"
-                aria-label="Şifreyi Sıfırla"
+                title={t("resetPassword")}
+                aria-label={t("resetPassword")}
               />
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-error hover:bg-error/10 hover:text-error"
-                icon={<Trash2 size={14} />}
-                onClick={() => void confirmDelete(user)}
+                className="text-error"
+                icon={<Trash2 size={14} aria-hidden="true" />}
+                onClick={() =>
+                  confirm({
+                    title: t("deleteTitle", { user: user.username }),
+                    description: t("deleteDescription"),
+                    confirmLabel: t("deleteConfirm"),
+                    onConfirm: () => deleteUser.mutateAsync(user.id),
+                  })
+                }
                 disabled={isMutating}
-                title="Sil"
-                aria-label="Sil"
+                title={t("delete")}
+                aria-label={t("delete")}
               />
             </div>
           );
         },
       },
     ],
-    [currentUsername, isMutating, setRole, promptReset, confirmDelete],
+    [t, currentUsername, isMutating, setRole, confirm, deleteUser],
   );
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h2 className="text-xl font-semibold text-text-primary">Kullanıcılar</h2>
-        <p className="text-sm text-text-muted mt-1">
-          Rol değişiklikleri kullanıcının oturumu yenilendiğinde geçerli olur.
-        </p>
-      </div>
+    <div className="stack gap-6">
+      <header>
+        <h2 className="h2">{t("title")}</h2>
+        <p className="small t3 mt-1">{t("subtitle")}</p>
+      </header>
 
       <DataTable
+        label={t("title")}
         data={users ?? []}
         columns={columns}
         loading={isLoading}
-        emptyMessage="Kullanıcı yok."
+        emptyMessage={t("empty")}
       />
 
-      <form
-        onSubmit={handleSubmit(onCreate)}
-        className="space-y-4 border-t border-border-default pt-6"
-        noValidate
-      >
-        <h3 className="font-medium text-text-primary">Yeni Kullanıcı</h3>
+      <form onSubmit={handleSubmit(onCreate)} className="card p-4 stack gap-4" noValidate>
+        <h3 className="h3">{t("newUser")}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input label="Kullanıcı Adı" error={errors.username?.message} {...register("username")} />
           <Input
-            label="E-posta (isteğe bağlı)"
+            label={t("username")}
+            autoComplete="off"
+            error={v(errors.username?.message)}
+            {...register("username")}
+          />
+          <Input
+            label={t("email")}
             id="new-user-email"
             type="email"
-            error={errors.email?.message}
+            error={v(errors.email?.message)}
             {...register("email")}
           />
           <Input
-            label="Geçici Şifre"
+            label={t("tempPassword")}
             id="new-user-password"
             type="password"
             autoComplete="new-password"
-            hint="Kullanıcı ilk girişte değiştirmek zorunda."
-            error={errors.password?.message}
+            hint={t("tempPasswordHint")}
+            error={v(errors.password?.message)}
             {...register("password")}
           />
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="new-user-role" className="text-sm font-medium text-text-secondary">
-              Rol
+          <div className="field">
+            <label htmlFor="new-user-role" className="label">
+              {t("role")}
             </label>
-            <select id="new-user-role" className={selectClass} {...register("role")}>
+            <select id="new-user-role" className="input" {...register("role")}>
               {ROLES.map((role) => (
                 <option key={role} value={role}>
-                  {ROLE_LABELS[role]} — {ROLE_DESCRIPTIONS[role]}
+                  {t(`roles.${role}`)} — {t(`roleDescriptions.${role}`)}
                 </option>
               ))}
             </select>
           </div>
         </div>
-        <Button type="submit" icon={<UserPlus size={16} />} loading={createUser.isPending}>
-          Kullanıcı Ekle
-        </Button>
+        <div>
+          <Button
+            type="submit"
+            icon={<UserPlus size={16} aria-hidden="true" />}
+            loading={createUser.isPending}
+          >
+            {t("create")}
+          </Button>
+        </div>
       </form>
+
+      <ResetPasswordDialog
+        user={resetTarget}
+        onClose={() => setResetTarget(null)}
+        busy={resetPassword.isPending}
+        onSubmit={(password) =>
+          resetTarget && resetPassword.mutate({ id: resetTarget.id, password })
+        }
+      />
+      {dialog}
     </div>
   );
 }

@@ -2,13 +2,10 @@ import { screen, waitFor, within } from "@/test/rtl";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import toast from "react-hot-toast";
-import Swal from "sweetalert2";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { API, ok, server } from "@/test/msw/server";
 import { renderWithQuery, signInAs } from "@/test/utils";
 import { UserManagement } from "./UserManagement";
-
-vi.mock("sweetalert2", () => ({ default: { fire: vi.fn() } }));
 
 const users = [
   {
@@ -31,7 +28,6 @@ const users = [
 
 beforeEach(() => {
   signInAs("ADMIN", "admin");
-  vi.mocked(Swal.fire).mockReset();
   vi.spyOn(toast, "success").mockImplementation(() => "");
   vi.spyOn(toast, "error").mockImplementation(() => "");
   server.use(http.get(`${API}/users`, () => HttpResponse.json(ok(users))));

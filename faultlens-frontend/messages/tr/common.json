@@ -48,5 +48,28 @@
     "notFoundDescription": "Aradığınız sayfa taşınmış ya da hiç var olmamış olabilir.",
     "backToDashboard": "Genel bakışa dön",
     "generic": "Bir hata oluştu."
+  },
+  "validation": {
+    "required": "Bu alan gereklidir",
+    "ruleNameRequired": "Kural adı gereklidir",
+    "max200": "En fazla 200 karakter",
+    "max500": "En fazla 500 karakter",
+    "minOneMinute": "En az 1 dakika",
+    "maxSixtyMinutes": "En fazla 60 dakika",
+    "minOne": "En az 1",
+    "maxDay": "En fazla 1440 dakika",
+    "channelRequired": "En az bir kanal seçin",
+    "patternRequired": "Desen gereklidir",
+    "patternInvalid": "Geçersiz düzenli ifade",
+    "number": "Geçerli bir sayı girin",
+    "usernameRequired": "Kullanıcı adı gereklidir",
+    "emailInvalid": "Geçersiz e-posta",
+    "passwordMin": "Şifre en az 8 karakter olmalı",
+    "passwordMin6": "Şifre en az 6 karakter olmalıdır",
+    "currentPasswordRequired": "Mevcut şifre gereklidir",
+    "newPasswordMin": "Yeni şifre en az 8 karakter olmalıdır",
+    "max128": "En fazla 128 karakter olabilir",
+    "passwordMismatch": "Şifreler eşleşmiyor",
+    "passwordSame": "Yeni şifre mevcut şifreden farklı olmalıdır"
   }
 }

@@ -3,7 +3,8 @@
 import { revokeSession } from "@/shared/api/session";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ShieldAlert } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { AuthShell } from "@/shared/components/layout/AuthShell";
 import { useAuthStore } from "@/features/auth/store/auth.store";
 import { ChangePasswordForm } from "@/features/auth/components/ChangePasswordForm";
 import { useSession } from "@/features/auth/hooks/useSession";
@@ -14,6 +15,7 @@ import { useSession } from "@/features/auth/hooks/useSession";
  * rejects other API calls until the password is changed.
  */
 export default function ChangePasswordPage() {
+  const t = useTranslations("auth.changePassword");
   const router = useRouter();
   const token = useAuthStore((state) => state.token);
   const mustChangePassword = useAuthStore((state) => state.user?.mustChangePassword ?? false);
@@ -36,36 +38,19 @@ export default function ChangePasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-bg-primary bg-grid-pattern bg-accent-glow flex items-center justify-center p-4">
-      <div className="relative z-10 w-full max-w-md glass rounded-2xl p-8 space-y-6">
-        <div className="text-center space-y-3">
-          <div className="flex items-center justify-center">
-            <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
-              <ShieldAlert size={22} className="text-accent" />
-            </div>
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold font-display text-text-primary">
-              Şifrenizi Değiştirin
-            </h1>
-            <p className="text-sm text-text-secondary mt-1">
-              {mustChangePassword
-                ? "Güvenliğiniz için devam etmeden önce yeni bir şifre belirlemeniz gerekiyor."
-                : "Hesabınız için yeni bir şifre belirleyin."}
-            </p>
-          </div>
+    <AuthShell>
+      <div className="stack gap-6">
+        <div>
+          <h1 className="h1">{t("title")}</h1>
+          <p className="small t3 mt-1.5">{mustChangePassword ? t("required") : t("optional")}</p>
         </div>
 
         <ChangePasswordForm onSuccess={() => router.replace("/dashboard")} />
 
-        <button
-          type="button"
-          onClick={handleLogout}
-          className="w-full text-xs text-text-muted hover:text-text-secondary transition-colors"
-        >
-          Çıkış yap
+        <button type="button" onClick={handleLogout} className="link xs t3 self-center">
+          {t("logout")}
         </button>
       </div>
-    </div>
+    </AuthShell>
   );
 }

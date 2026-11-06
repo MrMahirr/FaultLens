@@ -3,14 +3,22 @@
     "title": "Alarmlar ve kurallar",
     "subtitle": "Açık alarmları üstlenin, çözün; tetikleyici kuralları yönetin.",
     "newRule": "Yeni kural",
-    "tabs": { "alarms": "Alarmlar", "rules": "Kurallar", "label": "Alarm görünümü" },
+    "tabs": {
+      "alarms": "Alarmlar",
+      "rules": "Kurallar",
+      "label": "Alarm görünümü"
+    },
     "stats": {
       "active": "Aktif",
       "openCritical": "Açık kritik",
       "acknowledged": "Üstlenilen",
       "resolved": "Çözülen"
     },
-    "status": { "ACTIVE": "Aktif", "ACKNOWLEDGED": "Üstlenildi", "RESOLVED": "Çözüldü" },
+    "status": {
+      "ACTIVE": "Aktif",
+      "ACKNOWLEDGED": "Üstlenildi",
+      "RESOLVED": "Çözüldü"
+    },
     "channel": {
       "IN_APP": "Uygulama içi",
       "SLACK": "Slack",
@@ -96,20 +104,20 @@
       "cooldownHint": "Aynı kural bu süre içinde tekrar alarm üretmez",
       "preview": "Koşul:",
       "submit": "Kuralı ekle"
+    },
+    "toast": {
+      "created": "Alarm kuralı oluşturuldu.",
+      "createFailed": "Kural oluşturulamadı.",
+      "updated": "Kural güncellendi.",
+      "updateFailed": "Kural güncellenemedi.",
+      "deleted": "Kural silindi.",
+      "deleteFailed": "Kural silinemedi.",
+      "acknowledged": "Alarm üstlenildi.",
+      "acknowledgeFailed": "Alarm üstlenilemedi.",
+      "resolved": "Alarm çözüldü olarak işaretlendi.",
+      "resolveFailed": "Alarm çözülemedi.",
+      "alarmDeleted": "Alarm silindi.",
+      "alarmDeleteFailed": "Alarm silinemedi."
     }
-  },
-  "validation": {
-    "required": "Bu alan gereklidir",
-    "ruleNameRequired": "Kural adı gereklidir",
-    "max200": "En fazla 200 karakter",
-    "max500": "En fazla 500 karakter",
-    "minOneMinute": "En az 1 dakika",
-    "maxSixtyMinutes": "En fazla 60 dakika",
-    "minOne": "En az 1",
-    "maxDay": "En fazla 1440 dakika",
-    "channelRequired": "En az bir kanal seçin",
-    "patternRequired": "Desen gereklidir",
-    "patternInvalid": "Geçersiz düzenli ifade",
-    "number": "Geçerli bir sayı girin"
   }
 }

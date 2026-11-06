@@ -2,18 +2,15 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useLocale, useTranslations } from "next-intl";
-import { Menu, Sun, Moon, Monitor, LogOut, User, Bell, Languages } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { Menu, LogOut, User, Bell } from "lucide-react";
 import { revokeSession } from "@/shared/api/session";
 import { useUIStore } from "@/shared/store/ui.store";
-import { useTheme } from "@/shared/hooks/useTheme";
-import { useChangeLocale } from "@/shared/lib/locale";
-import { LOCALES, type Locale } from "@/i18n/config";
 import { Dropdown } from "@/shared/components/ui/Dropdown";
 import { LocaleSync } from "@/shared/components/layout/LocaleSync";
+import { LanguageMenu, ThemeMenu } from "@/shared/components/layout/PreferenceMenus";
 import { useAuthStore } from "@/features/auth/store/auth.store";
 import { useAlarmStatsQuery } from "@/features/alarms/api/useAlarmsQuery";
-import type { ThemePreference } from "@/shared/lib/theme";
 
 /* ── Breadcrumb ────────────────────────────────────────────── */
 
@@ -34,25 +31,13 @@ function Topbar() {
   const tNav = useTranslations("nav");
   const pathname = usePathname() ?? "/dashboard";
   const router = useRouter();
-  const locale = useLocale();
-  const { change: changeLocale } = useChangeLocale();
   const toggleSidebar = useUIStore((state) => state.toggleSidebar);
-  const { theme, resolvedTheme, setTheme } = useTheme();
   const user = useAuthStore((state) => state.user);
   const { data: alarmStats } = useAlarmStatsQuery();
   const activeAlarms = alarmStats?.active ?? 0;
 
   const [, section, ...rest] = pathname.split("/");
   const sectionKey = SECTION_KEYS[section as keyof typeof SECTION_KEYS];
-
-  const themeIcon =
-    theme === "system" ? (
-      <Monitor size={16} />
-    ) : resolvedTheme === "dark" ? (
-      <Moon size={16} />
-    ) : (
-      <Sun size={16} />
-    );
 
   const handleUserMenu = (value: string) => {
     if (value === "profile") router.push("/settings?tab=account");
@@ -100,45 +85,8 @@ function Topbar() {
       </div>
 
       <div className="flex items-center gap-1">
-        {/* Language */}
-        <Dropdown
-          label={t("language")}
-          trigger={
-            <button
-              type="button"
-              className="btn btn-ghost btn-sm gap-1.5"
-              aria-label={t("language")}
-            >
-              <Languages size={15} aria-hidden="true" />
-              <span className="mono xs uppercase">{locale}</span>
-            </button>
-          }
-          items={LOCALES.map((l) => ({
-            value: l,
-            label: t(`languages.${l}`),
-            checked: l === locale,
-          }))}
-          onSelect={(value) => changeLocale(value as Locale)}
-        />
-
-        {/* Theme */}
-        <Dropdown
-          label={t("theme")}
-          trigger={
-            <button type="button" className="btn btn-ghost btn-sm btn-icon" aria-label={t("theme")}>
-              <span aria-hidden="true" className="inline-flex">
-                {themeIcon}
-              </span>
-            </button>
-          }
-          items={(["system", "dark", "light"] as ThemePreference[]).map((value) => ({
-            value,
-            label: t(`themes.${value}`),
-            checked: theme === value,
-            hint: value === "system" ? t(`themes.${resolvedTheme}`) : undefined,
-          }))}
-          onSelect={(value) => setTheme(value as ThemePreference)}
-        />
+        <LanguageMenu />
+        <ThemeMenu />
 
         {/* Alarms */}
         <Link

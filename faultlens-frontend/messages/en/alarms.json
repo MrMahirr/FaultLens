@@ -3,14 +3,22 @@
     "title": "Alarms and rules",
     "subtitle": "Acknowledge and resolve open alarms; manage the rules that raise them.",
     "newRule": "New rule",
-    "tabs": { "alarms": "Alarms", "rules": "Rules", "label": "Alarm view" },
+    "tabs": {
+      "alarms": "Alarms",
+      "rules": "Rules",
+      "label": "Alarm view"
+    },
     "stats": {
       "active": "Active",
       "openCritical": "Open critical",
       "acknowledged": "Acknowledged",
       "resolved": "Resolved"
     },
-    "status": { "ACTIVE": "Active", "ACKNOWLEDGED": "Acknowledged", "RESOLVED": "Resolved" },
+    "status": {
+      "ACTIVE": "Active",
+      "ACKNOWLEDGED": "Acknowledged",
+      "RESOLVED": "Resolved"
+    },
     "channel": {
       "IN_APP": "In-app",
       "SLACK": "Slack",
@@ -96,20 +104,20 @@
       "cooldownHint": "The rule raises no further alarm within this time",
       "preview": "Condition:",
       "submit": "Add rule"
+    },
+    "toast": {
+      "created": "Alarm rule created.",
+      "createFailed": "The rule could not be created.",
+      "updated": "Rule updated.",
+      "updateFailed": "The rule could not be updated.",
+      "deleted": "Rule deleted.",
+      "deleteFailed": "The rule could not be deleted.",
+      "acknowledged": "Alarm acknowledged.",
+      "acknowledgeFailed": "The alarm could not be acknowledged.",
+      "resolved": "Alarm marked as resolved.",
+      "resolveFailed": "The alarm could not be resolved.",
+      "alarmDeleted": "Alarm deleted.",
+      "alarmDeleteFailed": "The alarm could not be deleted."
     }
-  },
-  "validation": {
-    "required": "This field is required",
-    "ruleNameRequired": "Rule name is required",
-    "max200": "At most 200 characters",
-    "max500": "At most 500 characters",
-    "minOneMinute": "At least 1 minute",
-    "maxSixtyMinutes": "At most 60 minutes",
-    "minOne": "At least 1",
-    "maxDay": "At most 1440 minutes",
-    "channelRequired": "Pick at least one channel",
-    "patternRequired": "Pattern is required",
-    "patternInvalid": "Invalid regular expression",
-    "number": "Enter a valid number"
   }
 }

@@ -45,38 +45,5 @@ export enum DeploymentEnvironment {
   DEVELOPMENT = "DEVELOPMENT",
 }
 
-/**
- * Severity → CSS class mapping.
- * Component'larda kullanılır, renk bilgisi CSS'te tanımlıdır.
- */
-export const SEVERITY_CLASS_MAP: Record<Severity, string> = {
-  [Severity.TRACE]: "severity-trace",
-  [Severity.DEBUG]: "severity-debug",
-  [Severity.INFO]: "severity-info",
-  [Severity.WARN]: "severity-warn",
-  [Severity.ERROR]: "severity-error",
-  [Severity.CRITICAL]: "severity-critical",
-};
-
-/**
- * Severity display labels
- */
-export const SEVERITY_LABELS: Record<Severity, string> = {
-  [Severity.TRACE]: "Trace",
-  [Severity.DEBUG]: "Debug",
-  [Severity.INFO]: "Info",
-  [Severity.WARN]: "Warning",
-  [Severity.ERROR]: "Error",
-  [Severity.CRITICAL]: "Critical",
-};
-
-/**
- * Source type display labels
- */
-export const SOURCE_TYPE_LABELS: Record<LogSourceType, string> = {
-  [LogSourceType.KUBERNETES]: "Kubernetes",
-  [LogSourceType.SSH]: "SSH",
-  [LogSourceType.DOCKER]: "Docker",
-  [LogSourceType.CICD]: "CI/CD",
-  [LogSourceType.LOCAL_FILE]: "Yerel Dosya",
-};
+// Labels for these enums live in the message catalogs (messages/<locale>/*.json);
+// enum values themselves (ERROR, KUBERNETES …) are shown untranslated.

@@ -1,0 +1,173 @@
+{
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Your personal preferences and the system configuration.",
+    "sections": "Settings sections",
+    "tabs": {
+      "appearance": "Appearance",
+      "account": "Account",
+      "notifications": "Notifications",
+      "system": "System",
+      "users": "Users"
+    },
+    "unsaved": "You have unsaved changes",
+    "discard": "Discard",
+    "saveChanges": "Save changes",
+    "appearance": {
+      "title": "Appearance",
+      "subtitle": "Theme, language and motion preferences are stored in this browser.",
+      "theme": "Theme",
+      "themes": {
+        "system": "System",
+        "dark": "Dark",
+        "light": "Light"
+      },
+      "systemResolved": "Currently: {theme}",
+      "language": "Interface language",
+      "languageHint": "Your choice applies to you only; admins set the system default.",
+      "motion": "Animations",
+      "motionHint": "When off, transitions and entry animations are not shown. If “reduce motion” is on in your OS, animations are already shortened.",
+      "compact": "Compact view",
+      "compactHint": "Tighter table rows: more logs in the same space."
+    },
+    "account": {
+      "title": "Account",
+      "subtitle": "Your profile and password.",
+      "profile": "Personal details",
+      "username": "Username",
+      "email": "Email address",
+      "saveProfile": "Save details",
+      "profileSaved": "Profile saved.",
+      "profileFailed": "The profile could not be updated.",
+      "security": "Security",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "confirmPassword": "New password (again)",
+      "passwordTooShort": "The new password needs at least 8 characters",
+      "passwordMismatch": "The passwords do not match",
+      "savePassword": "Update password",
+      "passwordSaved": "Password updated.",
+      "passwordFailed": "The password could not be changed."
+    },
+    "notifications": {
+      "title": "Notification preferences",
+      "subtitle": "Choose the channels you receive alarms on.",
+      "toggled": "Notification preference updated.",
+      "saved": "Notification preferences saved.",
+      "saveFailed": "The settings could not be saved.",
+      "email": {
+        "title": "Email",
+        "description": "Sends alarms to your profile address through the server's SMTP account.",
+        "noSmtp": "SMTP is not configured on the server, so no emails are sent. Ask your admin to set <code>SMTP_HOST</code> and the related settings.",
+        "target": "Alarms are sent to <b>{email}</b>.",
+        "noAddress": "Your profile has no email address. <link>Add one in account settings</link>.",
+        "test": "Send test email",
+        "testSent": "Test email sent.",
+        "testFailed": "The email could not be sent."
+      },
+      "slack": {
+        "title": "Slack",
+        "description": "Posts errors and warnings to the chosen channel as they happen.",
+        "url": "Slack webhook URL",
+        "urlHint": "Stored encrypted.",
+        "test": "Send test message",
+        "testSent": "Test message sent to the Slack channel.",
+        "testFailed": "The test message could not be sent."
+      },
+      "webhook": {
+        "title": "Webhook",
+        "description": "POSTs alarms as JSON to your own system (https).",
+        "url": "Webhook URL",
+        "urlHint": "Must be a public https:// address. Body: <code>{body}</code>",
+        "test": "Send test request",
+        "testSent": "Webhook test request sent.",
+        "testFailed": "The webhook request failed."
+      },
+      "push": {
+        "title": "Browser notifications",
+        "description": "While the app is open, alarms appear in the corner with a sound.",
+        "testHint": "Try the in-app notification.",
+        "test": "Trigger notification",
+        "testSent": "Notification triggered.",
+        "testFailed": "The notification could not be triggered."
+      },
+      "mobile": {
+        "title": "Mobile notifications",
+        "description": "Sends push notifications to the mobile app."
+      },
+      "urlRequired": "Enter a webhook URL first."
+    },
+    "system": {
+      "title": "System preferences",
+      "subtitle": "Retention, analysis and language settings for every user.",
+      "saved": "System preferences saved.",
+      "saveFailed": "The settings could not be saved.",
+      "retention": "Log retention",
+      "retentionHint": "Logs are deleted from the database after this period.",
+      "retentionDays": "{days, plural, one {# day} other {# days}}",
+      "retentionForever": "Forever (never delete)",
+      "engine": "Default analysis engine",
+      "engineHint": "The engine used for error groups.",
+      "engines": {
+        "rule": "Rule-based",
+        "ai": "AI-assisted"
+      },
+      "engineUnavailable": "unavailable",
+      "aiOff": "AI analysis is off on this server (AI_ENABLED / OPENAI_API_KEY not set).",
+      "aiOffSelected": "Although AI is selected, analyses run on the rule-based engine.",
+      "aiPrivacy": "With AI selected, error messages and stack traces are sent to OpenAI (USA) for analysis. Logs that may contain personal data can require explicit consent under KVKK/GDPR.",
+      "language": "Default language",
+      "languageHint": "Users who have not picked a language see the interface in this one."
+    },
+    "users": {
+      "title": "Users",
+      "subtitle": "Role changes take effect when the user's session is renewed.",
+      "empty": "No users.",
+      "you": "(you)",
+      "roleOf": "Role of {user}",
+      "columns": {
+        "user": "User",
+        "role": "Role",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "pendingPassword": "Password change pending",
+      "active": "Active",
+      "resetPassword": "Reset password",
+      "resetTitle": "Temporary password for {user}",
+      "resetDescription": "The user has to change it at the next sign-in.",
+      "resetConfirm": "Reset",
+      "delete": "Delete",
+      "deleteTitle": "Delete “{user}”?",
+      "deleteDescription": "The user and their notification settings are deleted permanently.",
+      "deleteConfirm": "Delete user",
+      "newUser": "New user",
+      "username": "Username",
+      "email": "Email (optional)",
+      "tempPassword": "Temporary password",
+      "tempPasswordHint": "The user has to change it at first sign-in.",
+      "role": "Role",
+      "create": "Add user",
+      "roles": {
+        "ADMIN": "Admin",
+        "EDITOR": "Editor",
+        "VIEWER": "Viewer"
+      },
+      "roleDescriptions": {
+        "ADMIN": "Everything: deleting, system settings, user management",
+        "EDITOR": "Edits sources and rules, acknowledges and resolves alarms",
+        "VIEWER": "View only"
+      },
+      "toast": {
+        "created": "User created; they will change the password at first sign-in.",
+        "createFailed": "The user could not be created.",
+        "roleChanged": "Role updated. It applies at the user's next session renewal.",
+        "roleFailed": "The role could not be updated.",
+        "reset": "Password reset; the user changes it at first sign-in.",
+        "resetFailed": "The password could not be reset.",
+        "deleted": "User deleted.",
+        "deleteFailed": "The user could not be deleted."
+      }
+    }
+  }
+}

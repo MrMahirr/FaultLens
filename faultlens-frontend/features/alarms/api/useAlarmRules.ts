@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { useTranslations } from "next-intl";
 import { getApiErrorMessage } from "@/shared/api/errors";
 import type { AlarmRuleInput } from "../types/alarm.types";
 import { AlarmRuleApi } from "./alarmRuleApi";
@@ -12,37 +13,37 @@ export const alarmRuleKeys = {
 export const useAlarmRulesQuery = () =>
   useQuery({ queryKey: alarmRuleKeys.all, queryFn: AlarmRuleApi.list });
 
+type RuleToast =
+  "created" | "createFailed" | "updated" | "updateFailed" | "deleted" | "deleteFailed";
+
 function useRuleMutation<TVariables>(
   mutationFn: (variables: TVariables) => Promise<unknown>,
-  successMessage: string,
-  errorMessage: string,
+  successKey: RuleToast,
+  errorKey: RuleToast,
 ) {
   const queryClient = useQueryClient();
+  const t = useTranslations("alarms.toast");
   return useMutation({
     mutationFn,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: alarmRuleKeys.all });
-      toast.success(successMessage);
+      toast.success(t(successKey));
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, errorMessage));
+      toast.error(getApiErrorMessage(error, t(errorKey)));
     },
   });
 }
 
 export const useCreateAlarmRuleMutation = () =>
-  useRuleMutation(
-    (input: AlarmRuleInput) => AlarmRuleApi.create(input),
-    "Alarm kuralı oluşturuldu.",
-    "Kural oluşturulamadı.",
-  );
+  useRuleMutation((input: AlarmRuleInput) => AlarmRuleApi.create(input), "created", "createFailed");
 
 export const useToggleAlarmRuleMutation = () =>
   useRuleMutation(
     ({ id, enabled }: { id: number; enabled: boolean }) => AlarmRuleApi.setEnabled(id, enabled),
-    "Kural güncellendi.",
-    "Kural güncellenemedi.",
+    "updated",
+    "updateFailed",
   );
 
 export const useDeleteAlarmRuleMutation = () =>
-  useRuleMutation((id: number) => AlarmRuleApi.remove(id), "Kural silindi.", "Kural silinemedi.");
+  useRuleMutation((id: number) => AlarmRuleApi.remove(id), "deleted", "deleteFailed");

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import toast from "react-hot-toast";
 import { MoreVertical, Wifi, WifiOff, TestTube, Trash2 } from "lucide-react";
 import { Badge } from "@/shared/components/ui/Badge";
 import { Button } from "@/shared/components/ui/Button";
@@ -38,6 +39,7 @@ function parseConfig(raw?: string): Record<string, string> {
 
 function SourceCard({ source, index }: SourceCardProps) {
   const t = useTranslations("sources");
+  const tToast = useTranslations("sources.toast");
   const dates = useDateFormat();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const testConnection = useTestConnectionMutation();
@@ -172,7 +174,12 @@ function SourceCard({ source, index }: SourceCardProps) {
               fullWidth
               icon={<TestTube size={14} aria-hidden="true" />}
               loading={testConnection.isPending}
-              onClick={() => testConnection.mutate(source.id)}
+              onClick={() =>
+                testConnection.mutate(source.id, {
+                  onSuccess: () => toast.success(tToast("testOk")),
+                  onError: (error) => toast.error(error.message || tToast("connectFailed")),
+                })
+              }
               title={t("testHint")}
             >
               {t("test")}

@@ -1,7 +1,10 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+import toast from "react-hot-toast";
 import { Button } from "@/shared/components/ui/Button";
 import { apiClient } from "@/shared/api/client";
 import { Endpoints } from "@/shared/api/endpoints";
-import toast from "react-hot-toast";
 import { getApiErrorMessage } from "@/shared/api/errors";
 
 interface WebhookConfigFormProps {
@@ -9,43 +12,51 @@ interface WebhookConfigFormProps {
   onChange: (value: string) => void;
 }
 
+const BODY_SHAPE = '{"event":"alarm","title","message","severity","at","url"}';
+
 /** Generic webhook: alarms are POSTed as JSON to a public https URL. */
 export function WebhookConfigForm({ webhookUrl, onChange }: WebhookConfigFormProps) {
+  const t = useTranslations("settings.notifications");
+
   const handleTest = async () => {
     if (!webhookUrl) {
-      toast.error("Lütfen önce bir Webhook URL girin.");
+      toast.error(t("urlRequired"));
       return;
     }
     try {
       await apiClient.post(Endpoints.SETTINGS.TEST.WEBHOOK, { webhookUrl });
-      toast.success("Webhook test isteği gönderildi!");
+      toast.success(t("webhook.testSent"));
     } catch (err) {
-      toast.error(getApiErrorMessage(err, "Webhook isteği başarısız oldu."));
+      toast.error(getApiErrorMessage(err, t("webhook.testFailed")));
     }
   };
 
   return (
     <>
-      <div className="flex flex-col gap-1">
-        <label htmlFor="webhook-url" className="text-sm font-medium text-text-secondary">
-          Webhook URL
+      <div className="field">
+        <label htmlFor="webhook-url" className="label">
+          {t("webhook.url")}
         </label>
         <input
           id="webhook-url"
           type="url"
-          placeholder="https://ornek.com/faultlens-hook"
-          className="w-full bg-bg-primary text-text-primary rounded-lg border border-border-default px-3 py-2 text-sm focus:outline-none focus:border-accent"
+          placeholder="https://example.com/faultlens-hook"
+          className="input mono"
+          autoComplete="off"
+          aria-describedby="webhook-url-hint"
           value={webhookUrl || ""}
           onChange={(e) => onChange(e.target.value)}
         />
-        <p className="text-xs text-text-muted">
-          Herkese açık bir sunucuda <code>https://</code> adresi olmalı. Gövde:{" "}
-          <code>{'{"event":"alarm","title","message","severity","at","url"}'}</code>
+        <p id="webhook-url-hint" className="help">
+          {t.rich("webhook.urlHint", {
+            body: BODY_SHAPE,
+            code: (chunks) => <code className="mono">{chunks}</code>,
+          })}
         </p>
       </div>
-      <div className="flex justify-end mt-2">
+      <div className="flex justify-end">
         <Button variant="secondary" size="sm" onClick={handleTest}>
-          Test İsteği Gönder
+          {t("webhook.test")}
         </Button>
       </div>
     </>

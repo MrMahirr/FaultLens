@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/features/auth/store/auth.store";
 import { useAuthHydrated } from "@/features/auth/hooks/useAuthHydrated";
+import { AuthShell } from "@/shared/components/layout/AuthShell";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   const token = useAuthStore((state) => state.token);
@@ -28,9 +29,5 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     );
   }
 
-  return (
-    <div className="min-h-screen bg-bg-primary bg-grid-pattern bg-accent-glow flex items-center justify-center p-4">
-      <div className="relative z-10 w-full max-w-md">{children}</div>
-    </div>
-  );
+  return <AuthShell>{children}</AuthShell>;
 }

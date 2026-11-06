@@ -15,15 +15,3 @@ export interface CreateUserInput {
   role: Role;
   password: string;
 }
-
-export const ROLE_LABELS: Record<Role, string> = {
-  ADMIN: "Yönetici",
-  EDITOR: "Editör",
-  VIEWER: "İzleyici",
-};
-
-export const ROLE_DESCRIPTIONS: Record<Role, string> = {
-  ADMIN: "Her şey: silme, sistem ayarları, kullanıcı yönetimi",
-  EDITOR: "Kaynak/kural düzenler, alarmları onaylar/çözer",
-  VIEWER: "Yalnızca görüntüler",
-};

@@ -48,5 +48,28 @@
     "notFoundDescription": "The page you are looking for may have moved or never existed.",
     "backToDashboard": "Back to overview",
     "generic": "Something went wrong."
+  },
+  "validation": {
+    "required": "This field is required",
+    "ruleNameRequired": "Rule name is required",
+    "max200": "At most 200 characters",
+    "max500": "At most 500 characters",
+    "minOneMinute": "At least 1 minute",
+    "maxSixtyMinutes": "At most 60 minutes",
+    "minOne": "At least 1",
+    "maxDay": "At most 1440 minutes",
+    "channelRequired": "Pick at least one channel",
+    "patternRequired": "Pattern is required",
+    "patternInvalid": "Invalid regular expression",
+    "number": "Enter a valid number",
+    "usernameRequired": "Username is required",
+    "emailInvalid": "Invalid email",
+    "passwordMin": "The password needs at least 8 characters",
+    "passwordMin6": "The password needs at least 6 characters",
+    "currentPasswordRequired": "The current password is required",
+    "newPasswordMin": "The new password needs at least 8 characters",
+    "max128": "At most 128 characters",
+    "passwordMismatch": "The passwords do not match",
+    "passwordSame": "The new password must differ from the current one"
   }
 }

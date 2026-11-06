@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { apiClient } from "@/shared/api/client";
 import { Endpoints } from "@/shared/api/endpoints";
 import toast from "react-hot-toast";
+import { useTranslations } from "next-intl";
 import { getApiErrorMessage } from "@/shared/api/errors";
 
 /** What the user edits (backend UpdateNotificationRequest). */
@@ -55,6 +56,7 @@ function toStatus(data: NotificationResponse): EmailStatus {
 }
 
 export function useNotificationSettings() {
+  const t = useTranslations("settings.notifications");
   const [settings, setSettings] = useState<NotificationState>(DEFAULT_STATE);
   const [emailStatus, setEmailStatus] = useState<EmailStatus>({
     email: null,
@@ -101,9 +103,9 @@ export function useNotificationSettings() {
     try {
       const response = await apiClient.put(Endpoints.SETTINGS.NOTIFICATIONS, newSettings);
       apply(response.data?.data);
-      toast.success("Bildirim tercihi güncellendi!");
+      toast.success(t("toggled"));
     } catch (err) {
-      toast.error(getApiErrorMessage(err, "Ayarlar kaydedilemedi."));
+      toast.error(getApiErrorMessage(err, t("saveFailed")));
       setSettings(previousSettings);
     }
   };
@@ -113,9 +115,9 @@ export function useNotificationSettings() {
     try {
       const response = await apiClient.put(Endpoints.SETTINGS.NOTIFICATIONS, settings);
       apply(response.data?.data);
-      toast.success("Bildirim tercihleri kaydedildi!");
+      toast.success(t("saved"));
     } catch (err) {
-      toast.error(getApiErrorMessage(err, "Ayarlar kaydedilirken bir hata oluştu."));
+      toast.error(getApiErrorMessage(err, t("saveFailed")));
     } finally {
       setIsSaving(false);
     }
