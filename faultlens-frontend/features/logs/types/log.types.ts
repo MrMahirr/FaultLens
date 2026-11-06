@@ -1,4 +1,4 @@
-import { Severity, LogSourceType } from "@/shared/types/common.types";
+import { Severity } from "@/shared/types/common.types";
 import type { AnalysisResultDto } from "@/features/analyses/types/analysis.types";
 
 /* ── Log Entry DTO ─────────────────────────────────────────── */
@@ -27,15 +27,9 @@ export interface LogEntryDto {
  */
 export type LogTimeRange = "1h" | "24h" | "7d" | "30d" | "all";
 
-export const DEFAULT_LOG_TIME_RANGE: LogTimeRange = "24h";
+export const LOG_TIME_RANGES: LogTimeRange[] = ["1h", "24h", "7d", "30d", "all"];
 
-export const LOG_TIME_RANGE_LABELS: Record<LogTimeRange, string> = {
-  "1h": "Son 1 saat",
-  "24h": "Son 24 saat",
-  "7d": "Son 7 gün",
-  "30d": "Son 30 gün",
-  all: "Tümü",
-};
+export const DEFAULT_LOG_TIME_RANGE: LogTimeRange = "24h";
 
 const RANGE_MS: Record<Exclude<LogTimeRange, "all">, number> = {
   "1h": 3_600_000,
@@ -52,7 +46,8 @@ export function rangeStart(range: LogTimeRange, now = Date.now()): string {
 }
 
 export interface LogFilters {
-  severity?: Severity[];
+  /** Exact severity (the API filters on one level). */
+  severity?: Severity;
   source?: string;
   namespace?: string;
   search?: string;

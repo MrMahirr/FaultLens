@@ -10,9 +10,10 @@ function keys(tree: object, prefix = ""): string[] {
   );
 }
 
-/** ICU placeholders ({name}, {count, plural, …}) used by a message. */
+/** ICU arguments ({name}, {count, plural, …}) used by a message; plural branches are not arguments. */
 function placeholders(message: string): string[] {
-  return [...message.matchAll(/\{\s*(\w+)/g)].map((m) => m[1]).sort();
+  const names = [...message.matchAll(/\{\s*(\w+)\s*[},]/g)].map((m) => m[1]);
+  return [...new Set(names)].sort();
 }
 
 function leaf(tree: object, path: string): string {

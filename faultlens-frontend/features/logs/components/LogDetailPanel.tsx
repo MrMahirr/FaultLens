@@ -1,19 +1,17 @@
 "use client";
 
+import { useEffect, useId, useRef } from "react";
 import Link from "next/link";
-import { AnalysisType, Severity } from "@/shared/types/common.types";
 import { motion } from "framer-motion";
-import { X, Clock, Server, Layers, Code, Lightbulb, Brain } from "lucide-react";
-import { SeverityBadge } from "@/features/logs/components/SeverityBadge";
-import { Card } from "@/shared/components/ui/Card";
-import { Button } from "@/shared/components/ui/Button";
+import { useTranslations } from "next-intl";
+import { X, ExternalLink } from "lucide-react";
+import { SeverityBadge } from "@/shared/components/ui/SeverityBadge";
+import { useFocusTrap } from "@/shared/hooks/useFocusTrap";
+import { useDateFormat } from "@/shared/hooks/useDateFormat";
 import type { LogEntryDto } from "@/features/logs/types/log.types";
-import { formatDate } from "@/shared/lib/utils";
-import { cn } from "@/shared/lib/utils";
 import { useLogDetailQuery } from "@/features/logs/api/useLogQuery";
-
-/** Severities the analyzer receives (processor forwards only these to log-errors). */
-const ANALYZED_SEVERITIES = new Set<string>([Severity.ERROR, Severity.CRITICAL]);
+import { StackTrace } from "./StackTrace";
+import { LogAnalyses } from "./LogAnalyses";
 
 /* ── Props ─────────────────────────────────────────────────── */
 
@@ -24,188 +22,119 @@ interface LogDetailPanelProps {
 
 /* ── Component ─────────────────────────────────────────────── */
 
+/** Side drawer with one log: a modal dialog (focus trapped, Esc / backdrop close). */
 function LogDetailPanel({ log, onClose }: LogDetailPanelProps) {
-  const { data: detailData, isLoading: isDetailLoading } = useLogDetailQuery(log?.id ?? 0);
-  const analyses = detailData?.analyses || [];
+  const t = useTranslations("logs.detail");
+  const dates = useDateFormat();
+  const panelRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+  const { data: detailData, isLoading } = useLogDetailQuery(log?.id ?? 0);
+
+  useFocusTrap(panelRef, !!log);
+
+  useEffect(() => {
+    if (!log) return;
+    const onKeyDown = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [log, onClose]);
 
   if (!log) return null;
 
+  const meta: [string, string | undefined][] = [
+    [t("time"), dates.dateTimeLong(log.timestamp)],
+    [t("source"), log.serviceName ?? `#${log.sourceId}`],
+    [t("namespace"), log.namespace],
+    [t("pod"), log.podName],
+    [t("container"), log.containerName],
+  ];
+
   return (
     <motion.div
-      initial={{ x: "100%", opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      exit={{ x: "100%", opacity: 0 }}
-      transition={{ type: "spring", damping: 30, stiffness: 300 }}
-      className={cn(
-        "fixed right-0 top-0 h-screen w-full sm:w-[480px] z-50",
-        "bg-bg-secondary border-l border-border-default",
-        "shadow-2xl overflow-y-auto",
-      )}
+      className="fixed inset-0 z-50 flex justify-end"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.15 }}
     >
-      {/* Header */}
-      <div className="sticky top-0 bg-bg-secondary border-b border-border-default px-6 py-4 flex items-center justify-between z-10">
-        <div className="flex items-center gap-3">
-          <SeverityBadge severity={log.severity} />
-          <span className="text-sm font-mono text-text-muted">#{log.id}</span>
-        </div>
-        <button
-          onClick={onClose}
-          className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-tertiary transition-colors"
-          aria-label="Paneli kapat"
-        >
-          <X size={18} />
-        </button>
-      </div>
+      <div
+        className="absolute inset-0"
+        style={{ background: "var(--scrim)" }}
+        onClick={onClose}
+        aria-hidden="true"
+      />
 
-      {/* Content */}
-      <div className="p-6 space-y-6">
-        {/* Meta Info */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex items-center gap-2">
-            <Clock size={14} className="text-text-muted shrink-0" />
-            <div>
-              <p className="text-[10px] text-text-muted uppercase tracking-wider">Zaman</p>
-              <p className="text-xs font-mono text-text-primary">{formatDate(log.timestamp)}</p>
-            </div>
+      <motion.div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        initial={{ x: 24, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        exit={{ x: 24, opacity: 0 }}
+        transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
+        className="relative h-full w-full sm:w-[520px] bg-bg-raised border-l border-border-default overflow-y-auto outline-none"
+        style={{ boxShadow: "var(--pop)" }}
+      >
+        <div className="panel-h sticky top-0 bg-bg-raised z-10">
+          <div className="row">
+            <h2 id={titleId} className="sr-only">
+              {t("title")}
+            </h2>
+            <SeverityBadge severity={log.severity} />
+            <span className="mono t3">#{log.id}</span>
           </div>
-
-          <div className="flex items-center gap-2">
-            <Server size={14} className="text-text-muted shrink-0" />
-            <div>
-              <p className="text-[10px] text-text-muted uppercase tracking-wider">Kaynak</p>
-              <p className="text-xs font-mono text-text-primary">
-                {log.serviceName ?? `Source #${log.sourceId}`}
-              </p>
-            </div>
+          <div className="row gap-1">
+            <Link
+              href={`/logs/${log.id}`}
+              className="btn btn-ghost btn-sm btn-icon"
+              aria-label={t("openPage")}
+              title={t("openPage")}
+            >
+              <ExternalLink size={14} aria-hidden="true" />
+            </Link>
+            <button
+              type="button"
+              onClick={onClose}
+              className="btn btn-ghost btn-sm btn-icon"
+              aria-label={t("close")}
+            >
+              <X size={16} aria-hidden="true" />
+            </button>
           </div>
-
-          <div className="flex items-center gap-2">
-            <Layers size={14} className="text-text-muted shrink-0" />
-            <div>
-              <p className="text-[10px] text-text-muted uppercase tracking-wider">Namespace</p>
-              <p className="text-xs font-mono text-text-primary">{log.namespace}</p>
-            </div>
-          </div>
-
-          {log.podName && (
-            <div className="flex items-center gap-2">
-              <Code size={14} className="text-text-muted shrink-0" />
-              <div>
-                <p className="text-[10px] text-text-muted uppercase tracking-wider">Pod</p>
-                <p className="text-xs font-mono text-text-primary">{log.podName}</p>
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* Message */}
-        <div>
-          <h3 className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">
-            Mesaj
-          </h3>
-          <Card variant="bordered" padding="sm">
-            <p className="text-sm text-text-primary leading-relaxed">{log.message}</p>
-          </Card>
-        </div>
-
-        {/* Stack Trace */}
-        {log.stackTrace && (
-          <div>
-            <h3 className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">
-              Stack Trace
-            </h3>
-            <div className="bg-bg-primary border border-border-default rounded-xl p-4 overflow-x-auto">
-              <pre className="font-mono text-xs leading-relaxed">
-                {log.stackTrace.split("\n").map((line, i) => (
-                  <div
-                    key={i}
-                    className={cn(
-                      "py-0.5",
-                      line.includes("Error") || line.includes("Exception")
-                        ? "text-error font-medium"
-                        : line.trim().startsWith("at")
-                          ? "text-text-muted pl-4"
-                          : "text-text-secondary",
-                    )}
-                  >
-                    {line}
-                  </div>
-                ))}
-              </pre>
-            </div>
-          </div>
-        )}
-
-        {/* Analysis Suggestion */}
-        <div>
-          <h3 className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">
-            Kök Neden & Analiz
-          </h3>
-          {isDetailLoading ? (
-            <div className="flex items-center gap-2 text-xs text-text-muted">
-              <div className="w-3.5 h-3.5 border border-accent border-t-transparent rounded-full animate-spin" />
-              <span>Analizler yükleniyor...</span>
-            </div>
-          ) : analyses && analyses.length > 0 ? (
-            <div className="space-y-3">
-              {analyses.map((analysis, i) => (
-                <Card
-                  key={analysis.id || i}
-                  variant="glass"
-                  padding="sm"
-                  className="border-l-2 border-l-accent"
-                >
-                  <div className="flex items-start gap-2">
-                    <Brain size={14} className="text-accent shrink-0 mt-0.5" />
-                    <div className="flex-1">
-                      <p className="text-xs font-semibold text-text-primary uppercase tracking-wider">
-                        {analysis.engineType === AnalysisType.RULE_BASED
-                          ? "Kural Tabanlı Analiz"
-                          : "AI Analizi"}
-                      </p>
-                      <p className="text-xs text-text-secondary mt-1">
-                        <strong>Kök Neden:</strong> {analysis.rootCause}
-                      </p>
-                      <p className="text-xs text-text-secondary mt-1">
-                        <strong>Öneri:</strong> {analysis.suggestion}
-                      </p>
-                      {analysis.confidenceScore && (
-                        <p className="text-[10px] text-accent mt-2 font-mono">
-                          Güven: {Math.round(analysis.confidenceScore * 100)}%
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          ) : !ANALYZED_SEVERITIES.has(log.severity) ? (
-            // Only ERROR/CRITICAL entries go to the analyzer (log-errors topic).
-            <p className="text-xs text-text-muted">
-              {log.severity} seviyesindeki loglar analiz edilmez; yalnızca ERROR ve CRITICAL loglar
-              için kök neden analizi yapılır.
-            </p>
-          ) : log.groupId ? (
-            <Card variant="glass" padding="sm">
-              <div className="flex items-start gap-2">
-                <Lightbulb size={14} className="text-warning shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm text-text-primary">
-                    Bu log bir hata grubuna ait. Grubun kök neden analizi Analizler sayfasında.
-                  </p>
-                  <Link href="/analyses">
-                    <Button variant="ghost" size="sm" className="mt-2">
-                      Analize Git →
-                    </Button>
-                  </Link>
+        <div className="p-5 stack gap-5">
+          <dl className="kv">
+            {meta
+              .filter(([, value]) => value)
+              .map(([label, value]) => (
+                <div key={label} className="contents">
+                  <dt>{label}</dt>
+                  <dd className="mono break-all">{value}</dd>
                 </div>
-              </div>
-            </Card>
-          ) : (
-            <p className="text-xs text-text-muted">Bu log için henüz analiz bulunmuyor.</p>
+              ))}
+          </dl>
+
+          <section className="field">
+            <h3 className="eyebrow">{t("message")}</h3>
+            <p className="well p-3 text-[14px] leading-relaxed break-words">{log.message}</p>
+          </section>
+
+          {log.stackTrace && (
+            <section className="field">
+              <h3 className="eyebrow">{t("stackTrace")}</h3>
+              <StackTrace trace={log.stackTrace} />
+            </section>
           )}
+
+          <section className="field">
+            <h3 className="eyebrow">{t("analysis")}</h3>
+            <LogAnalyses log={log} analyses={detailData?.analyses ?? []} loading={isLoading} />
+          </section>
         </div>
-      </div>
+      </motion.div>
     </motion.div>
   );
 }

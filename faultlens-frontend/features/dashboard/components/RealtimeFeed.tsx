@@ -44,7 +44,7 @@ function RealtimeFeed() {
   const { data: initialData } = useLogsQuery({
     page: 0,
     size: 20,
-    severity: [Severity.ERROR, Severity.CRITICAL],
+    severity: Severity.ERROR,
   });
 
   // Connect to live WebSocket log stream

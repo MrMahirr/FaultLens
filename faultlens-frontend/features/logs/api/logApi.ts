@@ -17,8 +17,8 @@ export const LogApi = {
       size: filters.size ?? 20,
     };
 
-    if (filters.severity && filters.severity.length > 0) {
-      params.severity = filters.severity[0];
+    if (filters.severity) {
+      params.severity = filters.severity;
     }
     if (filters.search) {
       params.search = filters.search;

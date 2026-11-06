@@ -1,0 +1,35 @@
+{
+  "analyses": {
+    "title": "Analyses",
+    "subtitle": "Root-cause analyses of error groups; low-confidence results go to review.",
+    "source": "Source",
+    "allSources": "All sources",
+    "clearHistory": "Clear history",
+    "clearTitle": "Delete the analysis history?",
+    "clearDescriptionSource": "All analyses of “{name}” are deleted permanently.",
+    "clearDescriptionAll": "The analysis history of every source is deleted permanently.",
+    "cleared": "Analysis history cleared.",
+    "clearFailed": "The history could not be cleared.",
+    "emptyTitle": "No analyses yet",
+    "emptySource": "No error has been analysed for this source yet.",
+    "emptyAll": "Analyses appear here as ERROR and CRITICAL logs arrive.",
+    "engine": {
+      "RULE_BASED": "Rule-based",
+      "AI": "AI"
+    },
+    "confidence": "Confidence",
+    "confidenceValue": "Confidence {value}%",
+    "needsReview": "Review",
+    "rootCause": "Root cause",
+    "rootCauseSummary": "Root cause summary",
+    "suggestion": "Suggestion and fix",
+    "affectedDeployment": "Deployment affected",
+    "affectedDeploymentTitle": "Affected deployment",
+    "affectedDeploymentText": "This error may be related to the {deployment} deployment.",
+    "reanalyze": "Analyse again",
+    "details": "Details",
+    "detailTitle": "Analysis #{id}",
+    "analyzedAt": "Analysed",
+    "list": "Analysis list"
+  }
+}
