@@ -14,6 +14,7 @@ const stored = {
   name: "github-actions",
   display_key: "flk_Ab12Cd34_…",
   scopes: ["deployments:write"],
+  source_id: null,
   created_by: "admin",
   created_at: "2026-11-01T10:00:00Z",
   expires_at: null,
@@ -30,7 +31,17 @@ beforeEach(() => {
   keys = [];
   vi.spyOn(toast, "success").mockImplementation(() => "");
   vi.spyOn(toast, "error").mockImplementation(() => "");
-  server.use(http.get(`${API}/api-keys`, () => HttpResponse.json(ok(keys))));
+  server.use(
+    http.get(`${API}/api-keys`, () => HttpResponse.json(ok(keys))),
+    http.get(`${API}/sources`, () =>
+      HttpResponse.json(
+        ok([
+          { id: 4, name: "orders-http", type: "HTTP", config: "{}", enabled: true },
+          { id: 5, name: "k8s", type: "KUBERNETES", config: "{}", enabled: true },
+        ]),
+      ),
+    ),
+  );
 });
 
 describe("ApiKeySettings", () => {
@@ -84,6 +95,41 @@ describe("ApiKeySettings", () => {
 
     expect(await within(form).findByText("En az bir kapsam seçin")).toBeInTheDocument();
     expect(create).not.toHaveBeenCalled();
+  });
+
+  it("binds a logs:ingest key to an HTTP source", async () => {
+    let body: unknown;
+    server.use(
+      http.post(`${API}/api-keys`, async ({ request }) => {
+        body = await request.json();
+        return HttpResponse.json(ok({ key: { ...stored, id: 11 }, token: TOKEN }), { status: 201 });
+      }),
+    );
+    const user = userEvent.setup();
+    renderWithQuery(<ApiKeySettings />);
+
+    await user.click(await screen.findByRole("button", { name: "Yeni anahtar" }));
+    const form = screen.getByRole("dialog");
+    await user.type(within(form).getByLabelText("Ad"), "orders-ingest");
+    await user.click(within(form).getByRole("checkbox", { name: /deployments:write/ }));
+    await user.click(within(form).getByRole("checkbox", { name: /logs:ingest/ }));
+    await user.click(within(form).getByRole("button", { name: "Anahtarı oluştur" }));
+    expect(await within(form).findByText("logs:ingest için bir kaynak seçin")).toBeInTheDocument();
+
+    const select = within(form).getByLabelText("Kaynak");
+    // Only HTTP sources can receive pushed logs.
+    expect(within(select).queryByRole("option", { name: "k8s" })).not.toBeInTheDocument();
+    await user.selectOptions(select, "4");
+    await user.click(within(form).getByRole("button", { name: "Anahtarı oluştur" }));
+
+    await waitFor(() =>
+      expect(body).toEqual({
+        name: "orders-ingest",
+        scopes: ["logs:ingest"],
+        expires_in_days: 365,
+        source_id: 4,
+      }),
+    );
   });
 
   it("revokes a key only after confirmation", async () => {

@@ -6,6 +6,9 @@ import { useSourceWizard } from "../hooks/useSourceWizard";
 import { SourceTypeSelectionStep } from "./SourceTypeSelectionStep";
 import { SourceConfigFormStep } from "./SourceConfigFormStep";
 import { SourceTestResultStep } from "./SourceTestResultStep";
+import { IngestSetup } from "./IngestSetup";
+import { Button } from "@/shared/components/ui/Button";
+import { LogSourceType } from "@/shared/types/common.types";
 
 interface AddSourceModalProps {
   isOpen: boolean;
@@ -14,6 +17,7 @@ interface AddSourceModalProps {
 
 export function AddSourceModal({ isOpen, onClose }: AddSourceModalProps) {
   const t = useTranslations("sources.wizard");
+  const tIngest = useTranslations("sources.ingest");
   const wizard = useSourceWizard(onClose);
 
   return (
@@ -21,12 +25,12 @@ export function AddSourceModal({ isOpen, onClose }: AddSourceModalProps) {
       isOpen={isOpen}
       onClose={wizard.handleClose}
       title={t("title")}
-      description={`${t("step", { step: wizard.step })} · ${t(`steps.${wizard.step as 1 | 2 | 3}`)}`}
+      description={`${t("step", { step: wizard.step })} · ${t(`steps.${wizard.step as 1 | 2 | 3 | 4}`)}`}
       size="lg"
     >
       {/* Progress (Instrument .steps) */}
       <div className="steps" aria-hidden="true">
-        {[1, 2, 3].map((n) => (
+        {(wizard.selectedType === LogSourceType.HTTP ? [1, 2, 3, 4] : [1, 2, 3]).map((n) => (
           <i key={n} style={{ ["--k" as string]: wizard.step >= n ? 1 : 0 }} />
         ))}
       </div>
@@ -72,6 +76,17 @@ export function AddSourceModal({ isOpen, onClose }: AddSourceModalProps) {
           }}
           onSave={wizard.handleSave}
         />
+      )}
+
+      {wizard.step === 4 && wizard.createdSource && (
+        <>
+          <IngestSetup sourceId={wizard.createdSource.id} sourceName={wizard.createdSource.name} />
+          <div className="flex justify-end">
+            <Button variant="primary" onClick={wizard.handleClose}>
+              {tIngest("done")}
+            </Button>
+          </div>
+        </>
       )}
     </Modal>
   );

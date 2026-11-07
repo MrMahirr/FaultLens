@@ -250,7 +250,7 @@ FaultLens, platform bağımsız bir mimariye sahip olduğu için projelerinizin 
    - Jenkins, GitLab CI, GitHub Actions (Devreye alma logları ve Deployment takibi)
    - *Bağlantı Yöntemi: FaultLens REST API (Webhook) üzerinden. Detaylar için Bölüm 6'ya bakınız.*
 
-> **Not:** Serverless ortamlar (AWS Lambda, Google Cloud Functions) doğrudan bir dosya veya container erişimi sunmadığı için bu ortamlardaki logların FaultLens'e aktarılması için aracı bir CloudWatch/PubSub -> Kafka tetikleyicisi yazılması gerekir.
+> **Not:** Serverless ortamlar (AWS Lambda, Google Cloud Functions) dosya veya container erişimi sunmaz; bu ortamlarda uygulama logları **HTTP / OTLP ingest** ile doğrudan gönderir (Bölüm 7) — örneğin OpenTelemetry SDK veya Collector üzerinden.
 
 ---
 
@@ -309,3 +309,69 @@ curl -fsS -X POST https://api.faultlens.com/api/v1/deployments \
 *(Not: `environment` alanı için `PRODUCTION`, `STAGING` veya `DEVELOPMENT` değerlerinden birini kullanmalısınız.)*
 
 Bu entegrasyon sayesinde Deployments sayfasında hataların hangi sürümden sonra başladığını görebilir, "Sonraki logları incele" ile deployment anından itibaren logları açabilirsiniz.
+
+---
+
+## 7. Uygulamadan Doğrudan Log Gönderme (HTTP / OTLP)
+
+Collector'ın sunucuya bağlanıp log okuyamadığı ortamlarda (serverless, kapalı ağlar, hazır OpenTelemetry kurulumu) uygulamanız logları FaultLens'e **kendisi gönderebilir**. Gelen kayıtlar collector'ın kullandığı hattın aynısından geçer: ayrıştırma, gruplama, alarmlar ve kök neden analizi değişmeden çalışır.
+
+### 1. HTTP kaynağı ve anahtar
+1. **Kaynaklar → Yeni kaynak → HTTP / OTLP**, bir ad verin ve kaydedin.
+2. Sihirbazın son adımında **Ingest anahtarı oluştur**'a basın (ADMIN). Anahtar `logs:ingest` kapsamlıdır ve **yalnızca bu kaynağa** log yazar; kaynağı istemci seçemez. EDITOR iseniz bir yöneticiden **Ayarlar → API anahtarları**'nda `logs:ingest` + bu kaynakla anahtar istemeniz gerekir.
+3. Anahtarı uygulamanızın ortamında `FAULTLENS_API_KEY` olarak saklayın.
+
+Kaynak devre dışıysa istekler `409 SOURCE_DISABLED`, kaynak silinmişse `403 API_KEY_NO_SOURCE` alır. Kullanıcı oturumu (JWT) ile ingest yapılamaz.
+
+### 2a. Basit JSON — `POST /api/v1/ingest/logs`
+Bir dizi kayıt (veya `{"logs": [...]}` ya da tek bir kayıt nesnesi). Yalnızca `message` zorunludur:
+
+```bash
+curl -fsS -X POST https://api.faultlens.com/api/v1/ingest/logs \
+  -H "Authorization: Bearer $FAULTLENS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '[{"timestamp":"2026-11-07T10:00:00Z","severity":"ERROR","message":"Payment failed",
+        "stack_trace":"java.lang.IllegalStateException: card declined\n\tat com.acme.Pay.run(Pay.java:42)",
+        "service_name":"orders","namespace":"prod","pod_name":"orders-7d9f","attributes":{"order_id":"42"}}]'
+```
+
+| Alan | Açıklama |
+|---|---|
+| `message` | Zorunlu. 64 KB'tan uzunsa kısaltılır. |
+| `timestamp` | ISO-8601 veya epoch milisaniye; yoksa alınma zamanı. |
+| `severity` | `TRACE…CRITICAL`, ayrıca `warning`, `fatal`, `severe` vb. Yoksa processor satırdan çıkarır. |
+| `stack_trace` | Stack trace; gruplama ve kural motoru bunu kullanır. |
+| `service_name`, `namespace`, `pod_name`, `container_name`, `cluster` | Filtreleme ve korelasyon için. |
+| `attributes` | Serbest anahtar/değer (en fazla 32). |
+
+Cevap: `202 {"data": {"accepted": n}}`.
+
+### 2b. OpenTelemetry (OTLP/HTTP) — `POST /v1/logs`
+Protobuf (`application/x-protobuf`) ve JSON desteklenir. OpenTelemetry Collector'ın `otlphttp` exporter'ı doğrudan FaultLens'e yazabilir (`/v1/logs` yolunu exporter kendisi ekler):
+
+```yaml
+exporters:
+  otlphttp/faultlens:
+    endpoint: https://api.faultlens.com
+    headers:
+      Authorization: "Bearer ${env:FAULTLENS_API_KEY}"
+
+service:
+  pipelines:
+    logs:
+      receivers: [otlp]
+      exporters: [otlphttp/faultlens]
+```
+
+Eşleme: `body` → mesaj, `exception.stacktrace` → stack trace, `service.name` / `k8s.namespace.name` / `k8s.pod.name` / `k8s.container.name` / `k8s.cluster.name` (kaynak veya kayıt attribute'u) → ilgili alanlar, `severity_number` → seviye (1–4 TRACE … 21–24 CRITICAL; yoksa `severity_text`). Diğer attribute'lar etiket olarak saklanır.
+
+### Sınırlar ve hata kodları
+
+| Durum | Cevap |
+|---|---|
+| İstek başına 5000'den fazla kayıt / 5 MB'tan büyük gövde | `413 TOO_MANY_RECORDS` / `413 PAYLOAD_TOO_LARGE` |
+| Mesajı olmayan kayıt, bozuk JSON / protobuf | `400 INVALID_LOG_RECORD` / `INVALID_JSON` / `INVALID_OTLP` (istek tamamen reddedilir) |
+| Kafka zamanında onaylamadı | `503 INGEST_UNAVAILABLE` + `Retry-After` — **yeniden deneyin** (tekrar gönderimde aynı kayıt iki kez görünebilir, kayıp olmaz) |
+| Anahtar başına dakikada 600 istek aşıldı | `429 RATE_LIMITED` + `Retry-After` |
+
+Sınırlar `faultlens.ingest.max-records`, `faultlens.ingest.max-body-bytes`, `faultlens.ingest.max-message-chars` ve `faultlens.ingest.kafka-timeout-ms` ile ayarlanabilir.

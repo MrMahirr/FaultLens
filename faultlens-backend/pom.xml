@@ -34,6 +34,8 @@
         <jjwt.version>0.13.0</jjwt.version>
         <mapstruct.version>1.6.3</mapstruct.version>
         <springdoc.version>3.2.0</springdoc.version>
+        <!-- OTLP log ingest (P10 / 1.2): generated protobuf classes of the OpenTelemetry protocol. -->
+        <opentelemetry-proto.version>1.10.0-alpha</opentelemetry-proto.version>
         <!-- -DskipUTs runs only the *IT suite (failsafe); -DskipITs runs only unit tests (surefire). -->
         <skipUTs>false</skipUTs>
         <jacoco.version>0.8.16</jacoco.version>

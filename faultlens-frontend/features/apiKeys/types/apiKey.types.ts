@@ -14,6 +14,8 @@ export interface ApiKey {
   /** Masked, e.g. "flk_Ab12Cd34_…" — the full token is never returned again. */
   displayKey: string;
   scopes: ApiKeyScope[];
+  /** HTTP source of a logs:ingest key. */
+  sourceId: number | null;
   createdBy: string | null;
   createdAt: string;
   expiresAt: string | null;
@@ -28,6 +30,8 @@ export interface CreateApiKeyInput {
   scopes: ApiKeyScope[];
   /** Omitted = never expires. */
   expiresInDays?: number;
+  /** Required with logs:ingest: the HTTP source the pushed logs belong to. */
+  sourceId?: number;
 }
 
 /** Creation result: `token` is the only time the full key is visible. */

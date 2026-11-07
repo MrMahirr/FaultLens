@@ -31,6 +31,8 @@ import tools.jackson.databind.ObjectMapper;
 public class ApiKeyAuthFilter extends OncePerRequestFilter {
     public static final String HEADER = "X-FaultLens-Key";
     public static final String PRINCIPAL_PREFIX = "api-key:";
+    /** Request attribute with the HTTP source id of a logs:ingest key (Long, may be absent). */
+    public static final String SOURCE_ATTRIBUTE = "faultlens.apiKey.sourceId";
 
     private final ApiKeyService apiKeys;
     private final ApiKeyRateLimiter rateLimiter;
@@ -76,6 +78,9 @@ public class ApiKeyAuthFilter extends OncePerRequestFilter {
                 .map(ApiKeyScope::authority).map(SimpleGrantedAuthority::new).toList();
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(PRINCIPAL_PREFIX + key.name(), null, authorities));
+        if (key.sourceId() != null) {
+            request.setAttribute(SOURCE_ATTRIBUTE, key.sourceId());
+        }
         apiKeys.recordUse(key.id(), request.getRemoteAddr());
         filterChain.doFilter(request, response);
     }

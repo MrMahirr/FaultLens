@@ -63,6 +63,22 @@ public class CollectorOrchestrator {
         adapters.forEach(adapter -> this.adapters.put(adapter.getType(), adapter));
     }
 
+    /**
+     * Records logs pushed to an HTTP source (P10 / 1.2): marks it connected and updates its
+     * last-seen time (written by {@link #flushLastSeen()}, like collected sources).
+     */
+    public void recordPushed(Long sourceId) {
+        if (sourceId == null) {
+            return;
+        }
+        health.connected(sourceId);
+        pendingLastSeen.merge(sourceId, Instant.now(), (a, b) -> a.isAfter(b) ? a : b);
+    }
+
+    private static boolean isPushed(LogSource source) {
+        return source.getType() != null && source.getType().isPushed();
+    }
+
     @EventListener(ApplicationReadyEvent.class)
     public void onReady() {
         reconcile();
@@ -90,6 +106,9 @@ public class CollectorOrchestrator {
             }
         }
         for (LogSource source : enabled) {
+            if (isPushed(source)) {
+                continue; // HTTP sources push their logs; nothing to collect or lease
+            }
             if (!isStreaming(source.getId()) && leases.tryAcquire(source.getId())) {
                 startLocal(source);
             }
@@ -113,7 +132,7 @@ public class CollectorOrchestrator {
      * lease from whoever holds it, so the new configuration is used from now on.
      */
     public void startSource(LogSource source) {
-        if (source.getId() == null || !source.isEnabled()) {
+        if (source.getId() == null || !source.isEnabled() || isPushed(source)) {
             return;
         }
         leases.takeOver(source.getId());
@@ -224,6 +243,9 @@ public class CollectorOrchestrator {
      * Tests a source through its adapter.
      */
     public boolean testSource(LogSource source) {
+        if (isPushed(source)) {
+            return true; // nothing to connect to; the application calls us
+        }
         LogSourceAdapter adapter = adapters.get(source.getType());
         return adapter != null && adapter.testConnection(source);
     }

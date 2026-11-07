@@ -13,6 +13,9 @@ import { DataTable, type DataTableColumnDef } from "@/shared/components/ui/Table
 import { useDateFormat } from "@/shared/hooks/useDateFormat";
 import { useValidationMessage } from "@/shared/hooks/useValidationMessage";
 import { Endpoints } from "@/shared/api/endpoints";
+import { cn } from "@/shared/lib/utils";
+import { LogSourceType } from "@/shared/types/common.types";
+import { useSourcesQuery } from "@/features/sources/api/useSourceQuery";
 import {
   useApiKeysQuery,
   useCreateApiKeyMutation,
@@ -46,6 +49,10 @@ function CreateKeyDialog({
   const [name, setName] = useState("");
   const [scopes, setScopes] = useState<ApiKeyScope[]>(["deployments:write"]);
   const [expiry, setExpiry] = useState<Expiry>("365");
+  const [sourceId, setSourceId] = useState("");
+  const { data: sources } = useSourcesQuery();
+  const httpSources = (sources ?? []).filter((s) => s.type === LogSourceType.HTTP);
+  const needsSource = scopes.includes("logs:ingest");
   const [touched, setTouched] = useState(false);
 
   const reset = () => {
@@ -53,6 +60,7 @@ function CreateKeyDialog({
     setScopes(["deployments:write"]);
     setExpiry("365");
     setTouched(false);
+    setSourceId("");
   };
 
   const close = () => {
@@ -62,12 +70,13 @@ function CreateKeyDialog({
 
   const submit = () => {
     setTouched(true);
-    if (!name.trim() || scopes.length === 0) return;
+    if (!name.trim() || scopes.length === 0 || (needsSource && !sourceId)) return;
     create.mutate(
       {
         name: name.trim(),
         scopes,
         expiresInDays: expiry === "never" ? undefined : Number(expiry),
+        sourceId: needsSource ? Number(sourceId) : undefined,
       },
       {
         onSuccess: (created) => {
@@ -147,6 +156,42 @@ function CreateKeyDialog({
             </p>
           )}
         </fieldset>
+
+        {needsSource && (
+          <div className="field">
+            <label htmlFor="api-key-source" className="label">
+              {t("form.source")}
+            </label>
+            {httpSources.length === 0 ? (
+              <p className="banner c-warn small">{t("form.noHttpSources")}</p>
+            ) : (
+              <select
+                id="api-key-source"
+                className={cn("input", touched && !sourceId && "is-error")}
+                value={sourceId}
+                onChange={(e) => setSourceId(e.target.value)}
+                aria-describedby="api-key-source-hint"
+              >
+                <option value="" disabled>
+                  {t("form.chooseSource")}
+                </option>
+                {httpSources.map((source) => (
+                  <option key={source.id} value={source.id}>
+                    {source.name}
+                  </option>
+                ))}
+              </select>
+            )}
+            <p id="api-key-source-hint" className="help">
+              {t("form.sourceHint")}
+            </p>
+            {touched && !sourceId && (
+              <p className="err" role="alert">
+                {t("form.sourceRequired")}
+              </p>
+            )}
+          </div>
+        )}
 
         <div className="field">
           <label htmlFor="api-key-expiry" className="label">
@@ -238,6 +283,11 @@ export function ApiKeySettings() {
   const t = useTranslations("settings.apiKeys");
   const dates = useDateFormat();
   const { data: keys, isLoading } = useApiKeysQuery();
+  const { data: allSources } = useSourcesQuery();
+  const sourceNames = useMemo(
+    () => new Map((allSources ?? []).map((s) => [s.id, s.name])),
+    [allSources],
+  );
   const revoke = useRevokeApiKeyMutation();
   const { confirm, dialog } = useConfirm();
   const [showCreate, setShowCreate] = useState(false);
@@ -265,6 +315,13 @@ export function ApiKeySettings() {
         header: t("columns.scopes"),
         cell: ({ row }) => (
           <div className="row gap-1">
+            {row.original.sourceId && (
+              <span className="xs t3 basis-full">
+                {t("sourceLabel", {
+                  name: sourceNames.get(row.original.sourceId) ?? `#${row.original.sourceId}`,
+                })}
+              </span>
+            )}
             {row.original.scopes.map((scope) => (
               <Badge key={scope} variant="outline" mono>
                 {scope}
@@ -333,7 +390,7 @@ export function ApiKeySettings() {
           ) : null,
       },
     ],
-    [t, dates, confirm, revoke],
+    [t, dates, confirm, revoke, sourceNames],
   );
 
   return (

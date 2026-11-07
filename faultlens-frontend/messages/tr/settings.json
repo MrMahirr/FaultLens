@@ -208,7 +208,12 @@
           "never": "Süresiz"
         },
         "submit": "Anahtarı oluştur",
-        "scopeRequired": "En az bir kapsam seçin"
+        "scopeRequired": "En az bir kapsam seçin",
+        "source": "Kaynak",
+        "sourceHint": "logs:ingest anahtarının logları bu HTTP kaynağına yazılır.",
+        "chooseSource": "HTTP kaynağı seçin",
+        "noHttpSources": "Önce Kaynaklar sayfasında HTTP / OTLP türünde bir kaynak ekleyin.",
+        "sourceRequired": "logs:ingest için bir kaynak seçin"
       },
       "scopeHelp": {
         "deployments:write": "CI deployment kaydı (POST /deployments)",
@@ -228,7 +233,8 @@
         "createFailed": "Anahtar oluşturulamadı.",
         "revoked": "Anahtar iptal edildi.",
         "revokeFailed": "Anahtar iptal edilemedi."
-      }
+      },
+      "sourceLabel": "Kaynak: {name}"
     }
   }
 }

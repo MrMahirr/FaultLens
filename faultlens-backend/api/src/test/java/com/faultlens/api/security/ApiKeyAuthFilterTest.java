@@ -33,7 +33,7 @@ class ApiKeyAuthFilterTest {
     void allowByDefault() {
         when(rateLimiter.tryAcquire(any())).thenReturn(true);
         when(service.verify(TOKEN)).thenReturn(Optional.of(
-                new VerifiedKey(7L, "ci", EnumSet.of(ApiKeyScope.DEPLOYMENTS_WRITE))));
+                new VerifiedKey(7L, "ci", EnumSet.of(ApiKeyScope.DEPLOYMENTS_WRITE), null)));
     }
 
     @AfterEach

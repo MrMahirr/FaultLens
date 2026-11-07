@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Server, Terminal, Container, FileText } from "lucide-react";
+import { Server, Terminal, Container, FileText, Send } from "lucide-react";
 import { LogSourceType } from "@/shared/types/common.types";
 import { cn } from "@/shared/lib/utils";
 
@@ -10,6 +10,7 @@ const SOURCE_TYPES = [
   { type: LogSourceType.SSH, icon: <Terminal size={20} /> },
   { type: LogSourceType.DOCKER, icon: <Container size={20} /> },
   { type: LogSourceType.LOCAL_FILE, icon: <FileText size={20} /> },
+  { type: LogSourceType.HTTP, icon: <Send size={20} /> },
 ] as const;
 
 interface SourceTypeSelectionStepProps {

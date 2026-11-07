@@ -12,13 +12,15 @@
       "SSH": "SSH",
       "DOCKER": "Docker",
       "CICD": "CI/CD",
-      "LOCAL_FILE": "Yerel dosya"
+      "LOCAL_FILE": "Yerel dosya",
+      "HTTP": "HTTP / OTLP"
     },
     "typeDescriptions": {
       "KUBERNETES": "Cluster içindeki pod loglarını izleyin",
       "SSH": "Uzak sunucudaki bir log dosyasını izleyin",
       "DOCKER": "Container loglarını izleyin",
-      "LOCAL_FILE": "Bu makinedeki bir log dosyasını izleyin"
+      "LOCAL_FILE": "Bu makinedeki bir log dosyasını izleyin",
+      "HTTP": "Uygulamanız logları kendisi gönderir (JSON veya OpenTelemetry)"
     },
     "status": {
       "CONNECTED": "Bağlı",
@@ -65,11 +67,12 @@
     },
     "wizard": {
       "title": "Yeni kaynak",
-      "step": "Adım {step}/3",
+      "step": "Adım {step}",
       "steps": {
         "1": "Tür",
         "2": "Ayarlar",
-        "3": "Test ve kaydet"
+        "3": "Test ve kaydet",
+        "4": "Bağlantı"
       },
       "chooseType": "Kaynak türü",
       "name": "Kaynak Adı",
@@ -95,6 +98,21 @@
       "testFailed": "Bağlantı başarısız",
       "save": "Kaydet",
       "saveHint": "Kaydetmeden önce bağlantıyı test edin."
-    }
+    },
+    "ingest": {
+      "title": "Logları gönderin",
+      "intro": "Bu kaynak toplanmaz; uygulamanız logları FaultLens’e gönderir. Bunun için bu kaynağa bağlı, logs:ingest kapsamlı bir API anahtarı gerekir.",
+      "createKey": "Ingest anahtarı oluştur",
+      "creating": "Anahtar oluşturuluyor…",
+      "adminRequired": "Anahtarı bir yönetici oluşturmalı: Ayarlar → API anahtarları → logs:ingest kapsamı ve bu kaynak.",
+      "keyCreated": "Anahtar bu kaynağa bağlandı. Şimdi kopyalayın; bir daha gösterilmez.",
+      "jsonTitle": "JSON (curl)",
+      "otelTitle": "OpenTelemetry Collector",
+      "otelHint": "otlphttp exporter, /v1/logs yolunu kendisi ekler. Anahtarı FAULTLENS_API_KEY ortam değişkeninde tutun.",
+      "limits": "İstek başına en fazla 5000 kayıt ve 5 MB. Kafka yanıt vermezse 503 + Retry-After döner; istemci yeniden denemeli.",
+      "done": "Bitti",
+      "endpoint": "Uç nokta"
+    },
+    "ingestUrl": "Ingest uç noktası"
   }
 }

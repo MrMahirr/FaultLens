@@ -29,6 +29,8 @@ public class ApiKey {
     private String secretHash;
     /** Comma-separated {@code ApiKeyScope} values. */
     private String scopes;
+    /** HTTP source the key pushes logs to (logs:ingest keys only). */
+    private Long sourceId;
     private String createdBy;
     private Instant createdAt;
     private Instant expiresAt;

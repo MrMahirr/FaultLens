@@ -4,6 +4,9 @@ import com.faultlens.api.dto.ApiKeyDtos.ApiKeyResponse;
 import com.faultlens.api.dto.ApiKeyDtos.CreateApiKeyRequest;
 import com.faultlens.api.dto.ApiKeyDtos.CreatedApiKeyResponse;
 import com.faultlens.api.model.ApiKey;
+import com.faultlens.collector.model.LogSource;
+import com.faultlens.collector.repository.LogSourceRepository;
+import com.faultlens.common.enums.LogSourceType;
 import com.faultlens.api.repository.ApiKeyRepository;
 import com.faultlens.api.security.ApiKeyScope;
 import com.faultlens.api.security.ApiKeyTokens;
@@ -39,14 +42,16 @@ public class ApiKeyService {
     static final Duration USAGE_WRITE_INTERVAL = Duration.ofMinutes(1);
 
     private final ApiKeyRepository repository;
+    private final LogSourceRepository sources;
     private final Map<Long, Instant> lastUsageWrite = new ConcurrentHashMap<>();
 
-    public ApiKeyService(ApiKeyRepository repository) {
+    public ApiKeyService(ApiKeyRepository repository, LogSourceRepository sources) {
         this.repository = repository;
+        this.sources = sources;
     }
 
     /** An authenticated key: what the security filter needs. */
-    public record VerifiedKey(Long id, String name, Set<ApiKeyScope> scopes) {
+    public record VerifiedKey(Long id, String name, Set<ApiKeyScope> scopes, Long sourceId) {
     }
 
     public List<ApiKeyResponse> list() {
@@ -57,6 +62,7 @@ public class ApiKeyService {
     @Transactional
     public CreatedApiKeyResponse create(CreateApiKeyRequest request, String createdBy) {
         Set<ApiKeyScope> scopes = parseScopes(request.scopes());
+        Long sourceId = requireIngestSource(scopes, request.sourceId());
         ApiKeyTokens.Generated generated = ApiKeyTokens.generate();
         Instant now = Instant.now();
         ApiKey key = ApiKey.builder()
@@ -64,6 +70,7 @@ public class ApiKeyService {
                 .prefix(generated.prefix())
                 .secretHash(generated.hash())
                 .scopes(join(scopes))
+                .sourceId(sourceId)
                 .createdBy(createdBy)
                 .createdAt(now)
                 .expiresAt(request.expiresInDays() == null ? null : now.plus(Duration.ofDays(request.expiresInDays())))
@@ -92,7 +99,7 @@ public class ApiKeyService {
                 .flatMap(repository::findByPrefix)
                 .filter(key -> key.isActive(now))
                 .filter(key -> ApiKeyTokens.matches(token, key.getSecretHash()))
-                .map(key -> new VerifiedKey(key.getId(), key.getName(), storedScopes(key.getScopes())));
+                .map(key -> new VerifiedKey(key.getId(), key.getName(), storedScopes(key.getScopes()), key.getSourceId()));
     }
 
     /**
@@ -113,6 +120,28 @@ public class ApiKeyService {
         } catch (RuntimeException ex) {
             log.warn("Could not record API key use", ex);
         }
+    }
+
+    /**
+     * A logs:ingest key needs an HTTP source; other keys have none (a source on them would
+     * suggest a binding that does nothing).
+     */
+    private Long requireIngestSource(Set<ApiKeyScope> scopes, Long sourceId) {
+        if (!scopes.contains(ApiKeyScope.LOGS_INGEST)) {
+            if (sourceId != null) {
+                throw new FaultLensException("source_id is only used with the logs:ingest scope", "INVALID_API_KEY_SOURCE");
+            }
+            return null;
+        }
+        if (sourceId == null) {
+            throw new FaultLensException("A logs:ingest key needs source_id (an HTTP source)", "INVALID_API_KEY_SOURCE");
+        }
+        LogSource source = sources.findById(sourceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Source not found", "SOURCE_NOT_FOUND"));
+        if (source.getType() != LogSourceType.HTTP) {
+            throw new FaultLensException("Logs can only be pushed to an HTTP source", "INVALID_API_KEY_SOURCE");
+        }
+        return sourceId;
     }
 
     static Set<ApiKeyScope> parseScopes(Collection<String> values) {
@@ -141,7 +170,7 @@ public class ApiKeyService {
 
     private static ApiKeyResponse toResponse(ApiKey key, Instant now) {
         return new ApiKeyResponse(key.getId(), key.getName(), ApiKeyTokens.display(key.getPrefix()),
-                storedScopes(key.getScopes()).stream().map(ApiKeyScope::value).toList(),
+                storedScopes(key.getScopes()).stream().map(ApiKeyScope::value).toList(), key.getSourceId(),
                 key.getCreatedBy(), key.getCreatedAt(), key.getExpiresAt(), key.getLastUsedAt(),
                 key.getLastUsedIp(), key.getRevokedAt(), key.isActive(now));
     }

@@ -91,7 +91,7 @@ Scoped service tokens for CI and integrations (P10 / 1.1). Management endpoints 
 | Scope | Allows |
 |---|---|
 | `deployments:write` | `POST /api/v1/deployments` |
-| `logs:ingest` | `POST /api/v1/ingest/**`, `POST /v1/logs` (HTTP / OTLP ingest) |
+| `logs:ingest` | `POST /api/v1/ingest/**`, `POST /v1/logs` (HTTP / OTLP ingest, see 3b); needs `source_id` (an HTTP source) at creation |
 | `logs:read` | `GET /api/v1/logs`, `GET /api/v1/logs/**` |
 | `alarms:read` | `GET /api/v1/alarms`, `GET /api/v1/alarms/**` |
 
@@ -287,6 +287,40 @@ Requires authentication.
   }
   ```
   *(Note: This endpoint is high-performance cached in Redis with a 1-minute expiration).*
+
+---
+
+## 3b. Log Ingest (`/api/v1/ingest/logs`, `/v1/logs`)
+
+Applications push logs themselves (P10 / 1.2). Only API keys with the `logs:ingest` scope may call
+these endpoints (user tokens get `403`); the key is bound to an **HTTP** source (`source_id` at key
+creation), and every record is stored under that source. Records go to the `log-raw` topic like
+collected logs.
+
+| Method | Path | Body | Success |
+|---|---|---|---|
+| `POST` | `/api/v1/ingest/logs` | JSON array of records, `{"logs": [...]}` or one record | `202 { data: { accepted } }` |
+| `POST` | `/v1/logs` | OTLP `ExportLogsServiceRequest`, `application/x-protobuf` or `application/json` | `200` empty `ExportLogsServiceResponse` (same encoding) |
+
+**JSON record** (snake_case; camelCase accepted): `message` (required), `timestamp` (ISO-8601 or epoch
+ms), `severity`, `stack_trace`, `service_name`, `namespace`, `pod_name`, `container_name`, `cluster`,
+`attributes` (string map, max 32).
+
+**OTLP mapping:** body → message; `exception.stacktrace` → stack trace; `service.name`,
+`k8s.namespace.name`, `k8s.pod.name`, `k8s.container.name` / `container.name`, `k8s.cluster.name`
+(resource or record attributes) → fields; `severity_number` ranges → severity, else `severity_text`.
+
+**All or nothing:** a request is validated as a whole and answered after Kafka acknowledged every record.
+
+| Error | When |
+|---|---|
+| `400 INVALID_JSON` / `INVALID_OTLP` / `INVALID_LOG_RECORD` | malformed body, a record without message, bad timestamp |
+| `403 API_KEY_NO_SOURCE` | key not bound to an existing HTTP source |
+| `409 SOURCE_DISABLED` | the source is disabled |
+| `413 TOO_MANY_RECORDS` / `PAYLOAD_TOO_LARGE` | > `faultlens.ingest.max-records` (5000) / > `faultlens.ingest.max-body-bytes` (5 MB) |
+| `503 INGEST_UNAVAILABLE` + `Retry-After` | Kafka did not acknowledge within `faultlens.ingest.kafka-timeout-ms` (5 s); retry |
+
+Metric: `faultlens_ingest_records_total{source, format=json|otlp, result=accepted|rejected}`.
 
 ---
 

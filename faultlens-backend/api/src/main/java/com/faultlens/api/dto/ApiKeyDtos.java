@@ -18,7 +18,7 @@ public final class ApiKeyDtos {
     }
 
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    public record ApiKeyResponse(Long id, String name, String displayKey, List<String> scopes,
+    public record ApiKeyResponse(Long id, String name, String displayKey, List<String> scopes, Long sourceId,
                                  String createdBy, Instant createdAt, Instant expiresAt,
                                  Instant lastUsedAt, String lastUsedIp, Instant revokedAt, boolean active) {
     }
@@ -28,7 +28,9 @@ public final class ApiKeyDtos {
             @NotBlank @Size(max = 100) String name,
             @NotEmpty(message = "At least one scope is required") List<@NotBlank String> scopes,
             /* null = never expires */
-            @Min(1) @Max(3650) Integer expiresInDays) {
+            @Min(1) @Max(3650) Integer expiresInDays,
+            /* required with logs:ingest: the HTTP source pushed logs belong to */
+            Long sourceId) {
     }
 
     /** Creation result: {@code token} is the only time the full key is visible. */

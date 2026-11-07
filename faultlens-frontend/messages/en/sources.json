@@ -12,13 +12,15 @@
       "SSH": "SSH",
       "DOCKER": "Docker",
       "CICD": "CI/CD",
-      "LOCAL_FILE": "Local file"
+      "LOCAL_FILE": "Local file",
+      "HTTP": "HTTP / OTLP"
     },
     "typeDescriptions": {
       "KUBERNETES": "Follow pod logs in a cluster",
       "SSH": "Follow a log file on a remote server",
       "DOCKER": "Follow container logs",
-      "LOCAL_FILE": "Follow a log file on this machine"
+      "LOCAL_FILE": "Follow a log file on this machine",
+      "HTTP": "Your application sends its logs (JSON or OpenTelemetry)"
     },
     "status": {
       "CONNECTED": "Connected",
@@ -65,11 +67,12 @@
     },
     "wizard": {
       "title": "New source",
-      "step": "Step {step}/3",
+      "step": "Step {step}",
       "steps": {
         "1": "Type",
         "2": "Settings",
-        "3": "Test and save"
+        "3": "Test and save",
+        "4": "Connect"
       },
       "chooseType": "Source type",
       "name": "Source name",
@@ -95,6 +98,21 @@
       "testFailed": "Connection failed",
       "save": "Save",
       "saveHint": "Test the connection before saving."
-    }
+    },
+    "ingest": {
+      "title": "Send your logs",
+      "intro": "This source is not collected; your application sends its logs to FaultLens. That needs an API key with the logs:ingest scope, bound to this source.",
+      "createKey": "Create ingest key",
+      "creating": "Creating key…",
+      "adminRequired": "An admin has to create the key: Settings → API keys → logs:ingest scope and this source.",
+      "keyCreated": "The key is bound to this source. Copy it now; it is never shown again.",
+      "jsonTitle": "JSON (curl)",
+      "otelTitle": "OpenTelemetry Collector",
+      "otelHint": "The otlphttp exporter adds the /v1/logs path itself. Keep the key in the FAULTLENS_API_KEY environment variable.",
+      "limits": "At most 5000 records and 5 MB per request. If Kafka does not answer you get 503 + Retry-After; the client should retry.",
+      "done": "Done",
+      "endpoint": "Endpoint"
+    },
+    "ingestUrl": "Ingest endpoint"
   }
 }

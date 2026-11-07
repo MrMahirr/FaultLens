@@ -48,6 +48,18 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles refused log pushes (P10 / 1.2) with their own status; 503 carries Retry-After.
+     */
+    @ExceptionHandler(com.faultlens.api.ingest.IngestRejectedException.class)
+    public ResponseEntity<ErrorEnvelope> handleIngestRejected(com.faultlens.api.ingest.IngestRejectedException ex) {
+        ResponseEntity.BodyBuilder response = ResponseEntity.status(ex.getStatus());
+        if (ex.getRetryAfterSeconds() != null) {
+            response.header("Retry-After", Long.toString(ex.getRetryAfterSeconds()));
+        }
+        return response.body(ErrorEnvelope.of(ex.getErrorCode(), ex.getMessage()));
+    }
+
+    /**
      * Handles domain exceptions.
      */
     @ExceptionHandler(FaultLensException.class)

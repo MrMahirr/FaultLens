@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
-import { MoreVertical, Wifi, WifiOff, TestTube, Trash2 } from "lucide-react";
+import { MoreVertical, Wifi, WifiOff, TestTube, Trash2, Send } from "lucide-react";
+import { Modal } from "@/shared/components/ui/Modal";
+import { LogSourceType } from "@/shared/types/common.types";
 import { Badge } from "@/shared/components/ui/Badge";
 import { Button } from "@/shared/components/ui/Button";
 import { Dropdown, type DropdownItem } from "@/shared/components/ui/Dropdown";
@@ -18,6 +20,7 @@ import {
 import { useCan } from "@/features/auth/hooks/useCan";
 import { SourceDetailModal } from "./SourceDetailModal";
 import { SourceStatus } from "./SourceStatus";
+import { IngestSetup } from "./IngestSetup";
 
 /* ── Props ─────────────────────────────────────────────────── */
 
@@ -42,6 +45,7 @@ function SourceCard({ source, index }: SourceCardProps) {
   const tToast = useTranslations("sources.toast");
   const dates = useDateFormat();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showIngest, setShowIngest] = useState(false);
   const testConnection = useTestConnectionMutation();
   const toggleSource = useToggleSourceMutation();
   const deleteSource = useDeleteSourceMutation();
@@ -166,25 +170,39 @@ function SourceCard({ source, index }: SourceCardProps) {
           )}
         </dl>
 
-        {canEdit && (
+        {source.type === LogSourceType.HTTP ? (
           <div className="mt-auto pt-1">
             <Button
               variant="secondary"
               size="sm"
               fullWidth
-              icon={<TestTube size={14} aria-hidden="true" />}
-              loading={testConnection.isPending}
-              onClick={() =>
-                testConnection.mutate(source.id, {
-                  onSuccess: () => toast.success(tToast("testOk")),
-                  onError: (error) => toast.error(error.message || tToast("connectFailed")),
-                })
-              }
-              title={t("testHint")}
+              icon={<Send size={14} aria-hidden="true" />}
+              onClick={() => setShowIngest(true)}
             >
-              {t("test")}
+              {t("ingestUrl")}
             </Button>
           </div>
+        ) : (
+          canEdit && (
+            <div className="mt-auto pt-1">
+              <Button
+                variant="secondary"
+                size="sm"
+                fullWidth
+                icon={<TestTube size={14} aria-hidden="true" />}
+                loading={testConnection.isPending}
+                onClick={() =>
+                  testConnection.mutate(source.id, {
+                    onSuccess: () => toast.success(tToast("testOk")),
+                    onError: (error) => toast.error(error.message || tToast("connectFailed")),
+                  })
+                }
+                title={t("testHint")}
+              >
+                {t("test")}
+              </Button>
+            </div>
+          )
         )}
       </article>
 
@@ -193,6 +211,16 @@ function SourceCard({ source, index }: SourceCardProps) {
         onClose={() => setIsModalOpen(false)}
         source={source}
       />
+      {source.type === LogSourceType.HTTP && (
+        <Modal
+          isOpen={showIngest}
+          onClose={() => setShowIngest(false)}
+          title={source.name}
+          size="lg"
+        >
+          <IngestSetup sourceId={source.id} sourceName={source.name} />
+        </Modal>
+      )}
       {dialog}
     </li>
   );

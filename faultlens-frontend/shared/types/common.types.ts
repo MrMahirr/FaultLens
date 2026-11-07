@@ -18,6 +18,8 @@ export enum LogSourceType {
   DOCKER = "DOCKER",
   CICD = "CICD",
   LOCAL_FILE = "LOCAL_FILE",
+  /** Pushed by the application (HTTP / OTLP ingest) with a logs:ingest API key. */
+  HTTP = "HTTP",
 }
 
 export enum AnalysisType {

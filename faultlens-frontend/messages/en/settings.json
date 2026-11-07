@@ -208,7 +208,12 @@
           "never": "No expiry"
         },
         "submit": "Create key",
-        "scopeRequired": "Pick at least one scope"
+        "scopeRequired": "Pick at least one scope",
+        "source": "Source",
+        "sourceHint": "Logs pushed with a logs:ingest key are stored under this HTTP source.",
+        "chooseSource": "Choose an HTTP source",
+        "noHttpSources": "Add an HTTP / OTLP source on the Sources page first.",
+        "sourceRequired": "Pick a source for logs:ingest"
       },
       "scopeHelp": {
         "deployments:write": "Record deployments from CI (POST /deployments)",
@@ -228,7 +233,8 @@
         "createFailed": "The key could not be created.",
         "revoked": "Key revoked.",
         "revokeFailed": "The key could not be revoked."
-      }
+      },
+      "sourceLabel": "Source: {name}"
     }
   }
 }
