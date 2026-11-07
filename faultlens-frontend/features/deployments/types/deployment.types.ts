@@ -8,6 +8,6 @@ export interface DeploymentDto {
   status: DeploymentStatus;
   deployedBy: string;
   deployedAt: string;
-  errorCount: number;
-  description?: string;
+  /** Free text sent by CI or the form (the API field is `notes`). */
+  notes?: string | null;
 }

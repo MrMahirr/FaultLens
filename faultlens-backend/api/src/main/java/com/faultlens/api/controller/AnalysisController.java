@@ -3,6 +3,8 @@ package com.faultlens.api.controller;
 import com.faultlens.api.service.AnalysisQueryService;
 import com.faultlens.common.dto.ApiResponse;
 import com.faultlens.api.security.Roles;
+import com.faultlens.common.dto.PagedResponse;
+import com.faultlens.common.dto.AnalysisResultDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +25,7 @@ public class AnalysisController {
      * Lists analyses.
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<?>> list(
+    public ResponseEntity<ApiResponse<PagedResponse<AnalysisResultDto>>> list(
             @RequestParam(required = false) Long sourceId,
             @RequestParam(defaultValue = "0") int page, 
             @RequestParam(defaultValue = "50") int size) {
@@ -35,7 +37,7 @@ public class AnalysisController {
      */
     @PreAuthorize(Roles.ADMIN_ONLY)
     @org.springframework.web.bind.annotation.DeleteMapping
-    public ResponseEntity<ApiResponse<?>> deleteHistory(@RequestParam(required = false) Long sourceId) {
+    public ResponseEntity<ApiResponse<String>> deleteHistory(@RequestParam(required = false) Long sourceId) {
         service.deleteHistory(sourceId);
         return ResponseEntity.ok(ApiResponse.ok("Analiz geçmişi başarıyla temizlendi."));
     }
@@ -44,7 +46,7 @@ public class AnalysisController {
      * Returns one analysis.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<?>> get(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<AnalysisResultDto>> get(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(service.get(id)));
     }
 
@@ -53,7 +55,7 @@ public class AnalysisController {
      */
     @PreAuthorize(Roles.CAN_EDIT)
     @PostMapping("/trigger/{groupId}")
-    public ResponseEntity<ApiResponse<?>> trigger(@PathVariable Long groupId) {
+    public ResponseEntity<ApiResponse<AnalysisResultDto>> trigger(@PathVariable Long groupId) {
         return ResponseEntity.ok(ApiResponse.ok(service.trigger(groupId)));
     }
 }

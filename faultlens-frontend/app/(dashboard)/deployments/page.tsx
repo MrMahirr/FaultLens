@@ -93,7 +93,6 @@ function DeploymentsView() {
         status: DeploymentStatus.SUCCESS,
         deployedBy: username ?? "ui",
         deployedAt: new Date().toISOString(),
-        errorCount: 0,
       });
       toast.success(t("form.saved"));
       setShowModal(false);
@@ -203,14 +202,7 @@ function DeploymentsView() {
                 aria-hidden="true"
               />
 
-              <article
-                className="card p-4 flex flex-col sm:flex-row sm:items-start justify-between gap-4"
-                style={
-                  deployment.errorCount > 10
-                    ? { boxShadow: "inset 2px 0 0 var(--crit)" }
-                    : undefined
-                }
-              >
+              <article className="card p-4 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                 <div className="min-w-0">
                   <div className="row mb-1">
                     <h3 className="h3 text-[15px]">{deployment.serviceName}</h3>
@@ -224,8 +216,8 @@ function DeploymentsView() {
                       <span>{t("by", { user: deployment.deployedBy })}</span>
                     )}
                   </p>
-                  {deployment.description && (
-                    <p className="small t2 mt-2">{deployment.description}</p>
+                  {deployment.notes && (
+                    <p className="small t2 mt-2 whitespace-pre-line">{deployment.notes}</p>
                   )}
                 </div>
 
@@ -235,11 +227,6 @@ function DeploymentsView() {
                       {t(`status.${deployment.status}`)}
                     </Badge>
                     <Badge variant="outline">{t(`env.${deployment.environment}`)}</Badge>
-                    {deployment.errorCount > 0 && (
-                      <Badge variant="error" mono>
-                        {t("errors", { count: deployment.errorCount })}
-                      </Badge>
-                    )}
                   </div>
                   <Link
                     href={`/logs?from=${encodeURIComponent(deployment.deployedAt)}&range=all`}

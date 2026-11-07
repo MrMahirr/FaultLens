@@ -62,6 +62,10 @@ server:
   port: ${PORT:3500}
   shutdown: graceful
 
+# OpenAPI document (/v3/api-docs). Keys sorted so contracts/openapi.json diffs stay minimal.
+springdoc:
+  writer-with-order-by-keys: true
+
 management:
   # Optional separate port for actuator (P08). Prometheus scrapes /actuator/prometheus there
   # without credentials, so publish this port only to the monitoring network, never publicly.

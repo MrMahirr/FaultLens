@@ -28,7 +28,6 @@
       "DEVELOPMENT": "Development"
     },
     "by": "by {user}",
-    "errors": "{count, plural, one {# error} other {# errors}}",
     "viewLogs": "Logs since this deploy",
     "emptyTitle": "No deployments yet",
     "emptyDescription": "Send them from CI or create the first record by hand.",

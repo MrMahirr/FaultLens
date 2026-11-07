@@ -6,6 +6,11 @@ import com.faultlens.common.enums.Severity;
 import java.time.Instant;
 import java.util.Map;
 import com.faultlens.api.security.Roles;
+import com.faultlens.common.dto.PagedResponse;
+import com.faultlens.common.dto.LogEntryDto;
+import com.faultlens.api.dto.LogDetailDto;
+import com.faultlens.common.dto.LogGroupDto;
+import com.faultlens.api.dto.ClearedResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -30,7 +35,7 @@ public class LogController {
      * Lists logs with pagination and filters.
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<?>> list(
+    public ResponseEntity<ApiResponse<PagedResponse<LogEntryDto>>> list(
             @RequestParam(required = false) Severity severity,
             @RequestParam(required = false) Long sourceId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
@@ -45,7 +50,7 @@ public class LogController {
      * Returns one log detail including analyses.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<?>> detail(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<LogDetailDto>> detail(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(service.detail(id)));
     }
 
@@ -53,7 +58,7 @@ public class LogController {
      * Lists log groups.
      */
     @GetMapping("/groups")
-    public ResponseEntity<ApiResponse<?>> groups(
+    public ResponseEntity<ApiResponse<PagedResponse<LogGroupDto>>> groups(
             @RequestParam(required = false) Severity severity,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "50") @Min(1) @Max(1000) int size) {
@@ -64,7 +69,7 @@ public class LogController {
      * Lists log entries for a group.
      */
     @GetMapping("/groups/{id}/entries")
-    public ResponseEntity<ApiResponse<?>> groupEntries(
+    public ResponseEntity<ApiResponse<PagedResponse<LogEntryDto>>> groupEntries(
             @PathVariable Long id, 
             @RequestParam(defaultValue = "0") @Min(0) int page, 
             @RequestParam(defaultValue = "50") @Min(1) @Max(1000) int size) {
@@ -75,7 +80,7 @@ public class LogController {
      * Returns last-hour severity stats.
      */
     @GetMapping("/stats")
-    public ResponseEntity<ApiResponse<?>> stats(@RequestParam(defaultValue = "60") int windowMinutes) {
+    public ResponseEntity<ApiResponse<Map<String, Long>>> stats(@RequestParam(defaultValue = "60") int windowMinutes) {
         return ResponseEntity.ok(ApiResponse.ok(service.stats(windowMinutes)));
     }
 
@@ -84,8 +89,8 @@ public class LogController {
      */
     @PreAuthorize(Roles.ADMIN_ONLY)
     @org.springframework.web.bind.annotation.DeleteMapping("/clear")
-    public ResponseEntity<ApiResponse<?>> clearLogs(@RequestParam Long sourceId) {
+    public ResponseEntity<ApiResponse<ClearedResponse>> clearLogs(@RequestParam Long sourceId) {
         service.clearLogsBySource(sourceId);
-        return ResponseEntity.ok(ApiResponse.ok(Map.of("cleared", true)));
+        return ResponseEntity.ok(ApiResponse.ok(new ClearedResponse(true)));
     }
 }

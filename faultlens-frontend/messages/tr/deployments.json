@@ -28,7 +28,6 @@
       "DEVELOPMENT": "Development"
     },
     "by": "{user} tarafından",
-    "errors": "{count, plural, one {# hata} other {# hata}}",
     "viewLogs": "Sonraki logları incele",
     "emptyTitle": "Henüz deployment yok",
     "emptyDescription": "CI'dan gönderin ya da ilk kaydı elle oluşturun.",

@@ -5,6 +5,29 @@ This document details the REST API endpoints and real-time WebSocket channels pr
 - **Base URL:** `http://localhost:3500/api/v1`
 - **WebSocket Protocol URL:** `ws://localhost:3500/ws`
 - **Swagger Documentation Page:** `http://localhost:3500/swagger-ui/index.html`
+- **Machine-readable contract:** [`contracts/openapi.json`](../../contracts/openapi.json) (OpenAPI 3.1, the `/v3/api-docs` document)
+
+### The contract file (P10 / 1.3)
+
+`contracts/openapi.json` is generated from the running API and committed. The frontend generates
+its TypeScript types from it (`pnpm gen:api` → `faultlens-frontend/shared/api/schema.d.ts`) and
+checks its DTOs against them at compile time (`shared/api/contract.check.ts`).
+
+- Property names are documented in **snake_case**, as on the wire (swagger-core uses Jackson 2 and
+  does not see the Jackson 3 `@JsonNaming`, so `OpenApiConfig` applies the strategy globally).
+- `OpenApiContractIT` fails when the API and the committed file differ, and also checks the main
+  schemas against the real JSON field names pinned by `ApiContractIT`.
+- Controllers return concrete types (`ApiResponse<PagedResponse<LogEntryDto>>`, never
+  `ApiResponse<?>`), otherwise the response is published as an untyped object.
+- After an intended API change:
+
+  ```bash
+  cd faultlens-backend
+  ./mvnw verify -DskipUTs -pl api -am -Dit.test=OpenApiContractIT -Dcontracts.update=true
+  cd ../faultlens-frontend && pnpm gen:api && pnpm typecheck
+  ```
+
+  and commit `contracts/openapi.json` with `shared/api/schema.d.ts`. CI fails if either is stale.
 
 ---
 
