@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { ArrowLeft, FileQuestion } from "lucide-react";
 import { SeverityBadge } from "@/shared/components/ui/SeverityBadge";
-import { LoadingSpinner } from "@/shared/components/feedback/LoadingSpinner";
+import { RouteLoading } from "@/shared/components/route/RouteLoading";
 import { EmptyState } from "@/shared/components/feedback/EmptyState";
 import { useDateFormat } from "@/shared/hooks/useDateFormat";
 import { useLogDetailQuery } from "@/features/logs/api/useLogQuery";
@@ -20,13 +20,8 @@ export default function LogDetailPage({ params }: { params: Promise<{ id: string
   const { data: detailData, isLoading, error } = useLogDetailQuery(logId);
   const log = detailData?.log;
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <LoadingSpinner label={t("loading")} />
-      </div>
-    );
-  }
+  // Same skeleton as the route's loading.tsx, so data loading does not swap to a spinner.
+  if (isLoading) return <RouteLoading variant="detail" />;
 
   if (error || !log) {
     return (

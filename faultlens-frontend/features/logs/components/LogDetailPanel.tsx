@@ -36,7 +36,13 @@ function LogDetailPanel({ log, onClose }: LogDetailPanelProps) {
     if (!log) return;
     const onKeyDown = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
+    // The page behind a modal drawer must not scroll under the pointer.
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
   }, [log, onClose]);
 
   if (!log) return null;

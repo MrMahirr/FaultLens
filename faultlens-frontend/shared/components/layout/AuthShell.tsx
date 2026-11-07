@@ -1,13 +1,15 @@
 "use client";
 
 import { type ReactNode } from "react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Hexagon, Check } from "lucide-react";
+import { Check } from "lucide-react";
+import { BrandMark } from "@/shared/components/layout/BrandMark";
 import { LanguageMenu, ThemeMenu } from "@/shared/components/layout/PreferenceMenus";
 
 /**
  * Identity pages (Instrument): form on the left (max 380px), brand panel on the right
- * (hidden below lg), language and theme switchers top right.
+ * (hidden below lg), language and theme switchers top right; the brand links to the landing.
  */
 export function AuthShell({ children }: { children: ReactNode }) {
   const t = useTranslations("auth.login");
@@ -16,15 +18,11 @@ export function AuthShell({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-bg-primary grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       <div className="relative flex flex-col">
         <header className="flex items-center justify-between p-4 sm:p-6">
-          <span className="brand px-0">
-            <span
-              className="w-6 h-6 rounded-[6px] bg-primary text-on-primary grid place-items-center"
-              aria-hidden="true"
-            >
-              <Hexagon size={14} strokeWidth={2.2} />
-            </span>
+          {/* Back to the public landing page. */}
+          <Link href="/" className="brand px-0">
+            <BrandMark />
             FaultLens
-          </span>
+          </Link>
           <div className="row gap-1">
             <LanguageMenu />
             <ThemeMenu />

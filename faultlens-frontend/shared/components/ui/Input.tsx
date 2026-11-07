@@ -12,13 +12,26 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   icon?: ReactNode;
   iconPosition?: "left" | "right";
   fullWidth?: boolean;
+  /** Interactive control inside the field's right edge (e.g. show password), centred on it. */
+  trailing?: ReactNode;
 }
 
 /* ── Component (Instrument .field / .input) ────────────────── */
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
   (
-    { label, error, hint, icon, iconPosition = "left", fullWidth = true, className, id, ...props },
+    {
+      label,
+      error,
+      hint,
+      icon,
+      iconPosition = "left",
+      fullWidth = true,
+      trailing,
+      className,
+      id,
+      ...props
+    },
     ref,
   ) => {
     const autoId = useId();
@@ -53,12 +66,17 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               "input",
               icon && iconPosition === "left" && "pl-9",
               icon && iconPosition === "right" && "pr-9",
+              trailing && "pr-10",
               error && "is-error",
               "disabled:opacity-50 disabled:cursor-not-allowed",
               className,
             )}
             {...props}
           />
+
+          {trailing && (
+            <span className="absolute right-1 inset-y-0 flex items-center">{trailing}</span>
+          )}
 
           {icon && iconPosition === "right" && (
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted inline-flex">

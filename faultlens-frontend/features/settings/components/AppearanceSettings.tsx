@@ -15,6 +15,29 @@ const THEMES: { value: ThemePreference; icon: React.ReactNode }[] = [
   { value: "light", icon: <Sun size={14} /> },
 ];
 
+/**
+ * WAI-ARIA radio group keys for a `.seg`: ←/→ (and ↑/↓) pick the previous/next option and
+ * move focus to it; only the checked option is in the Tab order (roving tabindex).
+ */
+function segKeyDown<T>(options: readonly T[], current: T, pick: (value: T) => void) {
+  return (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const step =
+      e.key === "ArrowRight" || e.key === "ArrowDown"
+        ? 1
+        : e.key === "ArrowLeft" || e.key === "ArrowUp"
+          ? -1
+          : 0;
+    if (!step) return;
+    e.preventDefault();
+    const index = Math.max(0, options.indexOf(current));
+    const next = (index + step + options.length) % options.length;
+    pick(options[next]);
+    e.currentTarget.querySelectorAll<HTMLButtonElement>("[role=radio]")[next]?.focus();
+  };
+}
+
+const THEME_VALUES = THEMES.map((theme) => theme.value);
+
 /** One labelled settings row: text on the left, control on the right. */
 function Row({
   id,
@@ -72,13 +95,19 @@ export function AppearanceSettings() {
               : undefined
           }
         >
-          <div className="seg" role="radiogroup" aria-labelledby="pref-theme">
+          <div
+            className="seg"
+            role="radiogroup"
+            aria-labelledby="pref-theme"
+            onKeyDown={segKeyDown(THEME_VALUES, theme, setTheme)}
+          >
             {THEMES.map(({ value, icon }) => (
               <button
                 key={value}
                 type="button"
                 role="radio"
                 aria-checked={theme === value}
+                tabIndex={theme === value ? 0 : -1}
                 onClick={() => setTheme(value)}
                 className="inline-flex items-center gap-1.5"
               >
@@ -97,6 +126,7 @@ export function AppearanceSettings() {
             role="radiogroup"
             aria-labelledby="pref-language"
             aria-busy={pending || undefined}
+            onKeyDown={segKeyDown(LOCALES, locale as Locale, (l) => changeLocale(l))}
           >
             {LOCALES.map((l) => (
               <button
@@ -104,6 +134,7 @@ export function AppearanceSettings() {
                 type="button"
                 role="radio"
                 aria-checked={locale === l}
+                tabIndex={locale === l ? 0 : -1}
                 lang={l}
                 onClick={() => changeLocale(l as Locale)}
               >

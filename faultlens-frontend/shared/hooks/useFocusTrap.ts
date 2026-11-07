@@ -19,7 +19,8 @@ function focusables(root: HTMLElement): HTMLElement[] {
 
 /**
  * Keeps keyboard focus inside `ref` while `active`: moves focus in on open (to
- * `initialFocus`, else the first focusable, else the container), wraps Tab / Shift+Tab, and
+ * `initialFocus`, else the first focusable, else the container; an autoFocus field that
+ * already holds focus inside wins), wraps Tab / Shift+Tab, and
  * returns focus to the previously focused element on close.
  */
 export function useFocusTrap(
@@ -33,8 +34,13 @@ export function useFocusTrap(
     if (!root) return;
     const previous = document.activeElement as HTMLElement | null;
 
-    const target = initialFocus?.current ?? focusables(root)[0] ?? root;
-    target.focus({ preventScroll: true });
+    // A field with autoFocus already took focus inside: keep it rather than jumping to the
+    // first focusable (usually the close button).
+    const alreadyInside = root.contains(document.activeElement) && document.activeElement !== root;
+    if (!alreadyInside) {
+      const target = initialFocus?.current ?? focusables(root)[0] ?? root;
+      target.focus({ preventScroll: true });
+    }
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key !== "Tab") return;

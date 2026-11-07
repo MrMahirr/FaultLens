@@ -31,7 +31,7 @@ function AnalysisCard({ analysis, index, sourceName }: AnalysisCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
-    <li className={`card hov in d${Math.min(index + 1, 8)} list-none`}>
+    <li className={`card in d${Math.min(index + 1, 8)} list-none`}>
       <article className="p-4 stack gap-3" aria-labelledby={`analysis-${analysis.id}`}>
         <header className="between">
           <div className="row">

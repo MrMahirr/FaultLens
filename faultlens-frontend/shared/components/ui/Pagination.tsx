@@ -85,6 +85,7 @@ function Pagination({
   return (
     <nav aria-label={t("pagination")} className={cn("flex items-center gap-1", className)}>
       <button
+        type="button"
         onClick={handlePrev}
         disabled={currentPage === 1}
         className="btn btn-ghost btn-sm btn-icon"
@@ -121,6 +122,7 @@ function Pagination({
       })}
 
       <button
+        type="button"
         onClick={handleNext}
         disabled={currentPage === totalPages}
         className="btn btn-ghost btn-sm btn-icon"

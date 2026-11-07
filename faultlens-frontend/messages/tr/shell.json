@@ -11,10 +11,11 @@
     "alarms": "Alarmlar",
     "settings": "Ayarlar",
     "collapse": "Daralt",
-    "expand": "Genişlet"
+    "expand": "Genişlet",
+    "close": "Menüyü kapat"
   },
   "shell": {
-    "toggleMenu": "Menüyü aç/kapat",
+    "toggleMenu": "Menüyü aç",
     "breadcrumb": "Konum",
     "language": "Dil",
     "languages": { "tr": "Türkçe", "en": "English" },

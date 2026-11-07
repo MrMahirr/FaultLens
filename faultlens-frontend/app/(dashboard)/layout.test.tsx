@@ -7,7 +7,10 @@ import { useAuthStore } from "@/features/auth/store/auth.store";
 import DashboardLayout from "./layout";
 
 const replace = vi.fn();
-vi.mock("next/navigation", () => ({ useRouter: () => ({ replace, push: vi.fn() }) }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace, push: vi.fn() }),
+  usePathname: () => "/dashboard",
+}));
 // The chrome around the page is not under test (and opens WebSockets).
 vi.mock("@/shared/components/layout/Sidebar", () => ({ Sidebar: () => null }));
 vi.mock("@/shared/components/layout/Topbar", () => ({ Topbar: () => null }));

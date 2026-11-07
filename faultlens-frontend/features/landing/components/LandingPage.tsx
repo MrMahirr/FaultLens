@@ -184,8 +184,8 @@ export function LandingPage() {
             <p className="m-0 opacity-70 max-w-[56ch]">{t("cta.body")}</p>
             <Link
               href="/login"
-              className="btn group border-0"
-              style={{ background: "var(--signal)", color: "var(--primary-fg)" }}
+              // Lime fill in both themes, so the label is always the dark --on-signal ink.
+              className="btn group border-0 bg-signal text-on-signal hover:brightness-95"
             >
               {t("cta.button")}
               <ArrowRight

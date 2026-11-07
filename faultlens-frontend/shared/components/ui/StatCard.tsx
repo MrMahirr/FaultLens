@@ -49,7 +49,8 @@ function StatCard({
       {loading ? (
         <span className="skel h-7 w-16" aria-hidden="true" />
       ) : (
-        <span className="num">{value ?? "–"}</span>
+        // Fades in when the skeleton gives way, instead of popping in.
+        <span className="num in">{value ?? "–"}</span>
       )}
       {hint && <span className="xs t3">{hint}</span>}
     </div>

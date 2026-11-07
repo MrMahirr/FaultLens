@@ -11,10 +11,11 @@
     "alarms": "Alarms",
     "settings": "Settings",
     "collapse": "Collapse",
-    "expand": "Expand"
+    "expand": "Expand",
+    "close": "Close menu"
   },
   "shell": {
-    "toggleMenu": "Toggle menu",
+    "toggleMenu": "Open menu",
     "breadcrumb": "Breadcrumb",
     "language": "Language",
     "languages": { "tr": "Türkçe", "en": "English" },

@@ -89,7 +89,9 @@ function Modal({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="scrim center"
+          // framer-motion animates enter and exit; the CSS keyframes of .scrim/.modal would
+          // run a second, enter-only animation on top, so they are switched off here.
+          className="scrim center animate-none"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -109,7 +111,11 @@ function Modal({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 4, scale: 0.985 }}
             transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
-            className={cn("modal flex flex-col outline-none", sizeStyles[size], className)}
+            className={cn(
+              "modal flex flex-col outline-none animate-none",
+              sizeStyles[size],
+              className,
+            )}
           >
             {(title || showCloseButton) && (
               <div className="modal-h">

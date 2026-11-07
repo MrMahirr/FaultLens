@@ -34,7 +34,7 @@ function SystemHealthMap() {
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-2 gap-3 p-4" aria-hidden="true">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4" aria-hidden="true">
           {Array.from({ length: 4 }, (_, i) => (
             <div key={i} className="skel h-[68px]" />
           ))}
@@ -47,7 +47,7 @@ function SystemHealthMap() {
           </Link>
         </div>
       ) : (
-        <ul className="grid grid-cols-2 gap-3 p-4 m-0 list-none">
+        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 m-0 list-none">
           {sources.slice(0, 6).map((source) => {
             const status = source.status ?? ConnectionStatus.DISCONNECTED;
             return (

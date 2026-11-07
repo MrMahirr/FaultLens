@@ -141,7 +141,9 @@ function LogTable({
                     onClick={() => onRowClick?.(log)}
                     onKeyDown={(e) => onRowKeyDown(e, item.index, log)}
                     className={cn(
-                      "tr grid absolute left-0 cursor-pointer outline-offset-[-2px]",
+                      // left-0 + right-0: an absolute row would otherwise shrink to its content and
+                      // fall out of line with the header columns.
+                      "tr grid absolute left-0 right-0 cursor-pointer outline-offset-[-2px]",
                       GRID,
                       freshIds?.has(log.id) && "inA",
                     )}

@@ -18,32 +18,35 @@ const PasswordInput = forwardRef<HTMLInputElement, Omit<InputProps, "type">>(
       setCapsLock(e.getModifierState?.("CapsLock") ?? false);
 
     return (
-      <div className="relative">
-        <Input
-          ref={ref}
-          type={visible ? "text" : "password"}
-          className="pr-10"
-          hint={capsLock ? t("capsLock") : hint}
-          onKeyUp={(e) => {
-            trackCaps(e);
-            onKeyUp?.(e);
-          }}
-          onKeyDown={(e) => {
-            trackCaps(e);
-            onKeyDown?.(e);
-          }}
-          {...props}
-        />
-        <button
-          type="button"
-          onClick={() => setVisible((v) => !v)}
-          className="btn btn-ghost btn-sm btn-icon absolute right-1 top-[27px]"
-          aria-label={visible ? t("hidePassword") : t("showPassword")}
-          aria-pressed={visible}
-        >
-          {visible ? <EyeOff size={15} aria-hidden="true" /> : <Eye size={15} aria-hidden="true" />}
-        </button>
-      </div>
+      <Input
+        ref={ref}
+        type={visible ? "text" : "password"}
+        hint={capsLock ? t("capsLock") : hint}
+        onKeyUp={(e) => {
+          trackCaps(e);
+          onKeyUp?.(e);
+        }}
+        onKeyDown={(e) => {
+          trackCaps(e);
+          onKeyDown?.(e);
+        }}
+        trailing={
+          <button
+            type="button"
+            onClick={() => setVisible((v) => !v)}
+            className="btn btn-ghost btn-sm btn-icon"
+            aria-label={visible ? t("hidePassword") : t("showPassword")}
+            aria-pressed={visible}
+          >
+            {visible ? (
+              <EyeOff size={15} aria-hidden="true" />
+            ) : (
+              <Eye size={15} aria-hidden="true" />
+            )}
+          </button>
+        }
+        {...props}
+      />
     );
   },
 );

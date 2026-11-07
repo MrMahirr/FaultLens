@@ -23,7 +23,7 @@ export function SourceTypeSelectionStep({ selectedType, onSelect }: SourceTypeSe
   return (
     <fieldset className="swA">
       <legend className="label mb-2">{t("wizard.chooseType")}</legend>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
         {SOURCE_TYPES.map((item) => {
           const selected = selectedType === item.type;
           return (
@@ -34,10 +34,14 @@ export function SourceTypeSelectionStep({ selectedType, onSelect }: SourceTypeSe
               onClick={() => onSelect(item.type)}
               className={cn(
                 "card hov p-4 flex flex-col items-start gap-2 text-left",
-                selected && "border-border-hover bg-bg-glass-hover",
+                // Selected: a signal ring, not just a slightly lighter border.
+                selected && "bg-bg-glass-hover shadow-[0_0_0_1px_var(--signal-ink)]",
               )}
             >
-              <span className="t2 inline-flex" aria-hidden="true">
+              <span
+                className={cn("inline-flex", selected ? "text-accent" : "t2")}
+                aria-hidden="true"
+              >
                 {item.icon}
               </span>
               <span className="small font-medium">{t(`types.${item.type}`)}</span>

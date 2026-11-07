@@ -30,7 +30,8 @@
   --fg: #f7f8f8;
   --fg-2: #d0d6e0;
   --fg-3: #8a8f98;
-  --fg-4: #6b7079;
+  /* ≥ 4.5:1 on every dark surface (raised included) — it carries real text (nav groups, time). */
+  --fg-4: #7c818a;
   --primary-bg: #e4f222;
   --primary-fg: #08090a;
   --primary-hover: #eef75a;
@@ -38,6 +39,8 @@
   --signal-ink: #e4f222;
   --signal-ink-hover: #eef75a;
   --signal-soft: rgba(228, 242, 34, 0.12);
+  /* Text on a --signal (lime) fill; lime is light in both themes, so this stays dark. */
+  --on-signal: #08090a;
   --mark: rgba(228, 242, 34, 0.18);
   --ok: #4cb782;
   --warn: #f2c94c;
@@ -76,8 +79,9 @@
   --line-3: #c9c9c9;
   --fg: #171717;
   --fg-2: #4d4d4d;
-  --fg-3: #666666;
-  --fg-4: #8f8f8f;
+  --fg-3: #5c5c5c;
+  /* ≥ 4.5:1 on --bg-2/--sunken; was #8f8f8f (2.9:1). */
+  --fg-4: #6e6e6e;
   --primary-bg: #171717;
   --primary-fg: #ffffff;
   --primary-hover: #383838;
@@ -85,6 +89,7 @@
   --signal-ink: #5c6600;
   --signal-ink-hover: #454d00;
   --signal-soft: rgba(92, 102, 0, 0.09);
+  --on-signal: #08090a;
   --mark: #eaf55b;
   --ok: #16702f;
   --warn: #7d5300;
@@ -167,6 +172,8 @@
   --color-primary: var(--primary-bg);
   --color-primary-hover: var(--primary-hover);
   --color-on-primary: var(--primary-fg);
+  --color-signal: var(--signal);
+  --color-on-signal: var(--on-signal);
   --color-on-critical: var(--on-crit);
 
   --color-success: var(--ok);

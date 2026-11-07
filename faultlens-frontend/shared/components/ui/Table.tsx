@@ -173,7 +173,13 @@ function DataTable<TData extends object>({
                 onKeyDown={
                   onRowClick
                     ? (e) => {
-                        if (e.key === "Enter") handleRowClick(row.original);
+                        // Only the row itself: Enter on a button inside it (delete, resolve…)
+                        // must not also open the row's detail.
+                        if (e.target !== e.currentTarget) return;
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          handleRowClick(row.original);
+                        }
                       }
                     : undefined
                 }

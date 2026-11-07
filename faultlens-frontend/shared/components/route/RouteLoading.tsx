@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { SkeletonCard, SkeletonTable } from "@/shared/components/ui/Skeleton";
 
 /**
@@ -5,8 +6,11 @@ import { SkeletonCard, SkeletonTable } from "@/shared/components/ui/Skeleton";
  * (no layout shift) instead of a spinner.
  */
 export function RouteLoading({ variant = "cards" }: { variant?: "cards" | "table" | "detail" }) {
+  const t = useTranslations("common");
   return (
     <div className="stack gap-5" role="status" aria-busy="true">
+      {/* The skeletons are aria-hidden; this is what a screen reader announces. */}
+      <span className="sr">{t("loading")}</span>
       <div className="stack gap-2" aria-hidden="true">
         <div className="skel h-8 w-56" />
         <div className="skel h-4 w-80 max-w-full" />

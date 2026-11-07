@@ -31,7 +31,8 @@ function Topbar() {
   const tNav = useTranslations("nav");
   const pathname = usePathname() ?? "/dashboard";
   const router = useRouter();
-  const toggleSidebar = useUIStore((state) => state.toggleSidebar);
+  const mobileNavOpen = useUIStore((state) => state.mobileNavOpen);
+  const setMobileNavOpen = useUIStore((state) => state.setMobileNavOpen);
   const user = useAuthStore((state) => state.user);
   const { data: alarmStats } = useAlarmStatsQuery();
   const activeAlarms = alarmStats?.active ?? 0;
@@ -56,16 +57,20 @@ function Topbar() {
       <div className="flex items-center gap-2 min-w-0">
         <button
           type="button"
-          onClick={toggleSidebar}
+          onClick={() => setMobileNavOpen(true)}
           className="btn btn-ghost btn-sm btn-icon lg:hidden"
           aria-label={t("toggleMenu")}
+          aria-controls="app-sidebar"
+          aria-expanded={mobileNavOpen}
         >
           <Menu size={16} aria-hidden="true" />
         </button>
 
         <nav aria-label={t("breadcrumb")} className="crumbs">
-          <span>FaultLens</span>
-          <span aria-hidden="true">/</span>
+          <span className="hidden sm:inline">FaultLens</span>
+          <span className="hidden sm:inline" aria-hidden="true">
+            /
+          </span>
           {sectionKey ? (
             rest.length > 0 ? (
               <>

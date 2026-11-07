@@ -51,7 +51,10 @@ export default function AlarmsPage() {
         idPrefix="alarms"
       />
 
+      {/* Keyed by tab: the new panel slides in (Instrument swA), like Settings sections. */}
       <div
+        key={activeTab}
+        className="swA"
         role="tabpanel"
         id={`alarms-panel-${activeTab}`}
         aria-labelledby={`alarms-tab-${activeTab}`}

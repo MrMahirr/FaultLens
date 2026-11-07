@@ -712,7 +712,10 @@ select.input {
   background: var(--surface);
   font-size: 12.5px;
   color: var(--fg-2);
-  transition: all var(--t-1);
+  transition:
+    border-color var(--t-1),
+    background var(--t-1),
+    color var(--t-1);
 }
 .chip:hover {
   border-color: var(--line-3);
@@ -1497,4 +1500,38 @@ select.input {
 }
 :root[data-motion="off"] {
   scroll-behavior: auto;
+}
+
+/* Route change: a short fade of the page body (opacity only, no movement). */
+.page-enter {
+  animation: fade var(--t-2) var(--ease) both;
+}
+
+/* Phones: tighter page gutters so content keeps its width. */
+@media (max-width: 640px) {
+  .page {
+    padding: 16px;
+    gap: 16px;
+  }
+  .topbar {
+    padding: 8px 12px;
+  }
+  .modal-b {
+    padding: 16px;
+  }
+  .modal-f {
+    padding: 12px 16px;
+    flex-wrap: wrap;
+  }
+}
+
+/* Mobile navigation drawer (Sidebar below lg). */
+.drawer-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 39;
+  background: var(--scrim);
+  border: 0;
+  padding: 0;
+  animation: fade var(--t-2) var(--ease) both;
 }

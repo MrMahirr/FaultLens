@@ -177,7 +177,7 @@ export function AlarmsList() {
     <div className="space-y-4">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-3">
         <h2 className="h2">{t("list.title")}</h2>
-        <div className="flex gap-2">
+        <div className="grid grid-cols-2 gap-2 md:flex">
           <DropdownSelect
             label={t("list.statusFilter")}
             value={filters.status ?? ""}
@@ -189,7 +189,7 @@ export function AlarmsList() {
               })),
             ]}
             onChange={(value) => updateFilter("status", value)}
-            className="min-w-[160px] [&_.label]:sr-only"
+            className="min-w-0 md:min-w-[160px] [&_.label]:sr-only"
           />
           <DropdownSelect
             label={t("list.severityFilter")}
@@ -199,7 +199,7 @@ export function AlarmsList() {
               ...FILTER_SEVERITIES.map((severity) => ({ label: severity, value: severity })),
             ]}
             onChange={(value) => updateFilter("severity", value)}
-            className="min-w-[160px] [&_.label]:sr-only"
+            className="min-w-0 md:min-w-[160px] [&_.label]:sr-only"
           />
         </div>
       </div>

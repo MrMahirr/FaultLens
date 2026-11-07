@@ -90,7 +90,7 @@ function SourceCard({ source, index }: SourceCardProps) {
   return (
     <li className={`list-none in d${Math.min(index + 1, 8)}`}>
       <article
-        className="card hov p-4 h-full flex flex-col gap-3"
+        className="card p-4 h-full flex flex-col gap-3"
         style={failing ? { boxShadow: "inset 2px 0 0 var(--crit)" } : undefined}
         aria-labelledby={`source-${source.id}`}
       >

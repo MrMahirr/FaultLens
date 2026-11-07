@@ -23,7 +23,6 @@ import { useCreateDeploymentMutation } from "@/features/deployments/api/useDeplo
 import { DeploymentStatus, DeploymentEnvironment } from "@/shared/types/common.types";
 import { getApiErrorMessage } from "@/shared/api/errors";
 import { Endpoints } from "@/shared/api/endpoints";
-import { cn } from "@/shared/lib/utils";
 
 /**
  * Example CI step shown on the page. Mirrors what the API accepts: snake_case fields,
@@ -205,9 +204,7 @@ function DeploymentsView() {
               />
 
               <article
-                className={cn(
-                  "card hov p-4 flex flex-col sm:flex-row sm:items-start justify-between gap-4",
-                )}
+                className="card p-4 flex flex-col sm:flex-row sm:items-start justify-between gap-4"
                 style={
                   deployment.errorCount > 10
                     ? { boxShadow: "inset 2px 0 0 var(--crit)" }

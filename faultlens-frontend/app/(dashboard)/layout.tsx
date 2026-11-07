@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Sidebar } from "@/shared/components/layout/Sidebar";
 import { Topbar } from "@/shared/components/layout/Topbar";
@@ -17,6 +17,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const token = useAuthStore((state) => state.token);
   const mustChangePassword = useAuthStore((state) => state.user?.mustChangePassword ?? false);
   const router = useRouter();
+  const pathname = usePathname();
   const session = useSession();
   const t = useTranslations("shell");
 
@@ -58,15 +59,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       <Sidebar />
 
+      {/* Below lg the sidebar is a drawer over the content, so no margin is reserved. */}
       <div
         className={
           "min-h-screen flex flex-col transition-[margin] duration-200 " +
-          (sidebarOpen ? "ml-60" : "ml-16")
+          (sidebarOpen ? "lg:ml-60" : "lg:ml-16")
         }
       >
         <GlobalNotificationListener />
         <Topbar />
-        <main id="main" tabIndex={-1} className="page mx-auto outline-none">
+        {/* Keyed by route: each page fades in instead of swapping abruptly. */}
+        <main
+          key={pathname}
+          id="main"
+          tabIndex={-1}
+          className="page page-enter mx-auto outline-none"
+        >
           {children}
         </main>
       </div>

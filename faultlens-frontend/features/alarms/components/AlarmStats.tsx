@@ -11,7 +11,7 @@ export function AlarmStats() {
   const { data, isLoading } = useAlarmStatsQuery();
 
   return (
-    <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-5">
+    <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
       <StatCard
         label={t("active")}
         value={data?.active}
