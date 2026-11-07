@@ -19,6 +19,8 @@ public final class Roles {
 
     public static final String CAN_EDIT = "hasAnyRole('ADMIN', 'EDITOR')";
     public static final String ADMIN_ONLY = "hasRole('ADMIN')";
+    /** Editors, or an API key with the {@code deployments:write} scope (CI). */
+    public static final String CAN_RECORD_DEPLOYMENT = CAN_EDIT + " or hasAuthority('SCOPE_deployments:write')";
 
     private Roles() {
     }

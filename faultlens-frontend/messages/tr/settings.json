@@ -8,7 +8,8 @@
       "account": "Hesap",
       "notifications": "Bildirimler",
       "system": "Sistem",
-      "users": "Kullanıcılar"
+      "users": "Kullanıcılar",
+      "apiKeys": "API anahtarları"
     },
     "unsaved": "Kaydedilmemiş değişiklikler var",
     "discard": "Vazgeç",
@@ -167,6 +168,66 @@
         "resetFailed": "Şifre sıfırlanamadı.",
         "deleted": "Kullanıcı silindi.",
         "deleteFailed": "Kullanıcı silinemedi."
+      }
+    },
+    "apiKeys": {
+      "title": "API anahtarları",
+      "subtitle": "CI ve entegrasyonlar için kapsamı sınırlı anahtarlar. Bir anahtar yalnızca seçilen kapsamlardaki uç noktaları çağırabilir.",
+      "create": "Yeni anahtar",
+      "empty": "Henüz API anahtarı yok.",
+      "emptyHint": "CI deployment kaydı için deployments:write kapsamlı bir anahtar oluşturun.",
+      "list": "API anahtarları",
+      "columns": {
+        "name": "Ad",
+        "key": "Anahtar",
+        "scopes": "Kapsamlar",
+        "lastUsed": "Son kullanım",
+        "status": "Durum",
+        "actions": "Eylemler"
+      },
+      "never": "Hiç kullanılmadı",
+      "active": "Etkin",
+      "revoked": "İptal edildi",
+      "expired": "Süresi doldu",
+      "expires": "Bitiş: {date}",
+      "noExpiry": "Süresiz",
+      "revoke": "İptal et",
+      "revokeTitle": "“{name}” iptal edilsin mi?",
+      "revokeDescription": "Bu anahtarı kullanan CI işleri ve entegrasyonlar hemen 401 almaya başlar. Geri alınamaz.",
+      "revokeConfirm": "Anahtarı iptal et",
+      "form": {
+        "title": "Yeni API anahtarı",
+        "name": "Ad",
+        "namePlaceholder": "Örn. github-actions-prod",
+        "scopes": "Kapsamlar",
+        "expiry": "Geçerlilik",
+        "expiryOptions": {
+          "30": "30 gün",
+          "90": "90 gün",
+          "365": "1 yıl",
+          "never": "Süresiz"
+        },
+        "submit": "Anahtarı oluştur",
+        "scopeRequired": "En az bir kapsam seçin"
+      },
+      "scopeHelp": {
+        "deployments:write": "CI deployment kaydı (POST /deployments)",
+        "logs:ingest": "Uygulamalardan log gönderimi (HTTP / OTLP)",
+        "logs:read": "Logları okuma",
+        "alarms:read": "Alarmları okuma"
+      },
+      "created": {
+        "title": "Anahtar oluşturuldu",
+        "warning": "Bu anahtarı şimdi kopyalayın. Güvenlik için bir daha gösterilmez; kaybolursa iptal edip yenisini oluşturun.",
+        "copy": "Kopyala",
+        "copied": "Anahtar kopyalandı",
+        "usage": "Kullanım",
+        "done": "Kopyaladım, kapat"
+      },
+      "toast": {
+        "createFailed": "Anahtar oluşturulamadı.",
+        "revoked": "Anahtar iptal edildi.",
+        "revokeFailed": "Anahtar iptal edilemedi."
       }
     }
   }

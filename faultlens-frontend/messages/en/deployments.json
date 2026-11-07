@@ -6,9 +6,10 @@
     "addFirst": "Add a deployment",
     "ci": {
       "title": "CI/CD integration",
-      "description": "To record deployments automatically, add this request to your CI/CD pipeline (GitHub Actions etc.). Define FAULTLENS_TOKEN as a CI secret.",
+      "description": "To record deployments automatically, add this request to your CI/CD pipeline (GitHub Actions etc.). FAULTLENS_API_KEY is an API key with the deployments:write scope, stored as a CI secret.",
       "copy": "Copy command",
-      "copied": "Command copied"
+      "copied": "Command copied",
+      "createKey": "Create an API key"
     },
     "search": "Search services",
     "searchPlaceholder": "Search by service name…",
@@ -21,7 +22,11 @@
       "ROLLED_BACK": "Rolled back",
       "IN_PROGRESS": "In progress"
     },
-    "env": { "PRODUCTION": "Production", "STAGING": "Staging", "DEVELOPMENT": "Development" },
+    "env": {
+      "PRODUCTION": "Production",
+      "STAGING": "Staging",
+      "DEVELOPMENT": "Development"
+    },
     "by": "by {user}",
     "errors": "{count, plural, one {# error} other {# errors}}",
     "viewLogs": "Logs since this deploy",

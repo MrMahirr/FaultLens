@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
-import { Plus, Rocket, Terminal, ExternalLink, Copy, Search } from "lucide-react";
+import { Plus, Rocket, Terminal, ExternalLink, Copy, Search, KeyRound } from "lucide-react";
 import { useCan } from "@/features/auth/hooks/useCan";
 import { useAuthStore } from "@/features/auth/store/auth.store";
 import { PageHeader } from "@/shared/components/layout/PageHeader";
@@ -27,11 +27,12 @@ import { cn } from "@/shared/lib/utils";
 
 /**
  * Example CI step shown on the page. Mirrors what the API accepts: snake_case fields,
- * `deployed_at` is required and the endpoint needs a bearer token (FAULTLENS_TOKEN).
+ * `deployed_at` is required; FAULTLENS_API_KEY is an API key with the deployments:write
+ * scope (Settings → API keys), not a user token.
  */
 const CI_WEBHOOK_EXAMPLE = `curl -X POST ${Endpoints.DEPLOYMENTS.CREATE} \\
   -H "Content-Type: application/json" \\
-  -H "Authorization: Bearer $FAULTLENS_TOKEN" \\
+  -H "Authorization: Bearer $FAULTLENS_API_KEY" \\
   -d '{"service_name":"my-service","version":"v1.0.0","environment":"PRODUCTION","deployed_at":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'","deployed_by":"ci"}'`;
 
 const STATUS_BADGE: Record<DeploymentStatus, "success" | "error" | "warning" | "info"> = {
@@ -58,6 +59,7 @@ function DeploymentsView() {
   const { data: deployments, isLoading } = useDeploymentsQuery();
   const createDeployment = useCreateDeploymentMutation();
   const canEdit = useCan("edit");
+  const isAdmin = useCan("manageUsers");
   const username = useAuthStore((state) => state.user?.username);
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState(EMPTY_FORM);
@@ -137,14 +139,22 @@ function DeploymentsView() {
             <Terminal size={15} className="t3" aria-hidden="true" />
             {t("ci.title")}
           </h2>
-          <Button
-            variant="ghost"
-            size="sm"
-            icon={<Copy size={13} aria-hidden="true" />}
-            onClick={copyCommand}
-          >
-            {t("ci.copy")}
-          </Button>
+          <div className="row gap-1">
+            {isAdmin && (
+              <Link href="/settings?tab=apiKeys" className="btn btn-ghost btn-sm">
+                <KeyRound size={13} aria-hidden="true" />
+                {t("ci.createKey")}
+              </Link>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={<Copy size={13} aria-hidden="true" />}
+              onClick={copyCommand}
+            >
+              {t("ci.copy")}
+            </Button>
+          </div>
         </div>
         <div className="p-4 stack gap-3">
           <p className="small t2">{t("ci.description")}</p>

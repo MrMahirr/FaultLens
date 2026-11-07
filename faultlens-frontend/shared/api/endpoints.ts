@@ -84,6 +84,12 @@ export const Endpoints = {
     },
   },
 
+  // ── API keys (P10 / 1.1, ADMIN only) ──────────────────────
+  API_KEYS: {
+    LIST: `${BASE}/api-keys`,
+    DETAIL: (id: number) => `${BASE}/api-keys/${id}`,
+  },
+
   // ── WebSocket ─────────────────────────────────────────────
   WS: {
     LOGS: `${WS}/logs`,

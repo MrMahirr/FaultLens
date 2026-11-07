@@ -72,6 +72,35 @@ This document details the REST API endpoints and real-time WebSocket channels pr
 
 ---
 
+## 1b. API Keys (`/api/v1/api-keys`)
+
+Scoped service tokens for CI and integrations (P10 / 1.1). Management endpoints are **ADMIN only**
+(user JWT); an API key can never call them.
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/v1/api-keys` | All keys, newest first (masked `display_key`, never the token) |
+| `POST` | `/api/v1/api-keys` | `{ name, scopes: [...], expires_in_days? }` → `201 { key, token }` — `token` is shown **only here** |
+| `DELETE` | `/api/v1/api-keys/{id}` | Revoke (idempotent, `204`); the row is kept for auditing |
+
+**Token format:** `flk_<8-char prefix>_<32-char secret>`; only its SHA-256 is stored.
+**Sending a key:** `Authorization: Bearer flk_…` or `X-FaultLens-Key: flk_…`.
+
+**Scopes** — a key may call *only* these endpoints; anything else is `403 API_KEY_SCOPE`:
+
+| Scope | Allows |
+|---|---|
+| `deployments:write` | `POST /api/v1/deployments` |
+| `logs:ingest` | `POST /api/v1/ingest/**`, `POST /v1/logs` (HTTP / OTLP ingest) |
+| `logs:read` | `GET /api/v1/logs`, `GET /api/v1/logs/**` |
+| `alarms:read` | `GET /api/v1/alarms`, `GET /api/v1/alarms/**` |
+
+**Errors:** unknown / revoked / expired key → `401 INVALID_API_KEY`; outside its scopes → `403 API_KEY_SCOPE`;
+over the per-key limit (default 600 requests/minute, `faultlens.api-keys.rate-limit-per-minute`) →
+`429 RATE_LIMITED` with `Retry-After`; unknown scope at creation → `400 INVALID_SCOPE`.
+
+---
+
 ## 2. Log Source Management (`/api/v1/sources`)
 
 All source endpoints require **ADMIN** or **USER** authentication.
@@ -275,6 +304,7 @@ Requires authentication.
 ### B. Create Deployment Event
 - **Method:** `POST`
 - **Path:** `/api/v1/deployments`
+- **Auth:** EDITOR/ADMIN token, or an API key with the `deployments:write` scope (see 1b)
 - **Request Body (`application/json`):**
   ```json
   {

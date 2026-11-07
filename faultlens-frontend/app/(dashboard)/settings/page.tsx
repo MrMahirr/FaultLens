@@ -4,16 +4,17 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Palette, User, Bell, Settings2, Users } from "lucide-react";
+import { Palette, User, Bell, Settings2, Users, KeyRound } from "lucide-react";
 import { AppearanceSettings } from "@/features/settings/components/AppearanceSettings";
 import { AccountSettings } from "@/features/settings/components/AccountSettings";
 import { NotificationSettings } from "@/features/settings/components/NotificationSettings";
 import { SystemSettings } from "@/features/settings/components/SystemSettings";
 import { UserManagement } from "@/features/settings/components/UserManagement";
+import { ApiKeySettings } from "@/features/apiKeys/components/ApiKeySettings";
 import { useCan } from "@/features/auth/hooks/useCan";
 import { PageHeader } from "@/shared/components/layout/PageHeader";
 
-const TAB_IDS = ["appearance", "account", "notifications", "system", "users"] as const;
+const TAB_IDS = ["appearance", "account", "notifications", "system", "users", "apiKeys"] as const;
 type TabId = (typeof TAB_IDS)[number];
 
 function isTabId(value: string | null): value is TabId {
@@ -34,6 +35,7 @@ const ALL_TABS: TabDefinition[] = [
   { id: "notifications", icon: <Bell size={16} />, component: <NotificationSettings /> },
   { id: "system", icon: <Settings2 size={16} />, component: <SystemSettings />, adminOnly: true },
   { id: "users", icon: <Users size={16} />, component: <UserManagement />, adminOnly: true },
+  { id: "apiKeys", icon: <KeyRound size={16} />, component: <ApiKeySettings />, adminOnly: true },
 ];
 
 function SettingsContent() {

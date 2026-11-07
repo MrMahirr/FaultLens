@@ -32,7 +32,7 @@ public class DeploymentController {
     /**
      * Creates a deployment record.
      */
-    @PreAuthorize(Roles.CAN_EDIT)
+    @PreAuthorize(Roles.CAN_RECORD_DEPLOYMENT)
     @PostMapping
     public ResponseEntity<ApiResponse<?>> create(@Valid @RequestBody DeploymentDto deployment) {
         return ResponseEntity.ok(ApiResponse.ok(service.create(deployment)));

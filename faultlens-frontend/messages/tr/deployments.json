@@ -6,9 +6,10 @@
     "addFirst": "Deployment ekle",
     "ci": {
       "title": "CI/CD entegrasyonu",
-      "description": "Deployment'ları otomatik kaydetmek için CI/CD pipeline'ınıza (GitHub Actions vb.) şu isteği ekleyin. FAULTLENS_TOKEN bir CI sırrı olarak tanımlanmalı.",
+      "description": "Deployment kayıtlarını otomatik almak için CI/CD pipeline’ınıza (GitHub Actions vb.) şu isteği ekleyin. FAULTLENS_API_KEY, deployments:write kapsamlı bir API anahtarıdır ve CI sırrı olarak saklanmalıdır.",
       "copy": "Komutu kopyala",
-      "copied": "Komut kopyalandı"
+      "copied": "Komut kopyalandı",
+      "createKey": "API anahtarı oluştur"
     },
     "search": "Servis ara",
     "searchPlaceholder": "Servis adına göre ara…",
@@ -21,7 +22,11 @@
       "ROLLED_BACK": "Geri alındı",
       "IN_PROGRESS": "Devam ediyor"
     },
-    "env": { "PRODUCTION": "Production", "STAGING": "Staging", "DEVELOPMENT": "Development" },
+    "env": {
+      "PRODUCTION": "Production",
+      "STAGING": "Staging",
+      "DEVELOPMENT": "Development"
+    },
     "by": "{user} tarafından",
     "errors": "{count, plural, one {# hata} other {# hata}}",
     "viewLogs": "Sonraki logları incele",

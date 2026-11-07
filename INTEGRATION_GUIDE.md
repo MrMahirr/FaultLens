@@ -256,21 +256,34 @@ FaultLens, platform bağımsız bir mimariye sahip olduğu için projelerinizin 
 
 ## 6. Otomatik Deployment (CI/CD) Entegrasyonu
 
-FaultLens, yeni kodunuzun canlıya (veya test ortamına) alındığı anı tespit edip oluşan logları/hataları bu deployment ile ilişkilendirebilir (Korelasyon). Bunu sağlamak için CI/CD pipeline'ınıza ufak bir webhook (API çağrısı) eklemeniz yeterlidir.
+FaultLens, yeni kodunuzun canlıya (veya test ortamına) alındığı anı tespit edip oluşan logları/hataları bu deployment ile ilişkilendirebilir (Korelasyon). Bunu sağlamak için CI/CD pipeline'ınıza tek bir API çağrısı eklemeniz yeterlidir.
+
+### 1. API anahtarı oluşturun
+CI, kullanıcı oturumu (JWT) yerine **kapsamı sınırlı bir API anahtarı** kullanır:
+
+1. FaultLens'e ADMIN olarak girin → **Ayarlar → API anahtarları → Yeni anahtar**.
+2. Kapsam olarak `deployments:write` seçin, bir geçerlilik süresi belirleyin.
+3. Gösterilen `flk_…` anahtarını kopyalayın — **bir daha gösterilmez** (kaybolursa iptal edip yenisini oluşturun).
+4. Anahtarı CI'da gizli değişken olarak saklayın: `FAULTLENS_API_KEY`.
+
+Bu anahtar yalnızca `POST /api/v1/deployments` çağırabilir; başka bir uç noktaya giderse `403 API_KEY_SCOPE`, iptal edilmiş/süresi dolmuşsa `401 INVALID_API_KEY` döner. Anahtar başına dakikada 600 istek sınırı vardır (`faultlens.api-keys.rate-limit-per-minute`, ortam değişkeni `FAULTLENS_APIKEYS_RATELIMITPERMINUTE`).
+
+Anahtar `Authorization: Bearer flk_…` ya da `X-FaultLens-Key: flk_…` başlığıyla gönderilebilir. Alanlar **snake_case**'tir; `service_name`, `version`, `environment` ve `deployed_at` zorunludur.
 
 ### 🐙 GitHub Actions Örneği
-Mevcut `deploy.yml` veya `ci.yml` dosyanızın en son adımına (başarılı deploy sonrası) şu curl komutunu ekleyin:
-
 ```yaml
     - name: Notify FaultLens Deployment
+      env:
+        FAULTLENS_API_KEY: ${{ secrets.FAULTLENS_API_KEY }}
       run: |
-        curl -X POST https://api.faultlens.com/api/v1/deployments \
+        curl -fsS -X POST https://api.faultlens.com/api/v1/deployments \
+          -H "Authorization: Bearer $FAULTLENS_API_KEY" \
           -H "Content-Type: application/json" \
-          -d '{"serviceName":"my-backend-service", "version":"${{ github.sha }}", "environment":"PRODUCTION"}'
+          -d '{"service_name":"my-backend-service","version":"${{ github.sha }}","environment":"PRODUCTION","deployed_at":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'","deployed_by":"github-actions"}'
 ```
 
 ### 🦊 GitLab CI Örneği
-`.gitlab-ci.yml` dosyanızdaki deploy aşamasının `script` bloğuna ekleyin:
+`FAULTLENS_API_KEY`'i **Settings → CI/CD → Variables** altına (masked) ekleyin:
 
 ```yaml
 deploy_production:
@@ -278,17 +291,21 @@ deploy_production:
   script:
     - echo "Uygulama sunucuya yükleniyor..."
     - # Kendi deploy komutlarınız...
-    - curl -X POST https://api.faultlens.com/api/v1/deployments -H "Content-Type: application/json" -d '{"serviceName":"my-frontend", "version":"'$CI_COMMIT_SHORT_SHA'", "environment":"PRODUCTION"}'
+    - >
+      curl -fsS -X POST https://api.faultlens.com/api/v1/deployments
+      -H "Authorization: Bearer $FAULTLENS_API_KEY"
+      -H "Content-Type: application/json"
+      -d '{"service_name":"my-frontend","version":"'"$CI_COMMIT_SHORT_SHA"'","environment":"PRODUCTION","deployed_at":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'","deployed_by":"gitlab-ci"}'
 ```
 
 ### ⚙️ Genel cURL Kullanımı (Jenkins, Bitbucket vb.)
-Herhangi bir bash/shell script içinden FaultLens'i tetiklemek için:
 ```bash
-curl -X POST https://api.faultlens.com/api/v1/deployments \
+curl -fsS -X POST https://api.faultlens.com/api/v1/deployments \
+  -H "Authorization: Bearer $FAULTLENS_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"serviceName":"servis-adiniz", "version":"v1.2.3", "environment":"PRODUCTION"}'
+  -d '{"service_name":"servis-adiniz","version":"v1.2.3","environment":"PRODUCTION","deployed_at":"2026-11-07T10:00:00Z","deployed_by":"jenkins"}'
 ```
 
 *(Not: `environment` alanı için `PRODUCTION`, `STAGING` veya `DEVELOPMENT` değerlerinden birini kullanmalısınız.)*
 
-Bu entegrasyon sayesinde Deployments arayüzünde "Kırmızı Hata Parlaması" özelliğinden faydalanabilir ve hataların hangi versiyondan sonra patlak verdiğini saniyeler içinde görebilirsiniz.
+Bu entegrasyon sayesinde Deployments sayfasında hataların hangi sürümden sonra başladığını görebilir, "Sonraki logları incele" ile deployment anından itibaren logları açabilirsiniz.
