@@ -70,3 +70,6 @@ faultlens-frontend/out/
 faultlens-frontend/build/
 faultlens-frontend/coverage/
 faultlens-frontend/*.tsbuildinfo
+
+# graphify knowledge-graph output (generated, ~20 MB; rebuild with the graphify skill)
+graphify-out/
