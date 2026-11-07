@@ -47,8 +47,8 @@ class SourceControllerTest {
         // Regression: the UI showed "Bağlı" for every source, even one the collector refused.
         when(service.findAll()).thenReturn(List.of(
                 source(1L, true), source(2L, true), source(3L, false)));
-        when(orchestrator.isStreaming(1L)).thenReturn(true);
-        when(orchestrator.isStreaming(2L)).thenReturn(false);
+        when(orchestrator.isCollectedAnywhere(1L)).thenReturn(true); // by any instance (P08 leases)
+        when(orchestrator.isCollectedAnywhere(2L)).thenReturn(false);
 
         mockMvc.perform(get("/api/v1/sources"))
                 .andExpect(status().isOk())

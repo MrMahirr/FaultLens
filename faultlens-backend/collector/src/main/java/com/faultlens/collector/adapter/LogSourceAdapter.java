@@ -3,7 +3,6 @@ package com.faultlens.collector.adapter;
 import com.faultlens.collector.model.LogSource;
 import com.faultlens.common.dto.LogEventDto;
 import com.faultlens.common.enums.LogSourceType;
-import java.util.function.Consumer;
 
 public interface LogSourceAdapter {
     /**
@@ -14,7 +13,7 @@ public interface LogSourceAdapter {
     /**
      * Starts streaming source logs to the callback.
      */
-    void startStreaming(LogSource source, Consumer<LogEventDto> onEvent);
+    void startStreaming(LogSource source, SourceSink onEvent);
 
     /**
      * Stops streaming for a source id.

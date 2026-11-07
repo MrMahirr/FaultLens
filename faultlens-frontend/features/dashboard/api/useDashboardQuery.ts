@@ -4,7 +4,7 @@ import { DashboardApi } from "./dashboardApi";
 export const dashboardKeys = {
   all: ["dashboard"] as const,
   stats: () => [...dashboardKeys.all, "stats"] as const,
-  chart: () => [...dashboardKeys.all, "chart"] as const,
+  severity: () => [...dashboardKeys.all, "severity"] as const,
 };
 
 export const useDashboardStatsQuery = () =>
@@ -13,8 +13,9 @@ export const useDashboardStatsQuery = () =>
     queryFn: () => DashboardApi.getStats(),
   });
 
-export const useSeverityChartQuery = () =>
+export const useSeverityCountsQuery = () =>
   useQuery({
-    queryKey: dashboardKeys.chart(),
-    queryFn: () => DashboardApi.getSeverityChart(),
+    queryKey: dashboardKeys.severity(),
+    queryFn: () => DashboardApi.getSeverityCounts(),
+    refetchInterval: 30_000,
   });

@@ -32,34 +32,38 @@ import org.springframework.http.ResponseEntity;
  * P05's Jackson 3 migration changes naming/serialization defaults; this test turns any drift
  * into a failing build instead of a blank UI column. If a change is intentional, update the
  * expected set here and the frontend types together.
+ *
+ * <p>The sets are package-visible: OpenApiContractIT checks the OpenAPI schemas against them, so
+ * the published contract (and the TypeScript types generated from it) matches the real JSON.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ApiContractIT extends AbstractIntegrationTest {
-    private static final Set<String> ENVELOPE = Set.of("success", "data", "message", "timestamp");
-    private static final Set<String> ERROR_ENVELOPE = Set.of("success", "error");
-    private static final Set<String> ERROR_BODY = Set.of("code", "message", "timestamp");
-    private static final Set<String> PAGE = Set.of("content", "page", "size", "total_elements", "total_pages");
+    static final Set<String> ENVELOPE = Set.of("success", "data", "message", "timestamp");
+    static final Set<String> ERROR_ENVELOPE = Set.of("success", "error");
+    static final Set<String> ERROR_BODY = Set.of("code", "message", "timestamp");
+    static final Set<String> PAGE = Set.of("content", "page", "size", "total_elements", "total_pages");
 
-    private static final Set<String> ALARM = Set.of("id", "rule_id", "rule_name", "source_id", "severity", "status",
-            "message", "triggered_at", "resolved_at");
-    private static final Set<String> ALARM_STATS = Set.of("active", "acknowledged", "resolved", "open_critical");
-    private static final Set<String> LOG_ENTRY = Set.of("id", "source_id", "group_id", "severity", "message",
+    static final Set<String> ALARM = Set.of("id", "rule_id", "rule_name", "source_id", "severity", "status",
+            "message", "triggered_at", "resolved_at", "alarm_rule_id");
+    static final Set<String> ALARM_STATS = Set.of("active", "acknowledged", "resolved", "open_critical");
+    static final Set<String> LOG_ENTRY = Set.of("id", "source_id", "group_id", "severity", "message",
             "parsed_message", "stack_trace", "namespace", "pod_name", "container_name", "service_name", "cluster",
             "timestamp");
-    private static final Set<String> LOG_GROUP = Set.of("id", "fingerprint", "first_message", "severity", "count",
+    static final Set<String> LOG_GROUP = Set.of("id", "fingerprint", "first_message", "severity", "count",
             "first_seen_at", "last_seen_at");
-    private static final Set<String> LOG_STATS = Set.of("TRACE", "DEBUG", "INFO", "WARN", "ERROR", "CRITICAL", "total");
-    private static final Set<String> ANALYSIS = Set.of("id", "log_group_id", "log_entry_id", "source_id", "root_cause",
+    static final Set<String> LOG_STATS = Set.of("TRACE", "DEBUG", "INFO", "WARN", "ERROR", "CRITICAL", "total");
+    static final Set<String> ANALYSIS = Set.of("id", "log_group_id", "log_entry_id", "source_id", "root_cause",
             "suggestion", "affected_deployment", "confidence_score", "engine_type", "analyzed_at");
-    private static final Set<String> DEPLOYMENT = Set.of("id", "service_name", "version", "environment", "deployed_at",
+    static final Set<String> DEPLOYMENT = Set.of("id", "service_name", "version", "environment", "deployed_at",
             "deployed_by", "status", "notes");
-    private static final Set<String> SOURCE = Set.of("id", "name", "type", "config", "enabled", "created_at", "status",
-            "last_seen_at");
-    private static final Set<String> NOTIFICATION_SETTINGS = Set.of("email_enabled", "slack_enabled", "slack_webhook",
-            "push_enabled", "mobile_enabled", "emailjs_service_id", "emailjs_template_id", "emailjs_public_key");
-    private static final Set<String> SYSTEM_SETTINGS = Set.of("log_retention_days", "default_engine", "language");
-    private static final Set<String> PROFILE = Set.of("username", "email", "role");
-    private static final Set<String> TOKEN = Set.of("token", "expires_at", "must_change_password");
+    static final Set<String> SOURCE = Set.of("id", "name", "type", "config", "enabled", "created_at", "status",
+            "last_seen_at", "health", "last_error", "last_error_at", "collector_instance");
+    static final Set<String> NOTIFICATION_SETTINGS = Set.of("email_enabled", "slack_enabled", "slack_webhook",
+            "webhook_enabled", "webhook_url", "push_enabled", "mobile_enabled", "email", "email_available");
+    static final Set<String> SYSTEM_SETTINGS = Set.of("log_retention_days", "default_engine", "language", "ai_available");
+    static final Set<String> PROFILE = Set.of("username", "email", "role");
+    static final Set<String> TOKEN = Set.of("token", "expires_at", "must_change_password");
+    static final Set<String> PROFILE_UPDATE = Set.of("username", "email", "role", "token", "expires_at");
 
     @Autowired
     private LogEventProducer producer;
@@ -146,6 +150,10 @@ class ApiContractIT extends AbstractIntegrationTest {
         assertObject(get("/api/v1/settings/system", token), SYSTEM_SETTINGS);
         assertObject(get("/api/v1/auth/profile", token), PROFILE);
         assertObject(login("admin", ADMIN_PASSWORD), TOKEN);
+        // Same username (other ITs share the admin token); a rename is covered by AuthServiceTest.
+        String email = get("/api/v1/auth/profile", token).getBody().at("/data/email").asText();
+        assertObject(exchange(HttpMethod.PUT, "/api/v1/auth/profile", token,
+                Map.of("username", "admin", "email", email)), PROFILE_UPDATE);
     }
 
     @Test

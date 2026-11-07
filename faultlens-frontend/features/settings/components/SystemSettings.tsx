@@ -1,44 +1,71 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Database, BrainCircuit, Globe, HardDrive } from "lucide-react";
+import { useState } from "react";
+import { useTranslations } from "next-intl";
+import toast from "react-hot-toast";
+import { useQueryClient } from "@tanstack/react-query";
+import { BrainCircuit, HardDrive, Languages, ShieldAlert } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
+import { ErrorState } from "@/shared/components/feedback/ErrorState";
 import { apiClient } from "@/shared/api/client";
 import { Endpoints } from "@/shared/api/endpoints";
-import toast from "react-hot-toast";
 import { getApiErrorMessage } from "@/shared/api/errors";
+import { LOCALES, isLocale } from "@/i18n/config";
+import {
+  systemSettingsKey,
+  useSystemSettingsQuery,
+  type SystemSettingsDto,
+} from "@/features/settings/api/useSystemSettings";
 
-export function SystemSettings() {
-  const [retention, setRetention] = useState("30");
-  const [engine, setEngine] = useState("ai");
-  const [language, setLanguage] = useState("tr");
+const RETENTION_DAYS = [7, 15, 30, 90, 120, 0];
 
-  const [isLoading, setIsLoading] = useState(true);
+function Section({
+  id,
+  icon,
+  title,
+  hint,
+  children,
+}: {
+  id: string;
+  icon: React.ReactNode;
+  title: string;
+  hint: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="card" aria-labelledby={id}>
+      <div className="panel-h">
+        <h3 id={id} className="h3 row">
+          <span className="t3 inline-flex" aria-hidden="true">
+            {icon}
+          </span>
+          {title}
+        </h3>
+      </div>
+      <div className="p-4 stack gap-3">
+        <p className="xs t3">{hint}</p>
+        {children}
+      </div>
+    </section>
+  );
+}
+
+/** The editable form, seeded once from the loaded settings (remounted after a save). */
+function SystemSettingsForm({ initial }: { initial: SystemSettingsDto }) {
+  const t = useTranslations("settings.system");
+  const tSettings = useTranslations("settings");
+  const tShell = useTranslations("shell");
+  const queryClient = useQueryClient();
+  const [retention, setRetention] = useState(String(initial.logRetentionDays ?? 30));
+  const [engine, setEngine] = useState(initial.defaultEngine ?? "ai");
+  const [language, setLanguage] = useState(isLocale(initial.language) ? initial.language : "tr");
   const [isSaving, setIsSaving] = useState(false);
+  const aiAvailable = Boolean(initial.aiAvailable);
 
-  // Load once on mount; state is only set in promise callbacks and not after unmount.
-  useEffect(() => {
-    let active = true;
-    apiClient
-      .get(Endpoints.SETTINGS.SYSTEM)
-      .then((response) => {
-        const data = response.data?.data;
-        if (active && data) {
-          setRetention(String(data.logRetentionDays ?? 30));
-          setEngine(data.defaultEngine ?? "ai");
-          setLanguage(data.language ?? "tr");
-        }
-      })
-      .catch(() => {
-        // Fallback to defaults
-      })
-      .finally(() => {
-        if (active) setIsLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
+  const dirty =
+    retention !== String(initial.logRetentionDays) ||
+    engine !== initial.defaultEngine ||
+    language !== initial.language;
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -48,110 +75,147 @@ export function SystemSettings() {
         defaultEngine: engine,
         language,
       });
-      const data = response.data?.data;
-      if (data) {
-        setRetention(String(data.logRetentionDays));
-        setEngine(data.defaultEngine);
-        setLanguage(data.language);
-      }
-      toast.success("Sistem tercihleri başarıyla kaydedildi!");
+      const data = response.data?.data as SystemSettingsDto | undefined;
+      if (data) queryClient.setQueryData(systemSettingsKey, data);
+      toast.success(t("saved"));
     } catch (err) {
-      toast.error(getApiErrorMessage(err, "Ayarlar kaydedilirken bir hata oluştu."));
+      toast.error(getApiErrorMessage(err, t("saveFailed")));
     } finally {
       setIsSaving(false);
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6 animate-pulse">
-        <div className="flex items-center justify-between">
-          <div className="h-10 w-48 bg-bg-tertiary/30 rounded" />
-          <div className="h-8 w-32 bg-bg-tertiary/30 rounded" />
+  return (
+    <div className="stack gap-4">
+      <header className="between">
+        <div>
+          <h2 className="h2">{t("title")}</h2>
+          <p className="small t3 mt-1">{t("subtitle")}</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="h-32 bg-bg-tertiary/30 rounded-2xl border border-border-default" />
-          <div className="h-32 bg-bg-tertiary/30 rounded-2xl border border-border-default" />
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={handleSave}
+          loading={isSaving}
+          disabled={!dirty}
+        >
+          {tSettings("saveChanges")}
+        </Button>
+      </header>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Section
+          id="sys-retention"
+          icon={<HardDrive size={15} />}
+          title={t("retention")}
+          hint={t("retentionHint")}
+        >
+          <label htmlFor="sys-retention-select" className="sr-only">
+            {t("retention")}
+          </label>
+          <select
+            id="sys-retention-select"
+            className="input"
+            value={retention}
+            onChange={(e) => setRetention(e.target.value)}
+          >
+            {RETENTION_DAYS.map((days) => (
+              <option key={days} value={days}>
+                {days === 0 ? t("retentionForever") : t("retentionDays", { days })}
+              </option>
+            ))}
+          </select>
+        </Section>
+
+        <Section
+          id="sys-engine"
+          icon={<BrainCircuit size={15} />}
+          title={t("engine")}
+          hint={t("engineHint")}
+        >
+          <label htmlFor="sys-engine-select" className="sr-only">
+            {t("engine")}
+          </label>
+          <select
+            id="sys-engine-select"
+            className="input"
+            value={engine}
+            onChange={(e) => setEngine(e.target.value)}
+          >
+            <option value="rule">{t("engines.rule")}</option>
+            <option value="ai" disabled={!aiAvailable && engine !== "ai"}>
+              {t("engines.ai")}
+              {aiAvailable ? "" : ` — ${t("engineUnavailable")}`}
+            </option>
+          </select>
+          {!aiAvailable && (
+            <p className="xs text-warning">
+              {t("aiOff")} {engine === "ai" && t("aiOffSelected")}
+            </p>
+          )}
+          {engine === "ai" && aiAvailable && (
+            <p className="banner c-warn xs" role="note">
+              <ShieldAlert size={14} aria-hidden="true" />
+              <span>{t("aiPrivacy")}</span>
+            </p>
+          )}
+        </Section>
+
+        <Section
+          id="sys-language"
+          icon={<Languages size={15} />}
+          title={t("language")}
+          hint={t("languageHint")}
+        >
+          <label htmlFor="sys-language-select" className="sr-only">
+            {t("language")}
+          </label>
+          <select
+            id="sys-language-select"
+            className="input"
+            value={language}
+            onChange={(e) => setLanguage(e.target.value as typeof language)}
+          >
+            {LOCALES.map((l) => (
+              <option key={l} value={l} lang={l}>
+                {tShell(`languages.${l}`)}
+              </option>
+            ))}
+          </select>
+        </Section>
+      </div>
+
+      {dirty && (
+        <p className="xs t3" role="status">
+          {tSettings("unsaved")}
+        </p>
+      )}
+    </div>
+  );
+}
+
+export function SystemSettings() {
+  const { data, isError, error, refetch } = useSystemSettingsQuery();
+
+  if (isError) return <ErrorState error={error as Error} onRetry={() => void refetch()} />;
+
+  if (!data) {
+    return (
+      <div className="stack" aria-hidden="true">
+        <div className="skel h-12 w-72" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="skel h-36" />
+          <div className="skel h-36" />
         </div>
       </div>
     );
   }
 
+  // Keyed on the stored values: after a save the form restarts from the saved state.
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-text-primary">Sistem Tercihleri</h2>
-          <p className="text-sm text-text-muted mt-1">
-            Uygulamanın veri saklama, dil ve analiz motoru ayarlarını yapılandırın.
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button variant="primary" size="sm" onClick={handleSave} loading={isSaving}>
-            Değişiklikleri Kaydet
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Retention Settings */}
-        <div className="bg-bg-tertiary/30 p-6 rounded-2xl border border-border-default space-y-4">
-          <div className="flex items-center gap-3 border-b border-border-default pb-3">
-            <HardDrive size={18} className="text-text-secondary" />
-            <h3 className="font-medium text-text-primary">Log Saklama Süresi</h3>
-          </div>
-          <p className="text-sm text-text-muted">
-            Veritabanındaki logların ne kadar süreyle tutulacağını belirleyin.
-          </p>
-          <select
-            className="w-full bg-bg-primary text-text-primary rounded-lg border border-border-default px-3 py-2.5 text-sm focus:outline-none focus:border-accent cursor-pointer"
-            value={retention}
-            onChange={(e) => setRetention(e.target.value)}
-          >
-            <option value="7">7 Gün</option>
-            <option value="15">15 Gün</option>
-            <option value="30">30 Gün</option>
-            <option value="90">90 Gün</option>
-            <option value="0">Süresiz (Silme)</option>
-          </select>
-        </div>
-
-        {/* Analysis Engine */}
-        <div className="bg-bg-tertiary/30 p-6 rounded-2xl border border-border-default space-y-4">
-          <div className="flex items-center gap-3 border-b border-border-default pb-3">
-            <BrainCircuit size={18} className="text-text-secondary" />
-            <h3 className="font-medium text-text-primary">Varsayılan Analiz Motoru</h3>
-          </div>
-          <p className="text-sm text-text-muted">
-            Logları analiz ederken kullanılacak varsayılan algoritmayı seçin.
-          </p>
-          <select
-            className="w-full bg-bg-primary text-text-primary rounded-lg border border-border-default px-3 py-2.5 text-sm focus:outline-none focus:border-accent cursor-pointer"
-            value={engine}
-            onChange={(e) => setEngine(e.target.value)}
-          >
-            <option value="rule">Rule-Based (Kural Tabanlı)</option>
-            <option value="ai">AI Analysis (Yapay Zeka Destekli)</option>
-          </select>
-        </div>
-
-        {/* Language */}
-        <div className="bg-bg-tertiary/30 p-6 rounded-2xl border border-border-default space-y-4 md:col-span-2 lg:col-span-1">
-          <div className="flex items-center gap-3 border-b border-border-default pb-3">
-            <Globe size={18} className="text-text-secondary" />
-            <h3 className="font-medium text-text-primary">Arayüz Dili</h3>
-          </div>
-          <p className="text-sm text-text-muted">Sistem dilini değiştirin.</p>
-          <select
-            className="w-full bg-bg-primary text-text-primary rounded-lg border border-border-default px-3 py-2.5 text-sm focus:outline-none focus:border-accent cursor-pointer"
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-          >
-            <option value="tr">Türkçe</option>
-            <option value="en">English (Yakında)</option>
-          </select>
-        </div>
-      </div>
-    </div>
+    <SystemSettingsForm
+      key={`${data.logRetentionDays}-${data.defaultEngine}-${data.language}`}
+      initial={data}
+    />
   );
 }

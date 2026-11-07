@@ -1,14 +1,20 @@
 "use client";
 
 import { Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { Palette, User, Bell, Settings2 } from "lucide-react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { Palette, User, Bell, Settings2, Users, KeyRound } from "lucide-react";
 import { AppearanceSettings } from "@/features/settings/components/AppearanceSettings";
 import { AccountSettings } from "@/features/settings/components/AccountSettings";
 import { NotificationSettings } from "@/features/settings/components/NotificationSettings";
 import { SystemSettings } from "@/features/settings/components/SystemSettings";
+import { UserManagement } from "@/features/settings/components/UserManagement";
+import { ApiKeySettings } from "@/features/apiKeys/components/ApiKeySettings";
+import { useCan } from "@/features/auth/hooks/useCan";
+import { PageHeader } from "@/shared/components/layout/PageHeader";
 
-const TAB_IDS = ["appearance", "account", "notifications", "system"] as const;
+const TAB_IDS = ["appearance", "account", "notifications", "system", "users", "apiKeys"] as const;
 type TabId = (typeof TAB_IDS)[number];
 
 function isTabId(value: string | null): value is TabId {
@@ -17,95 +23,78 @@ function isTabId(value: string | null): value is TabId {
 
 interface TabDefinition {
   id: TabId;
-  label: string;
   icon: React.ReactNode;
   component: React.ReactNode;
+  /** Hidden from non-admins (the API rejects them anyway). */
+  adminOnly?: boolean;
 }
 
+const ALL_TABS: TabDefinition[] = [
+  { id: "appearance", icon: <Palette size={16} />, component: <AppearanceSettings /> },
+  { id: "account", icon: <User size={16} />, component: <AccountSettings /> },
+  { id: "notifications", icon: <Bell size={16} />, component: <NotificationSettings /> },
+  { id: "system", icon: <Settings2 size={16} />, component: <SystemSettings />, adminOnly: true },
+  { id: "users", icon: <Users size={16} />, component: <UserManagement />, adminOnly: true },
+  { id: "apiKeys", icon: <KeyRound size={16} />, component: <ApiKeySettings />, adminOnly: true },
+];
+
 function SettingsContent() {
-  const router = useRouter();
+  const t = useTranslations("settings");
+  const tCommon = useTranslations("common");
   const searchParams = useSearchParams();
-  const tabQuery = searchParams.get("tab");
+  const tabQuery = searchParams?.get("tab") ?? null;
+  const isAdmin = useCan("manageUsers");
 
-  // The URL is the single source of truth for the selected tab.
-  const activeTab: TabId = isTabId(tabQuery) ? tabQuery : "appearance";
-
-  const handleTabChange = (tabId: TabId) => {
-    router.replace(`/settings?tab=${tabId}`);
-  };
-
-  const TABS: TabDefinition[] = [
-    {
-      id: "appearance",
-      label: "Görünüm",
-      icon: <Palette size={18} />,
-      component: <AppearanceSettings />,
-    },
-    {
-      id: "account",
-      label: "Hesap",
-      icon: <User size={18} />,
-      component: <AccountSettings />,
-    },
-    {
-      id: "notifications",
-      label: "Bildirimler",
-      icon: <Bell size={18} />,
-      component: <NotificationSettings />,
-    },
-    {
-      id: "system",
-      label: "Sistem",
-      icon: <Settings2 size={18} />,
-      component: <SystemSettings />,
-    },
-  ];
+  const tabs = ALL_TABS.filter((tab) => isAdmin || !tab.adminOnly);
+  // The URL is the single source of truth for the selected section (shareable link).
+  const activeTab: TabId =
+    isTabId(tabQuery) && tabs.some((tab) => tab.id === tabQuery) ? tabQuery : "appearance";
 
   return (
-    <div className="flex flex-col gap-6 w-full max-w-5xl mx-auto p-4 md:p-8 animate-fade-in">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-text-primary">Ayarlar</h1>
-        <p className="text-text-muted mt-1">
-          Kişisel tercihlerinizi ve sistem yapılandırmasını yönetin.
-        </p>
-      </div>
+    <>
+      <PageHeader title={t("title")} description={t("subtitle")} />
 
-      <div className="flex flex-col md:flex-row gap-8 mt-4">
-        {/* Horizontal / Vertical Tabs depending on screen size */}
-        <div className="md:w-64 shrink-0">
-          <nav className="flex md:flex-col gap-1 overflow-x-auto md:overflow-visible pb-2 md:pb-0">
-            {TABS.map((tab) => {
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => handleTabChange(tab.id)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 whitespace-nowrap cursor-pointer ${
-                    isActive
-                      ? "bg-accent/10 text-accent font-medium"
-                      : "text-text-secondary hover:bg-bg-tertiary hover:text-text-primary"
-                  }`}
+      <div className="flex flex-col md:flex-row gap-6">
+        <nav className="md:w-56 shrink-0" aria-label={t("sections")}>
+          <ul className="flex md:flex-col gap-0.5 overflow-x-auto m-0 p-0 list-none">
+            {tabs.map((tab) => (
+              <li key={tab.id}>
+                <Link
+                  href={`/settings?tab=${tab.id}`}
+                  replace
+                  scroll={false}
+                  className="nav whitespace-nowrap"
+                  aria-current={activeTab === tab.id ? "page" : undefined}
                 >
-                  <span className={isActive ? "text-accent" : "text-text-muted"}>{tab.icon}</span>
-                  {tab.label}
-                </button>
-              );
-            })}
-          </nav>
-        </div>
+                  <span aria-hidden="true" className="inline-flex">
+                    {tab.icon}
+                  </span>
+                  {t(`tabs.${tab.id}`)}
+                  {tab.adminOnly && (
+                    <span
+                      className="badge mono ol ml-auto text-[10px]"
+                      title={tCommon("adminOnly")}
+                    >
+                      ADMIN
+                    </span>
+                  )}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
 
-        {/* Content Area */}
-        <div className="flex-1 bg-bg-secondary p-6 rounded-3xl border border-border-default min-h-[500px]">
-          {TABS.find((t) => t.id === activeTab)?.component}
-        </div>
+        <section className="flex-1 min-w-0 swA" key={activeTab} aria-label={t(`tabs.${activeTab}`)}>
+          {tabs.find((tab) => tab.id === activeTab)?.component}
+        </section>
       </div>
-    </div>
+    </>
   );
 }
 
 export default function SettingsPage() {
   return (
-    <Suspense fallback={<div className="p-8 animate-pulse">Yükleniyor...</div>}>
+    <Suspense>
       <SettingsContent />
     </Suspense>
   );

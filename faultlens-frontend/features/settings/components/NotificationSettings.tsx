@@ -1,116 +1,118 @@
 "use client";
 
-import { Mail, Hash, BellRing, Smartphone } from "lucide-react";
+import { useTranslations } from "next-intl";
+import toast from "react-hot-toast";
+import { Mail, Hash, BellRing, Smartphone, Webhook } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { apiClient } from "@/shared/api/client";
 import { Endpoints } from "@/shared/api/endpoints";
-import toast from "react-hot-toast";
+import { getApiErrorMessage } from "@/shared/api/errors";
 import { useNotificationSettings } from "../hooks/useNotificationSettings";
 import { NotificationToggleCard } from "./NotificationToggleCard";
 import { EmailConfigForm } from "./EmailConfigForm";
 import { SlackConfigForm } from "./SlackConfigForm";
-import { getApiErrorMessage } from "@/shared/api/errors";
+import { WebhookConfigForm } from "./WebhookConfigForm";
 
 export function NotificationSettings() {
-  const { settings, setSettings, isLoading, isSaving, toggleOption, handleSave } =
+  const t = useTranslations("settings.notifications");
+  const tSettings = useTranslations("settings");
+  const { settings, setSettings, emailStatus, isLoading, isSaving, toggleOption, handleSave } =
     useNotificationSettings();
 
+  const triggerPush = async () => {
+    try {
+      await apiClient.post(Endpoints.SETTINGS.TEST.PUSH);
+      toast.success(t("push.testSent"));
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, t("push.testFailed")));
+    }
+  };
+
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
+    <div className="stack gap-4">
+      <header className="between">
         <div>
-          <h2 className="text-lg font-semibold text-text-primary">Bildirim Tercihleri</h2>
-          <p className="text-sm text-text-muted mt-1">
-            Alarmları ve uyarıları hangi kanallardan alacağınızı seçin.
-          </p>
+          <h2 className="h2">{t("title")}</h2>
+          <p className="small t3 mt-1">{t("subtitle")}</p>
         </div>
-        <div className="flex items-center gap-3">
-          <Button variant="primary" size="sm" onClick={handleSave} loading={isSaving}>
-            Değişiklikleri Kaydet
-          </Button>
+        <Button variant="primary" size="sm" onClick={handleSave} loading={isSaving}>
+          {tSettings("saveChanges")}
+        </Button>
+      </header>
+
+      {isLoading ? (
+        <div className="stack" aria-hidden="true">
+          {Array.from({ length: 4 }, (_, i) => (
+            <div key={i} className="skel h-[72px]" />
+          ))}
         </div>
-      </div>
+      ) : (
+        <div className="stack">
+          <NotificationToggleCard
+            id="email"
+            title={t("email.title")}
+            description={t("email.description")}
+            icon={<Mail size={16} />}
+            enabled={settings.emailEnabled}
+            onToggle={() => toggleOption("emailEnabled")}
+          >
+            <EmailConfigForm {...emailStatus} />
+          </NotificationToggleCard>
 
-      <div className="space-y-4">
-        {isLoading ? (
-          Array.from({ length: 4 }, (_, i) => (
-            <div
-              key={i}
-              className="h-20 bg-bg-tertiary/30 rounded-2xl border border-border-default animate-pulse"
+          <NotificationToggleCard
+            id="slack"
+            title={t("slack.title")}
+            description={t("slack.description")}
+            icon={<Hash size={16} />}
+            enabled={settings.slackEnabled}
+            onToggle={() => toggleOption("slackEnabled")}
+          >
+            <SlackConfigForm
+              webhookUrl={settings.slackWebhook}
+              onChange={(value) => setSettings({ ...settings, slackWebhook: value })}
             />
-          ))
-        ) : (
-          <>
-            <NotificationToggleCard
-              id="email"
-              title="E-posta Bildirimleri"
-              description="Kritik alarmları ve özet raporları e-posta adresinize gönderir."
-              icon={<Mail size={20} className="text-blue-500" />}
-              enabled={settings.emailEnabled}
-              onToggle={() => toggleOption("emailEnabled")}
-            >
-              <EmailConfigForm
-                serviceId={settings.emailjsServiceId ?? null}
-                templateId={settings.emailjsTemplateId ?? null}
-                publicKey={settings.emailjsPublicKey ?? null}
-                onChange={(field, value) => setSettings({ ...settings, [field]: value })}
-              />
-            </NotificationToggleCard>
+          </NotificationToggleCard>
 
-            <NotificationToggleCard
-              id="slack"
-              title="Slack Entegrasyonu"
-              description="Belirlenen kanallara anlık hata ve uyarı mesajları iletir."
-              icon={<Hash size={20} className="text-purple-500" />}
-              enabled={settings.slackEnabled}
-              onToggle={() => toggleOption("slackEnabled")}
-            >
-              <SlackConfigForm
-                webhookUrl={settings.slackWebhook}
-                onChange={(value) => setSettings({ ...settings, slackWebhook: value })}
-              />
-            </NotificationToggleCard>
-
-            <NotificationToggleCard
-              id="browser"
-              title="Tarayıcı (Push) Bildirimleri"
-              description="Sayfa açık olmasa bile tarayıcı üzerinden uyarı alın."
-              icon={<BellRing size={20} className="text-accent" />}
-              enabled={settings.pushEnabled}
-              onToggle={() => toggleOption("pushEnabled")}
-            >
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-text-secondary">
-                  Uygulama içi anlık bildirimleri test edin.
-                </p>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={async () => {
-                    try {
-                      await apiClient.post(Endpoints.SETTINGS.TEST.PUSH);
-                      toast.success("Push bildirimi tetiklendi.");
-                    } catch (err) {
-                      toast.error(getApiErrorMessage(err, "Bildirim tetiklenemedi."));
-                    }
-                  }}
-                >
-                  Push Bildirimi Tetikle
-                </Button>
-              </div>
-            </NotificationToggleCard>
-
-            <NotificationToggleCard
-              id="mobile"
-              title="Mobil Bildirimler"
-              description="Mobil uygulamaya push notification gönderir."
-              icon={<Smartphone size={20} className="text-green-500" />}
-              enabled={settings.mobileEnabled}
-              onToggle={() => toggleOption("mobileEnabled")}
+          <NotificationToggleCard
+            id="webhook"
+            title={t("webhook.title")}
+            description={t("webhook.description")}
+            icon={<Webhook size={16} />}
+            enabled={settings.webhookEnabled}
+            onToggle={() => toggleOption("webhookEnabled")}
+          >
+            <WebhookConfigForm
+              webhookUrl={settings.webhookUrl}
+              onChange={(value) => setSettings({ ...settings, webhookUrl: value })}
             />
-          </>
-        )}
-      </div>
+          </NotificationToggleCard>
+
+          <NotificationToggleCard
+            id="browser"
+            title={t("push.title")}
+            description={t("push.description")}
+            icon={<BellRing size={16} />}
+            enabled={settings.pushEnabled}
+            onToggle={() => toggleOption("pushEnabled")}
+          >
+            <div className="between">
+              <p className="small t2">{t("push.testHint")}</p>
+              <Button variant="secondary" size="sm" onClick={triggerPush}>
+                {t("push.test")}
+              </Button>
+            </div>
+          </NotificationToggleCard>
+
+          <NotificationToggleCard
+            id="mobile"
+            title={t("mobile.title")}
+            description={t("mobile.description")}
+            icon={<Smartphone size={16} />}
+            enabled={settings.mobileEnabled}
+            onToggle={() => toggleOption("mobileEnabled")}
+          />
+        </div>
+      )}
     </div>
   );
 }

@@ -32,6 +32,7 @@ class AnalyzerServiceTest {
     private LogGroupRepository logGroupRepository;
     private KafkaTemplate<String, AnalysisResultDto> kafkaTemplate;
     private AnalyzerService service;
+    private final java.util.concurrent.atomic.AtomicBoolean preferAi = new java.util.concurrent.atomic.AtomicBoolean(true);
 
     @BeforeEach
     @SuppressWarnings("unchecked")
@@ -46,6 +47,7 @@ class AnalyzerServiceTest {
         service = new AnalyzerService(
                 ruleBasedEngine,
                 Optional.of(aiAnalysisEngine),
+                Optional.of(preferAi::get),
                 deploymentCorrelator,
                 analysisRepository,
                 logGroupRepository,
@@ -104,6 +106,26 @@ class AnalyzerServiceTest {
 
         verify(analysisRepository).save(any(Analysis.class));
         verify(kafkaTemplate).send(eq("log-analysis"), eq("1"), any(AnalysisResultDto.class));
+    }
+
+    @Test
+    void ruleBasedPreferenceNeverCallsTheAiEngine() {
+        // Settings → default engine = "rule": the AI engine must not be called (cost, data egress).
+        preferAi.set(false);
+        LogEntryDto entry = LogEntryDto.builder().id(100L).groupId(1L).build();
+        LogGroup group = new LogGroup();
+        group.setId(1L);
+        when(logGroupRepository.findById(1L)).thenReturn(Optional.of(group));
+        when(ruleBasedEngine.analyze(eq(entry), eq(group)))
+                .thenReturn(new AnalysisResult("Rule Cause", "Rule Suggestion", null, 0.4, "RULE_BASED"));
+        when(aiAnalysisEngine.isAvailable()).thenReturn(true);
+        when(deploymentCorrelator.correlate(entry)).thenReturn(Optional.empty());
+        when(analysisRepository.save(any(Analysis.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        AnalysisResultDto result = service.analyze(entry);
+
+        assertThat(result.getEngineType()).isEqualTo("RULE_BASED");
+        org.mockito.Mockito.verify(aiAnalysisEngine, org.mockito.Mockito.never()).analyze(any(), any());
     }
 
     @Test

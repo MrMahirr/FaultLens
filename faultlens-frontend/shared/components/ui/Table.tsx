@@ -14,8 +14,8 @@ import {
 } from "@tanstack/react-table";
 import { useState, useCallback } from "react";
 import { ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/shared/lib/utils";
-
 import { useUIStore } from "@/shared/store/ui.store";
 
 /* ── Features ──────────────────────────────────────────────── */
@@ -47,9 +47,11 @@ interface DataTableProps<TData extends object> {
   emptyMessage?: string;
   className?: string;
   stickyHeader?: boolean;
+  /** Accessible name of the table. */
+  label?: string;
 }
 
-/* ── Component ─────────────────────────────────────────────── */
+/* ── Component (Instrument card + .th / .tr look) ──────────── */
 
 function DataTable<TData extends object>({
   data,
@@ -58,42 +60,33 @@ function DataTable<TData extends object>({
   enableSorting = true,
   enableSelection = false,
   loading = false,
-  emptyMessage = "Veri bulunamadı",
+  emptyMessage,
   className,
   stickyHeader = false,
+  label,
 }: DataTableProps<TData>) {
+  const t = useTranslations("common");
   const [sorting, setSorting] = useState<SortingState>([]);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-  const { compactMode } = useUIStore();
+  const compactMode = useUIStore((state) => state.compactMode);
 
   const table = useTable({
     features: dataTableFeatures,
     data,
     columns,
-    state: {
-      sorting,
-      rowSelection,
-    },
+    state: { sorting, rowSelection },
     onSortingChange: setSorting,
     onRowSelectionChange: setRowSelection,
     enableSorting,
     enableRowSelection: enableSelection,
   });
 
-  const handleRowClick = useCallback(
-    (row: TData) => {
-      onRowClick?.(row);
-    },
-    [onRowClick],
-  );
+  const handleRowClick = useCallback((row: TData) => onRowClick?.(row), [onRowClick]);
 
   return (
-    <div
-      className={cn("w-full overflow-x-auto rounded-xl border border-border-default", className)}
-    >
-      <table className="w-full text-sm">
-        {/* ── Header ────────────────────────────────── */}
-        <thead className={cn("bg-bg-tertiary/50", stickyHeader && "sticky top-0 z-10")}>
+    <div className={cn("card w-full overflow-x-auto", className)}>
+      <table className="w-full text-[13px]" aria-label={label} aria-busy={loading || undefined}>
+        <thead className={cn("bg-bg-tertiary", stickyHeader && "sticky top-0 z-10")}>
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
@@ -103,19 +96,38 @@ function DataTable<TData extends object>({
                 return (
                   <th
                     key={header.id}
+                    scope="col"
+                    aria-sort={
+                      sortDir === "asc"
+                        ? "ascending"
+                        : sortDir === "desc"
+                          ? "descending"
+                          : undefined
+                    }
+                    tabIndex={canSort ? 0 : undefined}
                     className={cn(
-                      "px-4 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider",
+                      "px-4 h-[34px] text-left text-[11.5px] font-medium text-text-muted",
                       "border-b border-border-default",
-                      canSort && "cursor-pointer select-none hover:text-text-secondary",
+                      canSort && "cursor-pointer select-none hover:text-text-primary",
                     )}
                     onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
+                    onKeyDown={
+                      canSort
+                        ? (e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              header.column.toggleSorting();
+                            }
+                          }
+                        : undefined
+                    }
                   >
                     <div className="flex items-center gap-1.5">
                       {header.isPlaceholder
                         ? null
                         : flexRender(header.column.columnDef.header, header.getContext())}
                       {canSort && (
-                        <span className="text-text-muted">
+                        <span className="text-text-faint" aria-hidden="true">
                           {sortDir === "asc" ? (
                             <ArrowUp size={12} />
                           ) : sortDir === "desc" ? (
@@ -133,7 +145,6 @@ function DataTable<TData extends object>({
           ))}
         </thead>
 
-        {/* ── Body ──────────────────────────────────── */}
         <tbody>
           {loading ? (
             Array.from({ length: 5 }, (_, i) => (
@@ -143,7 +154,7 @@ function DataTable<TData extends object>({
                     key={`skeleton-${i}-${j}`}
                     className="px-4 py-3 border-b border-border-default"
                   >
-                    <div className="h-4 bg-bg-tertiary rounded animate-pulse" />
+                    <div className="skel h-3.5" />
                   </td>
                 ))}
               </tr>
@@ -151,23 +162,38 @@ function DataTable<TData extends object>({
           ) : table.getRowModel().rows.length === 0 ? (
             <tr>
               <td colSpan={columns.length} className="px-4 py-12 text-center text-text-muted">
-                {emptyMessage}
+                {emptyMessage ?? t("noData")}
               </td>
             </tr>
           ) : (
             table.getRowModel().rows.map((row) => (
               <tr
                 key={row.id}
-                onClick={() => handleRowClick(row.original)}
+                onClick={onRowClick ? () => handleRowClick(row.original) : undefined}
+                onKeyDown={
+                  onRowClick
+                    ? (e) => {
+                        // Only the row itself: Enter on a button inside it (delete, resolve…)
+                        // must not also open the row's detail.
+                        if (e.target !== e.currentTarget) return;
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          handleRowClick(row.original);
+                        }
+                      }
+                    : undefined
+                }
+                tabIndex={onRowClick ? 0 : undefined}
+                aria-selected={enableSelection ? row.getIsSelected() : undefined}
                 className={cn(
-                  "border-b border-border-default transition-colors duration-150",
-                  onRowClick && "cursor-pointer hover:bg-bg-tertiary/50",
-                  row.getIsSelected() && "bg-accent/5",
+                  "border-b border-border-default last:border-b-0 transition-colors duration-150",
+                  onRowClick && "cursor-pointer hover:bg-bg-glass",
+                  row.getIsSelected() && "bg-bg-glass-hover",
                 )}
               >
                 {/* No column-visibility feature registered, so every cell is visible. */}
                 {row.getAllCells().map((cell) => (
-                  <td key={cell.id} className={cn("px-4", compactMode ? "py-1" : "py-3")}>
+                  <td key={cell.id} className={cn("px-4", compactMode ? "py-1.5" : "py-2.5")}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}

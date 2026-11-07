@@ -24,4 +24,11 @@ public class LogSourceDto {
     private Instant lastSeenAt;
     /** Live state from the collector; set by SourceController. */
     private SourceStatus status;
+    /** Collector health (P08): CONNECTED, ERROR or IDLE, shared by all instances. */
+    private String health;
+    /** Last adapter error (kept after recovery, for context) and when it happened. */
+    private String lastError;
+    private Instant lastErrorAt;
+    /** Instance that collects (or last collected) the source. */
+    private String collectorInstance;
 }

@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-backend
+  labels:
+    {{- include "faultlens.labels" . | nindent 4 }}
+    app.kubernetes.io/name: faultlens-backend
+spec:
+  replicas: {{ .Values.backend.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: faultlens-backend
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: faultlens-backend
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      {{- include "faultlens.podSecurity" . | nindent 6 }}
+      # Graceful shutdown hands the collector's source leases to the other replicas.
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: backend
+          image: "{{ .Values.image.registry }}/{{ .Values.image.backend }}:{{ include "faultlens.tag" . }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- include "faultlens.containerSecurity" . | nindent 10 }}
+          ports:
+            - name: http
+              containerPort: 3500
+            - name: management
+              containerPort: {{ .Values.backend.managementPort }}
+          env:
+            - name: PORT
+              value: "3500"
+            - name: MANAGEMENT_PORT
+              value: {{ .Values.backend.managementPort | quote }}
+            {{- range $key, $value := .Values.backend.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.backend.existingSecret }}
+          startupProbe:
+            httpGet:
+              path: /livez
+              port: http
+            periodSeconds: 5
+            failureThreshold: 36
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: http
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.backend.resources | nindent 12 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-backend
+  labels:
+    {{- include "faultlens.labels" . | nindent 4 }}
+    app.kubernetes.io/name: faultlens-backend
+spec:
+  selector:
+    app.kubernetes.io/name: faultlens-backend
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+    - name: http
+      port: 3500
+      targetPort: http
+    - name: management
+      port: {{ .Values.backend.managementPort }}
+      targetPort: management
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Release.Name }}-backend
+  labels:
+    {{- include "faultlens.labels" . | nindent 4 }}
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: faultlens-backend
+      app.kubernetes.io/instance: {{ .Release.Name }}

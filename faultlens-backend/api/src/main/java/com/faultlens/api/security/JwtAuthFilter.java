@@ -25,7 +25,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     static final Set<String> PASSWORD_CHANGE_ALLOWED = Set.of(
             "PUT /api/v1/auth/password",
             "GET /api/v1/auth/profile",
-            "POST /api/v1/auth/refresh");
+            "POST /api/v1/auth/refresh",
+            "POST /api/v1/auth/logout");
 
     private final JwtService jwtService;
     private final ObjectMapper objectMapper;
@@ -42,7 +43,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         String header = request.getHeader("Authorization");
-        if (header != null && header.startsWith("Bearer ")) {
+        // API keys (flk_…) are handled by ApiKeyAuthFilter.
+        if (header != null && header.startsWith("Bearer ") && !ApiKeyTokens.looksLikeKey(header.substring(7))) {
             try {
                 String token = header.substring(7);
                 if (!jwtService.validateToken(token)) {

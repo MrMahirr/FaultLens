@@ -5,6 +5,29 @@ This document details the REST API endpoints and real-time WebSocket channels pr
 - **Base URL:** `http://localhost:3500/api/v1`
 - **WebSocket Protocol URL:** `ws://localhost:3500/ws`
 - **Swagger Documentation Page:** `http://localhost:3500/swagger-ui/index.html`
+- **Machine-readable contract:** [`contracts/openapi.json`](../../contracts/openapi.json) (OpenAPI 3.1, the `/v3/api-docs` document)
+
+### The contract file (P10 / 1.3)
+
+`contracts/openapi.json` is generated from the running API and committed. The frontend generates
+its TypeScript types from it (`pnpm gen:api` → `faultlens-frontend/shared/api/schema.d.ts`) and
+checks its DTOs against them at compile time (`shared/api/contract.check.ts`).
+
+- Property names are documented in **snake_case**, as on the wire (swagger-core uses Jackson 2 and
+  does not see the Jackson 3 `@JsonNaming`, so `OpenApiConfig` applies the strategy globally).
+- `OpenApiContractIT` fails when the API and the committed file differ, and also checks the main
+  schemas against the real JSON field names pinned by `ApiContractIT`.
+- Controllers return concrete types (`ApiResponse<PagedResponse<LogEntryDto>>`, never
+  `ApiResponse<?>`), otherwise the response is published as an untyped object.
+- After an intended API change:
+
+  ```bash
+  cd faultlens-backend
+  ./mvnw verify -DskipUTs -pl api -am -Dit.test=OpenApiContractIT -Dcontracts.update=true
+  cd ../faultlens-frontend && pnpm gen:api && pnpm typecheck
+  ```
+
+  and commit `contracts/openapi.json` with `shared/api/schema.d.ts`. CI fails if either is stale.
 
 ---
 
@@ -69,6 +92,35 @@ This document details the REST API endpoints and real-time WebSocket channels pr
 - **Request Body:** `{ "current_password": "...", "new_password": "..." }` (`new_password`: 8-128 characters, must differ from the current one)
 - **Response (`200 OK`):** a fresh token (same shape as login) with `must_change_password: false`. Clients should replace their stored token.
 - **Error Codes:** `400 INVALID_CURRENT_PASSWORD`, `400 PASSWORD_REUSED`, `422 VALIDATION_FAILED`. A wrong current password is deliberately **not** `401`, so clients do not treat it as a logged-out session.
+
+---
+
+## 1b. API Keys (`/api/v1/api-keys`)
+
+Scoped service tokens for CI and integrations (P10 / 1.1). Management endpoints are **ADMIN only**
+(user JWT); an API key can never call them.
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/v1/api-keys` | All keys, newest first (masked `display_key`, never the token) |
+| `POST` | `/api/v1/api-keys` | `{ name, scopes: [...], expires_in_days? }` → `201 { key, token }` — `token` is shown **only here** |
+| `DELETE` | `/api/v1/api-keys/{id}` | Revoke (idempotent, `204`); the row is kept for auditing |
+
+**Token format:** `flk_<8-char prefix>_<32-char secret>`; only its SHA-256 is stored.
+**Sending a key:** `Authorization: Bearer flk_…` or `X-FaultLens-Key: flk_…`.
+
+**Scopes** — a key may call *only* these endpoints; anything else is `403 API_KEY_SCOPE`:
+
+| Scope | Allows |
+|---|---|
+| `deployments:write` | `POST /api/v1/deployments` |
+| `logs:ingest` | `POST /api/v1/ingest/**`, `POST /v1/logs` (HTTP / OTLP ingest, see 3b); needs `source_id` (an HTTP source) at creation |
+| `logs:read` | `GET /api/v1/logs`, `GET /api/v1/logs/**` |
+| `alarms:read` | `GET /api/v1/alarms`, `GET /api/v1/alarms/**` |
+
+**Errors:** unknown / revoked / expired key → `401 INVALID_API_KEY`; outside its scopes → `403 API_KEY_SCOPE`;
+over the per-key limit (default 600 requests/minute, `faultlens.api-keys.rate-limit-per-minute`) →
+`429 RATE_LIMITED` with `Retry-After`; unknown scope at creation → `400 INVALID_SCOPE`.
 
 ---
 
@@ -261,6 +313,40 @@ Requires authentication.
 
 ---
 
+## 3b. Log Ingest (`/api/v1/ingest/logs`, `/v1/logs`)
+
+Applications push logs themselves (P10 / 1.2). Only API keys with the `logs:ingest` scope may call
+these endpoints (user tokens get `403`); the key is bound to an **HTTP** source (`source_id` at key
+creation), and every record is stored under that source. Records go to the `log-raw` topic like
+collected logs.
+
+| Method | Path | Body | Success |
+|---|---|---|---|
+| `POST` | `/api/v1/ingest/logs` | JSON array of records, `{"logs": [...]}` or one record | `202 { data: { accepted } }` |
+| `POST` | `/v1/logs` | OTLP `ExportLogsServiceRequest`, `application/x-protobuf` or `application/json` | `200` empty `ExportLogsServiceResponse` (same encoding) |
+
+**JSON record** (snake_case; camelCase accepted): `message` (required), `timestamp` (ISO-8601 or epoch
+ms), `severity`, `stack_trace`, `service_name`, `namespace`, `pod_name`, `container_name`, `cluster`,
+`attributes` (string map, max 32).
+
+**OTLP mapping:** body → message; `exception.stacktrace` → stack trace; `service.name`,
+`k8s.namespace.name`, `k8s.pod.name`, `k8s.container.name` / `container.name`, `k8s.cluster.name`
+(resource or record attributes) → fields; `severity_number` ranges → severity, else `severity_text`.
+
+**All or nothing:** a request is validated as a whole and answered after Kafka acknowledged every record.
+
+| Error | When |
+|---|---|
+| `400 INVALID_JSON` / `INVALID_OTLP` / `INVALID_LOG_RECORD` | malformed body, a record without message, bad timestamp |
+| `403 API_KEY_NO_SOURCE` | key not bound to an existing HTTP source |
+| `409 SOURCE_DISABLED` | the source is disabled |
+| `413 TOO_MANY_RECORDS` / `PAYLOAD_TOO_LARGE` | > `faultlens.ingest.max-records` (5000) / > `faultlens.ingest.max-body-bytes` (5 MB) |
+| `503 INGEST_UNAVAILABLE` + `Retry-After` | Kafka did not acknowledge within `faultlens.ingest.kafka-timeout-ms` (5 s); retry |
+
+Metric: `faultlens_ingest_records_total{source, format=json|otlp, result=accepted|rejected}`.
+
+---
+
 ## 4. Anomaly Analysis & Deployments (`/api/v1/analyses`, `/api/v1/deployments`)
 
 Requires authentication.
@@ -275,6 +361,7 @@ Requires authentication.
 ### B. Create Deployment Event
 - **Method:** `POST`
 - **Path:** `/api/v1/deployments`
+- **Auth:** EDITOR/ADMIN token, or an API key with the `deployments:write` scope (see 1b)
 - **Request Body (`application/json`):**
   ```json
   {

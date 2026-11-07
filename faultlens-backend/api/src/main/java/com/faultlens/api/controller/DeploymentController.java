@@ -4,7 +4,10 @@ import com.faultlens.api.dto.DeploymentDto;
 import com.faultlens.api.service.DeploymentService;
 import com.faultlens.common.dto.ApiResponse;
 import jakarta.validation.Valid;
+import com.faultlens.api.security.Roles;
+import com.faultlens.common.dto.PagedResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,15 +26,16 @@ public class DeploymentController {
      * Lists deployment history.
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<?>> list(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "50") int size) {
+    public ResponseEntity<ApiResponse<PagedResponse<DeploymentDto>>> list(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "50") int size) {
         return ResponseEntity.ok(ApiResponse.ok(service.list(page, size)));
     }
 
     /**
      * Creates a deployment record.
      */
+    @PreAuthorize(Roles.CAN_RECORD_DEPLOYMENT)
     @PostMapping
-    public ResponseEntity<ApiResponse<?>> create(@Valid @RequestBody DeploymentDto deployment) {
+    public ResponseEntity<ApiResponse<DeploymentDto>> create(@Valid @RequestBody DeploymentDto deployment) {
         return ResponseEntity.ok(ApiResponse.ok(service.create(deployment)));
     }
 }

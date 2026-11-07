@@ -2,12 +2,20 @@
 
 import { Endpoints } from "@/shared/api/endpoints";
 import { useWebSocket } from "@/shared/hooks/useWebSocket";
+import { snakeToCamel } from "@/shared/lib/caseTransform";
 import { useAuthStore } from "@/features/auth/store/auth.store";
 import type { LogEntryDto } from "@/features/logs/types/log.types";
 
+/** The socket also carries in-app alarms ({ type: "ALARM" }); only log entries pass. */
+function toLogEntry(raw: unknown): LogEntryDto | null {
+  if (!raw || typeof raw !== "object" || "type" in raw) return null;
+  const entry = snakeToCamel<LogEntryDto>(raw);
+  return typeof entry.id === "number" && typeof entry.severity === "string" ? entry : null;
+}
+
 /**
- * WebSocket log stream hook.
- * Connects to the log WebSocket endpoint and parses incoming messages.
+ * Live log entries from /ws/logs (the backend publishes ERROR/CRITICAL entries), converted
+ * to the same camelCase shape as the REST API.
  */
 export function useLogStream({
   enabled = false,
@@ -23,9 +31,8 @@ export function useLogStream({
     token,
     enabled: enabled && !!token,
     onMessage: (data) => {
-      // Parse incoming log entry
-      const log = data as LogEntryDto;
-      onNewLog?.(log);
+      const log = toLogEntry(data);
+      if (log) onNewLog?.(log);
     },
   });
 

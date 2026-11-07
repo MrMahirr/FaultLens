@@ -1,7 +1,22 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const publicPaths = ["/login"];
+/** Reachable without a session; "/" is the public landing page. */
+const publicPaths = ["/", "/login"];
+
+/** Mirrors features/auth/store/auth.store.ts. */
+const SESSION_COOKIE = "faultlens_session";
+const LEGACY_TOKEN_COOKIE = "faultlens_token";
+
+/**
+ * Whether the browser has an unexpired session: the marker cookie holds the epoch second its
+ * refresh cookie expires. Not a verification (the refresh cookie is HttpOnly and scoped to the
+ * API); it only spares an expired session a round trip, the API stays the authority.
+ */
+export function hasSession(request: NextRequest, nowSec = Math.floor(Date.now() / 1000)): boolean {
+  const expiresAt = Number(request.cookies.get(SESSION_COOKIE)?.value);
+  return Number.isFinite(expiresAt) && expiresAt > nowSec;
+}
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -16,24 +31,22 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Check auth token cookie
-  const token = request.cookies.get("faultlens_token")?.value;
+  const signedIn = hasSession(request);
 
-  // If trying to access public auth paths while logged in, redirect to dashboard
+  // Signed-in users skip the landing page and the sign-in form.
   if (pathname === "/login" || pathname === "/") {
-    if (token) {
+    if (signedIn) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
-    }
-    // If accessing root without token, redirect to login
-    if (pathname === "/" && !token) {
-      return NextResponse.redirect(new URL("/login", request.url));
     }
     return NextResponse.next();
   }
 
-  // If trying to access protected paths without token, redirect to login
-  if (!token && !publicPaths.includes(pathname)) {
-    return NextResponse.redirect(new URL("/login", request.url));
+  // Protected paths need a session; drop stale cookies on the way to /login.
+  if (!signedIn && !publicPaths.includes(pathname)) {
+    const response = NextResponse.redirect(new URL("/login", request.url));
+    response.cookies.delete(SESSION_COOKIE);
+    response.cookies.delete(LEGACY_TOKEN_COOKIE);
+    return response;
   }
 
   return NextResponse.next();

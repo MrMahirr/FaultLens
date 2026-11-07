@@ -17,6 +17,7 @@ import io.fabric8.kubernetes.client.server.mock.KubernetesMockServer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
@@ -26,16 +27,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 /**
- * {@link KubernetesAdapter} against fabric8's mock API server.
- *
- * <p>Documents the <b>current</b> polling behaviour before P06 changes it: every poll re-reads
- * each pod's full log, so lines already sent are emitted again (see
- * {@link #currentBehaviour_eachPollReEmitsTheWholeLog()}).
+ * {@link KubernetesAdapter} against fabric8's mock API server. Logs are requested with
+ * {@code timestamps=true&sinceTime=...}; only lines newer than the last emitted one are sent on.
  */
 @EnableKubernetesMockClient
 class KubernetesAdapterTest {
     private static final String NAMESPACE = "team";
     private static final Duration WAIT = Duration.ofSeconds(15);
+    private static final String T1 = "2026-11-05T10:00:01.500Z";
+    private static final String T2 = "2026-11-05T10:00:02.250Z";
 
     KubernetesMockServer server;
     KubernetesClient client;
@@ -64,16 +64,17 @@ class KubernetesAdapterTest {
     }
 
     @Test
-    void emitsOneEventPerNonBlankLogLineWithPodMetadata() throws Exception {
+    void emitsOneEventPerNonBlankLogLineWithPodMetadataAndLogTimestamp() throws Exception {
         expectPods(pod("orders-1", "orders", "node-a"));
-        expectLog("orders-1", "started\n\nNullPointerException at Foo\n");
-        start(source());
+        expectLog("orders-1", Instant.EPOCH.toString(), T1 + " started\n\n" + T2 + " NullPointerException at Foo\n");
+        start(source(null));
 
         await().atMost(WAIT).until(() -> events.size() >= 2);
-        assertThat(events.subList(0, 2)).extracting(LogEventDto::getMessage)
+        assertThat(events).extracting(LogEventDto::getMessage)
                 .containsExactly("started", "NullPointerException at Foo");
 
         LogEventDto event = events.getFirst();
+        assertThat(event.getTimestamp()).as("taken from the log line").isEqualTo(Instant.parse(T1));
         assertThat(event.getSource()).isEqualTo("kubernetes");
         assertThat(event.getCluster()).isEqualTo("prod-eu");
         assertThat(event.getNamespace()).isEqualTo(NAMESPACE);
@@ -87,9 +88,9 @@ class KubernetesAdapterTest {
     @Test
     void readsEveryPodInTheNamespace() throws Exception {
         expectPods(pod("orders-1", "orders", "node-a"), pod("billing-1", null, "node-b"));
-        expectLog("orders-1", "from orders\n");
-        expectLog("billing-1", "from billing\n");
-        start(source());
+        expectLog("orders-1", Instant.EPOCH.toString(), T1 + " from orders\n");
+        expectLog("billing-1", Instant.EPOCH.toString(), T1 + " from billing\n");
+        start(source(null));
 
         await().atMost(WAIT).until(() -> events.stream().map(LogEventDto::getPodName).distinct().count() == 2);
         LogEventDto billing = events.stream().filter(e -> "billing-1".equals(e.getPodName())).findFirst().orElseThrow();
@@ -98,14 +99,43 @@ class KubernetesAdapterTest {
     }
 
     @Test
-    void currentBehaviour_eachPollReEmitsTheWholeLog() throws Exception {
+    void laterPollsSendOnlyNewLines() throws Exception {
+        // Regression (P06): every poll used to re-send the pod's whole log.
         expectPods(pod("orders-1", "orders", "node-a"));
-        expectLog("orders-1", "only line\n");
-        start(source());
+        expectLog("orders-1", Instant.EPOCH.toString(), T1 + " first\n");
+        // The next request asks since T1; the API repeats the boundary line (second precision).
+        expectLog("orders-1", T1, T1 + " first\n" + T2 + " second\n");
+        expectLog("orders-1", T2, T2 + " second\n");
+        start(source(null));
 
-        // Poll interval is 1s; after two polls the single line has been sent twice.
         await().atMost(WAIT).until(() -> events.size() >= 2);
-        assertThat(events.subList(0, 2)).extracting(LogEventDto::getMessage).containsOnly("only line");
+        Thread.sleep(2500); // at least two more polls
+        assertThat(events).extracting(LogEventDto::getMessage).containsExactly("first", "second");
+    }
+
+    @Test
+    void knownSourceResumesFromLastSeenAtInsteadOfReplaying() throws Exception {
+        Instant lastSeen = Instant.parse("2026-11-05T09:59:00Z");
+        expectPods(pod("orders-1", "orders", "node-a"));
+        expectLog("orders-1", lastSeen.toString(), "2026-11-05T09:58:59Z old\n" + T1 + " new\n");
+        expectLog("orders-1", T1, T1 + " new\n");
+        start(source(lastSeen));
+
+        await().atMost(WAIT).until(() -> !events.isEmpty());
+        Thread.sleep(1500);
+        assertThat(events).extracting(LogEventDto::getMessage).containsExactly("new");
+    }
+
+    @Test
+    void newLinesFiltersByTimestampAndKeepsLinesWithoutOne() {
+        Instant since = Instant.parse(T1);
+        String log = T1 + " boundary\n" + T2 + " after\n\nplain line without timestamp\n" + T2 + "   \n";
+
+        assertThat(KubernetesAdapter.newLines(log, since))
+                .extracting(KubernetesAdapter.TimedLine::text)
+                .containsExactly("after", "plain line without timestamp");
+        assertThat(KubernetesAdapter.newLines(log, null)).hasSize(3);
+        assertThat(KubernetesAdapter.newLines(null, since)).isEmpty();
     }
 
     @Test
@@ -113,7 +143,7 @@ class KubernetesAdapterTest {
         server.expect().get().withPath("/api/v1/namespaces")
                 .andReturn(200, new NamespaceListBuilder().build()).always();
 
-        assertThat(adapter.testConnection(source())).isTrue();
+        assertThat(adapter.testConnection(source(null))).isTrue();
     }
 
     @Test
@@ -121,7 +151,7 @@ class KubernetesAdapterTest {
         // 403 rather than 5xx: fabric8 retries 5xx with backoff, which only slows the test down.
         server.expect().get().withPath("/api/v1/namespaces").andReturn(403, "forbidden").always();
 
-        assertThat(adapter.testConnection(source())).isFalse();
+        assertThat(adapter.testConnection(source(null))).isFalse();
     }
 
     private void expectPods(Pod... pods) {
@@ -129,8 +159,10 @@ class KubernetesAdapterTest {
                 .andReturn(200, new PodListBuilder().withItems(pods).build()).always();
     }
 
-    private void expectLog(String podName, String body) {
-        server.expect().get().withPath("/api/v1/namespaces/" + NAMESPACE + "/pods/" + podName + "/log?pretty=false")
+    private void expectLog(String podName, String sinceTime, String body) {
+        server.expect().get()
+                .withPath("/api/v1/namespaces/" + NAMESPACE + "/pods/" + podName
+                        + "/log?pretty=false&sinceTime=" + sinceTime + "&timestamps=true")
                 .andReturn(200, body).always();
     }
 
@@ -144,7 +176,7 @@ class KubernetesAdapterTest {
     }
 
     /** Source whose kubeconfig points at the mock server. */
-    private LogSource source() throws Exception {
+    private LogSource source(Instant lastSeenAt) throws Exception {
         String kubeconfig = """
                 apiVersion: v1
                 kind: Config
@@ -169,7 +201,8 @@ class KubernetesAdapterTest {
         String json = """
                 {"namespace":"%s","cluster":"prod-eu","containerName":"app","kubeconfigPath":"%s"}"""
                 .formatted(NAMESPACE, file.toString().replace("\\", "\\\\"));
-        return LogSource.builder().id(7L).name("k8s-source").type(LogSourceType.KUBERNETES).config(json).build();
+        return LogSource.builder().id(7L).name("k8s-source").type(LogSourceType.KUBERNETES).config(json)
+                .lastSeenAt(lastSeenAt).build();
     }
 
     private void start(LogSource source) {

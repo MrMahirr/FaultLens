@@ -14,6 +14,7 @@ import com.faultlens.api.model.Alarm;
 import com.faultlens.api.model.AlarmStatus;
 import com.faultlens.api.repository.AlarmRepository;
 import com.faultlens.common.dto.AnalysisResultDto;
+import com.faultlens.common.enums.Severity;
 import com.faultlens.common.exception.FaultLensException;
 import com.faultlens.common.exception.ResourceNotFoundException;
 import java.time.Instant;
@@ -63,7 +64,7 @@ class AlarmServiceTest {
         when(repository.countByStatus(AlarmStatus.ACTIVE)).thenReturn(4L);
         when(repository.countByStatus(AlarmStatus.ACKNOWLEDGED)).thenReturn(2L);
         when(repository.countByStatus(AlarmStatus.RESOLVED)).thenReturn(9L);
-        when(repository.countByStatusInAndSeverity(anyCollection(), eq("CRITICAL"))).thenReturn(3L);
+        when(repository.countByStatusInAndSeverity(anyCollection(), eq(Severity.CRITICAL))).thenReturn(3L);
 
         var stats = service.stats();
 
@@ -113,13 +114,7 @@ class AlarmServiceTest {
 
     @Test
     void dispatcherStoresSourceIdNotLogGroupId() {
-        AlarmDispatcherService dispatcher = new AlarmDispatcherService(
-                repository,
-                mock(com.faultlens.api.repository.NotificationSettingsRepository.class),
-                mock(com.faultlens.api.repository.UserAccountRepository.class),
-                mock(SlackNotificationService.class),
-                mock(EmailNotificationService.class),
-                mock(InAppNotificationService.class));
+        AlarmDispatcherService dispatcher = new AlarmDispatcherService(repository, mock(AlarmNotifier.class));
         AnalysisResultDto analysis = new AnalysisResultDto();
         analysis.setId(5L);
         analysis.setLogGroupId(77L);
@@ -135,7 +130,7 @@ class AlarmServiceTest {
 
     private static Alarm alarm(Long id, AlarmStatus status) {
         return Alarm.builder()
-                .id(id).ruleName("rule").severity("CRITICAL").status(status)
+                .id(id).ruleName("rule").severity(Severity.CRITICAL).status(status)
                 .message("m").triggeredAt(Instant.now()).build();
     }
 }

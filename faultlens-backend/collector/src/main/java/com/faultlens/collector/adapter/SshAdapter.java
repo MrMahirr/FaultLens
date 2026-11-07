@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -46,7 +45,7 @@ public class SshAdapter implements LogSourceAdapter {
      * Streams remote log file lines over SSH.
      */
     @Override
-    public void startStreaming(LogSource source, Consumer<LogEventDto> onEvent) {
+    public void startStreaming(LogSource source, SourceSink onEvent) {
         String sourceId = String.valueOf(source.getId());
         running.add(sourceId);
         while (running.contains(sourceId) && !Thread.currentThread().isInterrupted()) {
@@ -54,6 +53,7 @@ public class SshAdapter implements LogSourceAdapter {
                 streamOnce(source, onEvent);
             } catch (Exception ex) {
                 log.warn("SSH stream interrupted for source {}, retrying", sourceId, ex);
+                onEvent.error(ex);
                 sleep(properties.getSsh().getRetryIntervalSeconds());
             }
         }
@@ -95,7 +95,7 @@ public class SshAdapter implements LogSourceAdapter {
         }
     }
 
-    private void streamOnce(LogSource source, Consumer<LogEventDto> onEvent) throws Exception {
+    private void streamOnce(LogSource source, SourceSink onEvent) throws Exception {
         Map<String, String> config = parseConfig(source.getConfig());
         Session session = openSession(config);
         String sourceId = String.valueOf(source.getId());

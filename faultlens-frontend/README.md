@@ -56,6 +56,20 @@ Uygulama **http://localhost:3000** adresinde çalışmaya başlayacaktır.
 | `pnpm test:coverage`                | Kapsam raporu → `coverage/index.html`                   |
 | `pnpm lint` / `pnpm typecheck`      | ESLint / TypeScript                                     |
 | `pnpm format` / `pnpm format:check` | Prettier ile biçimlendir / kontrol et (CI kontrol eder) |
+| `pnpm gen:api`                      | `../contracts/openapi.json` → `shared/api/schema.d.ts`  |
+
+### API sözleşmesi (OpenAPI → TypeScript)
+
+Backend'in OpenAPI dokümanı repoda `contracts/openapi.json` olarak tutulur; `pnpm gen:api` ondan
+`shared/api/schema.d.ts`'i üretir (elle düzenlenmez, CI güncel olduğunu kontrol eder).
+
+- `shared/api/contract.ts`: `ApiSchema<"LogEntryDto">` — şema, axios interceptor'ının snake→camel
+  dönüşümünden sonraki haliyle (`source_id` → `sourceId`).
+- `shared/api/contract.check.ts`: elle yazılmış DTO'ları (`features/*/types`) derleme zamanında
+  sözleşmeyle karşılaştırır. Backend'de bir alan adı değişir/eklenir/silinirse ya da bir enum'a değer
+  eklenirse `pnpm typecheck` hangi alanın farklı olduğunu yazarak kırılır.
+- DTO'lar elle yazılmaya devam eder: UI'ın kullandığı TS enum'larını ve hangi alanların `null`
+  olabileceğini (OpenAPI dokümanında bu bilgi yok) onlar taşır.
 
 ## 🎨 Tasarım Prensipleri
 

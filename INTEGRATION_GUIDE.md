@@ -250,27 +250,40 @@ FaultLens, platform bağımsız bir mimariye sahip olduğu için projelerinizin 
    - Jenkins, GitLab CI, GitHub Actions (Devreye alma logları ve Deployment takibi)
    - *Bağlantı Yöntemi: FaultLens REST API (Webhook) üzerinden. Detaylar için Bölüm 6'ya bakınız.*
 
-> **Not:** Serverless ortamlar (AWS Lambda, Google Cloud Functions) doğrudan bir dosya veya container erişimi sunmadığı için bu ortamlardaki logların FaultLens'e aktarılması için aracı bir CloudWatch/PubSub -> Kafka tetikleyicisi yazılması gerekir.
+> **Not:** Serverless ortamlar (AWS Lambda, Google Cloud Functions) dosya veya container erişimi sunmaz; bu ortamlarda uygulama logları **HTTP / OTLP ingest** ile doğrudan gönderir (Bölüm 7) — örneğin OpenTelemetry SDK veya Collector üzerinden.
 
 ---
 
 ## 6. Otomatik Deployment (CI/CD) Entegrasyonu
 
-FaultLens, yeni kodunuzun canlıya (veya test ortamına) alındığı anı tespit edip oluşan logları/hataları bu deployment ile ilişkilendirebilir (Korelasyon). Bunu sağlamak için CI/CD pipeline'ınıza ufak bir webhook (API çağrısı) eklemeniz yeterlidir.
+FaultLens, yeni kodunuzun canlıya (veya test ortamına) alındığı anı tespit edip oluşan logları/hataları bu deployment ile ilişkilendirebilir (Korelasyon). Bunu sağlamak için CI/CD pipeline'ınıza tek bir API çağrısı eklemeniz yeterlidir.
+
+### 1. API anahtarı oluşturun
+CI, kullanıcı oturumu (JWT) yerine **kapsamı sınırlı bir API anahtarı** kullanır:
+
+1. FaultLens'e ADMIN olarak girin → **Ayarlar → API anahtarları → Yeni anahtar**.
+2. Kapsam olarak `deployments:write` seçin, bir geçerlilik süresi belirleyin.
+3. Gösterilen `flk_…` anahtarını kopyalayın — **bir daha gösterilmez** (kaybolursa iptal edip yenisini oluşturun).
+4. Anahtarı CI'da gizli değişken olarak saklayın: `FAULTLENS_API_KEY`.
+
+Bu anahtar yalnızca `POST /api/v1/deployments` çağırabilir; başka bir uç noktaya giderse `403 API_KEY_SCOPE`, iptal edilmiş/süresi dolmuşsa `401 INVALID_API_KEY` döner. Anahtar başına dakikada 600 istek sınırı vardır (`faultlens.api-keys.rate-limit-per-minute`, ortam değişkeni `FAULTLENS_APIKEYS_RATELIMITPERMINUTE`).
+
+Anahtar `Authorization: Bearer flk_…` ya da `X-FaultLens-Key: flk_…` başlığıyla gönderilebilir. Alanlar **snake_case**'tir; `service_name`, `version`, `environment` ve `deployed_at` zorunludur.
 
 ### 🐙 GitHub Actions Örneği
-Mevcut `deploy.yml` veya `ci.yml` dosyanızın en son adımına (başarılı deploy sonrası) şu curl komutunu ekleyin:
-
 ```yaml
     - name: Notify FaultLens Deployment
+      env:
+        FAULTLENS_API_KEY: ${{ secrets.FAULTLENS_API_KEY }}
       run: |
-        curl -X POST https://api.faultlens.com/api/v1/deployments \
+        curl -fsS -X POST https://api.faultlens.com/api/v1/deployments \
+          -H "Authorization: Bearer $FAULTLENS_API_KEY" \
           -H "Content-Type: application/json" \
-          -d '{"serviceName":"my-backend-service", "version":"${{ github.sha }}", "environment":"PRODUCTION"}'
+          -d '{"service_name":"my-backend-service","version":"${{ github.sha }}","environment":"PRODUCTION","deployed_at":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'","deployed_by":"github-actions"}'
 ```
 
 ### 🦊 GitLab CI Örneği
-`.gitlab-ci.yml` dosyanızdaki deploy aşamasının `script` bloğuna ekleyin:
+`FAULTLENS_API_KEY`'i **Settings → CI/CD → Variables** altına (masked) ekleyin:
 
 ```yaml
 deploy_production:
@@ -278,17 +291,87 @@ deploy_production:
   script:
     - echo "Uygulama sunucuya yükleniyor..."
     - # Kendi deploy komutlarınız...
-    - curl -X POST https://api.faultlens.com/api/v1/deployments -H "Content-Type: application/json" -d '{"serviceName":"my-frontend", "version":"'$CI_COMMIT_SHORT_SHA'", "environment":"PRODUCTION"}'
+    - >
+      curl -fsS -X POST https://api.faultlens.com/api/v1/deployments
+      -H "Authorization: Bearer $FAULTLENS_API_KEY"
+      -H "Content-Type: application/json"
+      -d '{"service_name":"my-frontend","version":"'"$CI_COMMIT_SHORT_SHA"'","environment":"PRODUCTION","deployed_at":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'","deployed_by":"gitlab-ci"}'
 ```
 
 ### ⚙️ Genel cURL Kullanımı (Jenkins, Bitbucket vb.)
-Herhangi bir bash/shell script içinden FaultLens'i tetiklemek için:
 ```bash
-curl -X POST https://api.faultlens.com/api/v1/deployments \
+curl -fsS -X POST https://api.faultlens.com/api/v1/deployments \
+  -H "Authorization: Bearer $FAULTLENS_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"serviceName":"servis-adiniz", "version":"v1.2.3", "environment":"PRODUCTION"}'
+  -d '{"service_name":"servis-adiniz","version":"v1.2.3","environment":"PRODUCTION","deployed_at":"2026-11-07T10:00:00Z","deployed_by":"jenkins"}'
 ```
 
 *(Not: `environment` alanı için `PRODUCTION`, `STAGING` veya `DEVELOPMENT` değerlerinden birini kullanmalısınız.)*
 
-Bu entegrasyon sayesinde Deployments arayüzünde "Kırmızı Hata Parlaması" özelliğinden faydalanabilir ve hataların hangi versiyondan sonra patlak verdiğini saniyeler içinde görebilirsiniz.
+Bu entegrasyon sayesinde Deployments sayfasında hataların hangi sürümden sonra başladığını görebilir, "Sonraki logları incele" ile deployment anından itibaren logları açabilirsiniz.
+
+---
+
+## 7. Uygulamadan Doğrudan Log Gönderme (HTTP / OTLP)
+
+Collector'ın sunucuya bağlanıp log okuyamadığı ortamlarda (serverless, kapalı ağlar, hazır OpenTelemetry kurulumu) uygulamanız logları FaultLens'e **kendisi gönderebilir**. Gelen kayıtlar collector'ın kullandığı hattın aynısından geçer: ayrıştırma, gruplama, alarmlar ve kök neden analizi değişmeden çalışır.
+
+### 1. HTTP kaynağı ve anahtar
+1. **Kaynaklar → Yeni kaynak → HTTP / OTLP**, bir ad verin ve kaydedin.
+2. Sihirbazın son adımında **Ingest anahtarı oluştur**'a basın (ADMIN). Anahtar `logs:ingest` kapsamlıdır ve **yalnızca bu kaynağa** log yazar; kaynağı istemci seçemez. EDITOR iseniz bir yöneticiden **Ayarlar → API anahtarları**'nda `logs:ingest` + bu kaynakla anahtar istemeniz gerekir.
+3. Anahtarı uygulamanızın ortamında `FAULTLENS_API_KEY` olarak saklayın.
+
+Kaynak devre dışıysa istekler `409 SOURCE_DISABLED`, kaynak silinmişse `403 API_KEY_NO_SOURCE` alır. Kullanıcı oturumu (JWT) ile ingest yapılamaz.
+
+### 2a. Basit JSON — `POST /api/v1/ingest/logs`
+Bir dizi kayıt (veya `{"logs": [...]}` ya da tek bir kayıt nesnesi). Yalnızca `message` zorunludur:
+
+```bash
+curl -fsS -X POST https://api.faultlens.com/api/v1/ingest/logs \
+  -H "Authorization: Bearer $FAULTLENS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '[{"timestamp":"2026-11-07T10:00:00Z","severity":"ERROR","message":"Payment failed",
+        "stack_trace":"java.lang.IllegalStateException: card declined\n\tat com.acme.Pay.run(Pay.java:42)",
+        "service_name":"orders","namespace":"prod","pod_name":"orders-7d9f","attributes":{"order_id":"42"}}]'
+```
+
+| Alan | Açıklama |
+|---|---|
+| `message` | Zorunlu. 64 KB'tan uzunsa kısaltılır. |
+| `timestamp` | ISO-8601 veya epoch milisaniye; yoksa alınma zamanı. |
+| `severity` | `TRACE…CRITICAL`, ayrıca `warning`, `fatal`, `severe` vb. Yoksa processor satırdan çıkarır. |
+| `stack_trace` | Stack trace; gruplama ve kural motoru bunu kullanır. |
+| `service_name`, `namespace`, `pod_name`, `container_name`, `cluster` | Filtreleme ve korelasyon için. |
+| `attributes` | Serbest anahtar/değer (en fazla 32). |
+
+Cevap: `202 {"data": {"accepted": n}}`.
+
+### 2b. OpenTelemetry (OTLP/HTTP) — `POST /v1/logs`
+Protobuf (`application/x-protobuf`) ve JSON desteklenir. OpenTelemetry Collector'ın `otlphttp` exporter'ı doğrudan FaultLens'e yazabilir (`/v1/logs` yolunu exporter kendisi ekler):
+
+```yaml
+exporters:
+  otlphttp/faultlens:
+    endpoint: https://api.faultlens.com
+    headers:
+      Authorization: "Bearer ${env:FAULTLENS_API_KEY}"
+
+service:
+  pipelines:
+    logs:
+      receivers: [otlp]
+      exporters: [otlphttp/faultlens]
+```
+
+Eşleme: `body` → mesaj, `exception.stacktrace` → stack trace, `service.name` / `k8s.namespace.name` / `k8s.pod.name` / `k8s.container.name` / `k8s.cluster.name` (kaynak veya kayıt attribute'u) → ilgili alanlar, `severity_number` → seviye (1–4 TRACE … 21–24 CRITICAL; yoksa `severity_text`). Diğer attribute'lar etiket olarak saklanır.
+
+### Sınırlar ve hata kodları
+
+| Durum | Cevap |
+|---|---|
+| İstek başına 5000'den fazla kayıt / 5 MB'tan büyük gövde | `413 TOO_MANY_RECORDS` / `413 PAYLOAD_TOO_LARGE` |
+| Mesajı olmayan kayıt, bozuk JSON / protobuf | `400 INVALID_LOG_RECORD` / `INVALID_JSON` / `INVALID_OTLP` (istek tamamen reddedilir) |
+| Kafka zamanında onaylamadı | `503 INGEST_UNAVAILABLE` + `Retry-After` — **yeniden deneyin** (tekrar gönderimde aynı kayıt iki kez görünebilir, kayıp olmaz) |
+| Anahtar başına dakikada 600 istek aşıldı | `429 RATE_LIMITED` + `Retry-After` |
+
+Sınırlar `faultlens.ingest.max-records`, `faultlens.ingest.max-body-bytes`, `faultlens.ingest.max-message-chars` ve `faultlens.ingest.kafka-timeout-ms` ile ayarlanabilir.

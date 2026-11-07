@@ -1,95 +1,59 @@
+"use client";
+
+import Link from "next/link";
+import { useTranslations } from "next-intl";
+import toast from "react-hot-toast";
 import { Button } from "@/shared/components/ui/Button";
 import { apiClient } from "@/shared/api/client";
 import { Endpoints } from "@/shared/api/endpoints";
-import toast from "react-hot-toast";
 import { getApiErrorMessage } from "@/shared/api/errors";
+import type { EmailStatus } from "../hooks/useNotificationSettings";
 
-interface EmailConfigFormProps {
-  serviceId: string | null;
-  templateId: string | null;
-  publicKey: string | null;
-  onChange: (
-    field: "emailjsServiceId" | "emailjsTemplateId" | "emailjsPublicKey",
-    value: string,
-  ) => void;
-}
+/**
+ * Alarm e-mails are sent by the server over SMTP to the profile address (P07). Nothing to
+ * configure per user except that address; the test goes to it as well.
+ */
+export function EmailConfigForm({ email, emailAvailable }: EmailStatus) {
+  const t = useTranslations("settings.notifications.email");
 
-export function EmailConfigForm({
-  serviceId,
-  templateId,
-  publicKey,
-  onChange,
-}: EmailConfigFormProps) {
   const handleTest = async () => {
-    const emailInput = document.getElementById("test-email-input") as HTMLInputElement;
-    const testEmail = emailInput?.value;
-    if (!testEmail) {
-      toast.error("Lütfen bir e-posta adresi girin.");
-      return;
-    }
     try {
-      await apiClient.post(Endpoints.SETTINGS.TEST.EMAIL, { emailAddress: testEmail });
-      toast.success("Test e-postası başarıyla gönderildi!");
+      await apiClient.post(Endpoints.SETTINGS.TEST.EMAIL);
+      toast.success(t("testSent"));
     } catch (err) {
-      toast.error(getApiErrorMessage(err, "E-posta gönderilemedi."));
+      toast.error(getApiErrorMessage(err, t("testFailed")));
     }
   };
 
-  return (
-    <>
-      <p className="text-xs text-text-muted mt-2 border-l-2 border-accent pl-2">
-        E-posta gönderimleri <b>Email.js</b> kullanılarak yapılmaktadır. Gerekli API anahtarlarını
-        aşağıya girin.
+  if (!emailAvailable) {
+    return (
+      <p className="banner c-warn small">
+        <span>
+          {t.rich("noSmtp", { code: (chunks) => <code className="mono">{chunks}</code> })}
+        </span>
       </p>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-text-secondary">Service ID</label>
-          <input
-            type="text"
-            placeholder="service_xxxxx"
-            className="w-full bg-bg-primary text-text-primary rounded-lg border border-border-default px-3 py-2 text-sm focus:outline-none focus:border-accent"
-            value={serviceId || ""}
-            onChange={(e) => onChange("emailjsServiceId", e.target.value)}
-          />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-text-secondary">Template ID</label>
-          <input
-            type="text"
-            placeholder="template_xxxxx"
-            className="w-full bg-bg-primary text-text-primary rounded-lg border border-border-default px-3 py-2 text-sm focus:outline-none focus:border-accent"
-            value={templateId || ""}
-            onChange={(e) => onChange("emailjsTemplateId", e.target.value)}
-          />
-        </div>
-        <div className="flex flex-col gap-1 md:col-span-2">
-          <label className="text-sm font-medium text-text-secondary">Public Key (User ID)</label>
-          <input
-            type="text"
-            placeholder="xxxxxxxxxxxxx"
-            className="w-full bg-bg-primary text-text-primary rounded-lg border border-border-default px-3 py-2 text-sm focus:outline-none focus:border-accent"
-            value={publicKey || ""}
-            onChange={(e) => onChange("emailjsPublicKey", e.target.value)}
-          />
-        </div>
-      </div>
+    );
+  }
 
-      <hr className="border-border-default" />
-
-      <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-text-secondary">Yapılandırmayı Test Et</label>
-        <div className="flex gap-3">
-          <input
-            type="email"
-            id="test-email-input"
-            placeholder="ornek@sirket.com"
-            className="flex-1 bg-bg-primary text-text-primary rounded-lg border border-border-default px-3 py-2 text-sm focus:outline-none focus:border-accent"
-          />
-          <Button variant="secondary" size="sm" onClick={handleTest}>
-            Test Gönder
-          </Button>
-        </div>
-      </div>
-    </>
+  return (
+    <div className="between">
+      <p className="small t2">
+        {email
+          ? t.rich("target", {
+              email,
+              b: (chunks) => <b className="text-text-primary">{chunks}</b>,
+            })
+          : t.rich("noAddress", {
+              link: (chunks) => (
+                <Link href="/settings?tab=account" className="link">
+                  {chunks}
+                </Link>
+              ),
+            })}
+      </p>
+      <Button variant="secondary" size="sm" onClick={handleTest} disabled={!email}>
+        {t("test")}
+      </Button>
+    </div>
   );
 }

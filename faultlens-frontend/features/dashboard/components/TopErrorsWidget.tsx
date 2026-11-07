@@ -1,83 +1,63 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { TrendingUp } from "lucide-react";
-import { Card } from "@/shared/components/ui/Card";
-import { Badge } from "@/shared/components/ui/Badge";
+import { SeverityBadge } from "@/shared/components/ui/SeverityBadge";
+import { useDateFormat } from "@/shared/hooks/useDateFormat";
 import { useLogGroupsQuery } from "@/features/logs/api/useLogQuery";
-import { Severity } from "@/shared/types/common.types";
-import { formatRelativeTime, formatNumber } from "@/shared/lib/utils";
-
-/* ── Component ─────────────────────────────────────────────── */
 
 function TopErrorsWidget() {
+  const t = useTranslations("dashboard.topErrors");
+  const dates = useDateFormat();
   const { data: logGroupsPage, isLoading } = useLogGroupsQuery();
-  const topGroups = (logGroupsPage?.content || []).slice(0, 5);
+  const topGroups = (logGroupsPage?.content ?? []).slice(0, 5);
 
   return (
-    <Card variant="default" padding="none">
-      <div className="flex items-center justify-between px-5 pt-5 pb-3">
+    <section className="card" aria-labelledby="top-errors-title" aria-busy={isLoading || undefined}>
+      <div className="panel-h">
         <div>
-          <h3 className="text-sm font-semibold font-display text-text-primary">
-            En Çok Tekrarlayan Hatalar
-          </h3>
-          <p className="text-xs text-text-muted mt-0.5">
-            {isLoading ? "Yükleniyor..." : "Gruplanmış hatalar"}
-          </p>
+          <h2 id="top-errors-title" className="h3">
+            {t("title")}
+          </h2>
+          <p className="xs t3">{t("subtitle")}</p>
         </div>
-        <TrendingUp size={16} className="text-text-muted" />
+        <TrendingUp size={16} className="t3" aria-hidden="true" />
       </div>
 
-      {!isLoading && topGroups.length > 0 && (
-        <div>
-          {topGroups.map((group, index) => (
-            <motion.div
-              key={group.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.08, duration: 0.3 }}
-            >
-              <Link
-                href={`/logs?group=${group.id}`}
-                className="flex items-start gap-3 px-5 py-3 border-b border-border-default hover:bg-bg-tertiary/50 transition-colors"
-              >
-                <Badge
-                  variant={
-                    group.severity === Severity.CRITICAL
-                      ? "critical"
-                      : group.severity === Severity.ERROR
-                        ? "error"
-                        : "warning"
-                  }
-                  size="sm"
-                >
-                  {formatNumber(group.count)}
-                </Badge>
-
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-text-primary truncate">{group.firstMessage}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xs text-text-muted font-mono truncate max-w-[120px]">
-                      {group.fingerprint}
-                    </span>
-                    <span className="text-xs text-text-muted">
-                      Son: {formatRelativeTime(group.lastSeenAt)}
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            </motion.div>
+      {isLoading ? (
+        <div className="p-4 stack gap-3" aria-hidden="true">
+          {Array.from({ length: 4 }, (_, i) => (
+            <div key={i} className="skel h-9" />
           ))}
         </div>
+      ) : topGroups.length === 0 ? (
+        <p className="empty">{t("empty")}</p>
+      ) : (
+        <ol className="m-0 p-0 list-none">
+          {topGroups.map((group, index) => (
+            <li key={group.id} className={`in d${index + 1}`}>
+              <Link
+                href={`/logs?group=${group.id}`}
+                className="grid grid-cols-[auto_1fr_auto] items-start gap-3 px-4 py-2.5 border-b border-border-default last:border-b-0 hover:bg-bg-glass transition-colors"
+              >
+                <SeverityBadge severity={group.severity} />
+                <div className="min-w-0">
+                  <p className="small ellipsis">{group.firstMessage}</p>
+                  <p className="xs t3 mt-0.5 row gap-2">
+                    <span className="mono ellipsis max-w-[140px]">{group.fingerprint}</span>
+                    <span>{t("lastSeen", { time: dates.relative(group.lastSeenAt) })}</span>
+                  </p>
+                </div>
+                <span className="mono small t2 whitespace-nowrap">
+                  {t("occurrences", { count: group.count })}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ol>
       )}
-
-      {!isLoading && topGroups.length === 0 && (
-        <div className="py-8 text-center text-sm text-text-muted">
-          Kayıtlı hata grubu bulunamadı
-        </div>
-      )}
-    </Card>
+    </section>
   );
 }
 

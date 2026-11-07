@@ -11,6 +11,7 @@ import com.faultlens.common.exception.ResourceNotFoundException;
 import jakarta.persistence.criteria.Predicate;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import com.faultlens.common.enums.Severity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -53,7 +54,7 @@ public class AlarmService {
                 alarmRepository.countByStatus(AlarmStatus.ACKNOWLEDGED),
                 alarmRepository.countByStatus(AlarmStatus.RESOLVED),
                 alarmRepository.countByStatusInAndSeverity(
-                        List.of(AlarmStatus.ACTIVE, AlarmStatus.ACKNOWLEDGED), "CRITICAL"));
+                        List.of(AlarmStatus.ACTIVE, AlarmStatus.ACKNOWLEDGED), Severity.CRITICAL));
     }
 
     /**
@@ -105,10 +106,18 @@ public class AlarmService {
                 predicates.add(cb.equal(root.get("status"), status));
             }
             if (severity != null && !severity.isBlank()) {
-                predicates.add(cb.equal(root.get("severity"), severity.trim().toUpperCase(Locale.ROOT)));
+                predicates.add(cb.equal(root.get("severity"), parseSeverity(severity)));
             }
             return cb.and(predicates.toArray(Predicate[]::new));
         };
+    }
+
+    private static Severity parseSeverity(String value) {
+        try {
+            return Severity.valueOf(value.trim().toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException ex) {
+            throw new FaultLensException("Unknown severity: " + value, "INVALID_SEVERITY");
+        }
     }
 
     private AlarmDto mapToDto(Alarm alarm) {
@@ -117,7 +126,8 @@ public class AlarmService {
                 .ruleId(alarm.getRuleId())
                 .ruleName(alarm.getRuleName())
                 .sourceId(alarm.getSourceId())
-                .severity(alarm.getSeverity())
+                .severity(alarm.getSeverity() == null ? null : alarm.getSeverity().name())
+                .alarmRuleId(alarm.getAlarmRuleId())
                 .status(alarm.getStatus())
                 .message(alarm.getMessage())
                 .triggeredAt(alarm.getTriggeredAt())

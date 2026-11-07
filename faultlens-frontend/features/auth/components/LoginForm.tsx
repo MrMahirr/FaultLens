@@ -1,29 +1,57 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
-import { LogIn } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { AlertTriangle, LogIn } from "lucide-react";
 import { Input } from "@/shared/components/ui/Input";
+import { PasswordInput } from "@/shared/components/ui/PasswordInput";
 import { Button } from "@/shared/components/ui/Button";
+import { useValidationMessage } from "@/shared/hooks/useValidationMessage";
 import { useLoginMutation } from "@/features/auth/api/useAuthMutation";
-import { motion, AnimatePresence } from "framer-motion";
 
-/* ── Validation Schema ─────────────────────────────────────── */
+/* ── Validation Schema (messages are "validation" keys) ────── */
 
 const loginSchema = z.object({
-  username: z.string().min(1, "Kullanıcı adı gereklidir"),
-  password: z.string().min(6, "Şifre en az 6 karakter olmalıdır"),
+  username: z.string().min(1, "usernameRequired"),
+  password: z.string().min(6, "passwordMin6"),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
+/** Client-side pause after repeated failures; the API has its own rate limit. */
+const MAX_ATTEMPTS = 3;
+const LOCK_SECONDS = 30;
+
 /* ── Component ─────────────────────────────────────────────── */
 
 function LoginForm() {
+  const t = useTranslations("auth.login");
+  const v = useValidationMessage();
   const router = useRouter();
   const loginMutation = useLoginMutation();
+  const [failures, setFailures] = useState(0);
+  const [lockedUntil, setLockedUntil] = useState<number | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+
+  const secondsLeft = lockedUntil ? Math.max(0, Math.ceil((lockedUntil - now) / 1000)) : 0;
+  const locked = secondsLeft > 0;
+
+  useEffect(() => {
+    if (!lockedUntil) return;
+    const id = setInterval(() => {
+      const current = Date.now();
+      setNow(current);
+      if (current >= lockedUntil) {
+        setLockedUntil(null);
+        setFailures(0);
+      }
+    }, 1000);
+    return () => clearInterval(id);
+  }, [lockedUntil]);
 
   const {
     register,
@@ -31,55 +59,58 @@ function LoginForm() {
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
-    defaultValues: {
-      username: "",
-      password: "",
-    },
+    defaultValues: { username: "", password: "" },
   });
 
   const onSubmit = (data: LoginFormData) => {
+    if (locked) return;
     loginMutation.mutate(data, {
       onSuccess: (response) => {
         router.push(response.mustChangePassword ? "/change-password" : "/dashboard");
+      },
+      onError: () => {
+        const next = failures + 1;
+        setFailures(next);
+        if (next >= MAX_ATTEMPTS) {
+          const start = Date.now();
+          setNow(start);
+          setLockedUntil(start + LOCK_SECONDS * 1000);
+        }
       },
     });
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+    <form onSubmit={handleSubmit(onSubmit)} className="stack gap-4" noValidate>
       <Input
-        label="Kullanıcı Adı"
-        placeholder="admin"
-        error={errors.username?.message}
+        label={t("username")}
+        autoComplete="username"
+        autoCapitalize="none"
+        spellCheck={false}
+        autoFocus
+        error={v(errors.username?.message)}
         {...register("username")}
       />
 
-      <Input
-        label="Şifre"
-        type="password"
-        placeholder="••••••"
-        error={errors.password?.message}
+      <PasswordInput
+        label={t("password")}
+        autoComplete="current-password"
+        error={v(errors.password?.message)}
         {...register("password")}
       />
 
-      {/* Error Message */}
-      <AnimatePresence mode="wait">
-        {loginMutation.isError && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            className="flex items-center gap-2 p-3 rounded-lg bg-error/10 border border-error/20"
-          >
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-error shrink-0" />
-            <p className="text-sm text-error">
-              {loginMutation.error instanceof Error
+      {(loginMutation.isError || locked) && (
+        <div className="banner c-crit" role="alert">
+          <AlertTriangle size={14} aria-hidden="true" />
+          <p>
+            {locked
+              ? t("locked", { seconds: secondsLeft })
+              : loginMutation.error instanceof Error && loginMutation.error.message
                 ? loginMutation.error.message
-                : "Giriş yapılamadı. Lütfen tekrar deneyin."}
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                : t("failed")}
+          </p>
+        </div>
+      )}
 
       <Button
         type="submit"
@@ -87,10 +118,13 @@ function LoginForm() {
         size="lg"
         fullWidth
         loading={loginMutation.isPending}
-        icon={<LogIn size={18} />}
+        disabled={locked}
+        icon={<LogIn size={16} aria-hidden="true" />}
       >
-        Giriş Yap
+        {t("submit")}
       </Button>
+
+      <p className="xs t3 text-center">{t("forgot")}</p>
     </form>
   );
 }

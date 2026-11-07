@@ -1,14 +1,11 @@
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@/test/rtl";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import toast from "react-hot-toast";
-import Swal from "sweetalert2";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { API, ok, server } from "@/test/msw/server";
-import { renderWithQuery } from "@/test/utils";
+import { renderWithQuery, signInAs } from "@/test/utils";
 import { AlarmsList } from "./AlarmsList";
-
-vi.mock("sweetalert2", () => ({ default: { fire: vi.fn() } }));
 
 const alarm = {
   id: 7,
@@ -26,8 +23,8 @@ describe("AlarmsList delete", () => {
   let deleted: number;
 
   beforeEach(() => {
+    signInAs("ADMIN");
     deleted = 0;
-    vi.mocked(Swal.fire).mockReset();
     vi.spyOn(toast, "success").mockImplementation(() => "");
     server.use(
       http.get(`${API}/alarms`, () =>
@@ -43,20 +40,22 @@ describe("AlarmsList delete", () => {
   });
 
   it("asks before deleting and does nothing when cancelled", async () => {
-    vi.mocked(Swal.fire).mockResolvedValue({ isConfirmed: false } as never);
     renderWithQuery(<AlarmsList />);
 
     await userEvent.click(await screen.findByRole("button", { name: "Sil" }));
+    const dialog = await screen.findByRole("alertdialog", { name: "Alarm silinsin mi?" });
+    await userEvent.click(within(dialog).getByRole("button", { name: "Vazgeç" }));
 
-    await waitFor(() => expect(Swal.fire).toHaveBeenCalledOnce());
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument());
     expect(deleted).toBe(0);
   });
 
   it("deletes once the user confirms", async () => {
-    vi.mocked(Swal.fire).mockResolvedValue({ isConfirmed: true } as never);
     renderWithQuery(<AlarmsList />);
 
     await userEvent.click(await screen.findByRole("button", { name: "Sil" }));
+    const dialog = await screen.findByRole("alertdialog");
+    await userEvent.click(within(dialog).getByRole("button", { name: "Sil" }));
 
     await waitFor(() => expect(deleted).toBe(1));
   });

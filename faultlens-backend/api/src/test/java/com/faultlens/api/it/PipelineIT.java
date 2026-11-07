@@ -99,7 +99,7 @@ class PipelineIT extends AbstractIntegrationTest {
                         .findFirst().orElse(null),
                 found -> found != null);
         assertThat(alarm.getStatus()).isEqualTo(AlarmStatus.ACTIVE);
-        assertThat(alarm.getSeverity()).isEqualTo("CRITICAL");
+        assertThat(alarm.getSeverity()).isEqualTo(Severity.CRITICAL);
         assertThat(alarm.getMessage()).contains("Null referans");
     }
 }

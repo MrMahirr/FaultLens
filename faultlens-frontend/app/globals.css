@@ -1,439 +1,278 @@
 @import "tailwindcss";
+@import "./styles/instrument.css" layer(components);
 
-/* ============================================================
-   FaultLens — Terminal Noir Design System
-   Tailwind v4 CSS-first configuration
-   ============================================================ */
+/* =============================================================================
+   FaultLens — INSTRUMENT design system (single token source)
+   Direction: "precision instrument" — midnight surfaces / typeset paper, one signal
+   colour, hairlines instead of shadows. Spec: design-system/instrument/DESIGN_PATTERNS.md
 
-/* Fonts loaded via next/font/google in layout.tsx (SSR-optimized) */
+   1. Instrument tokens per theme (:root[data-theme]).
+   2. The app's semantic Tailwind names (bg-bg-primary, text-text-secondary, bg-accent …)
+      are mapped onto those tokens in @theme — there is no second palette.
+   Components must use these tokens; no raw hex in features/ or shared/.
+   ============================================================================= */
 
-/* ============================================================
-   Theme Variables: Dark & Light
-   ============================================================ */
+/* ---------- 1 · THEMES ---------- */
 
+:root,
 :root[data-theme="dark"] {
-  /* Backgrounds */
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #111118;
-  --bg-tertiary: #1a1a24;
-  --bg-glass: rgba(255, 255, 255, 0.03);
-  --bg-glass-hover: rgba(255, 255, 255, 0.06);
-
-  /* Borders */
-  --border: rgba(255, 255, 255, 0.06);
-  --border-hover: rgba(255, 255, 255, 0.1);
-  --border-active: rgba(99, 102, 241, 0.4);
-
-  /* Text */
-  --text-primary: #f0f0f8;
-  --text-secondary: #8b8ba8;
-  --text-muted: #4a4a6a;
-
-  /* Accent */
-  --accent: #6366f1;
-  --accent-hover: #818cf8;
-  --accent-glow: rgba(99, 102, 241, 0.15);
-  --accent-glow-strong: rgba(99, 102, 241, 0.3);
-
-  /* Semantic */
-  --success: #10b981;
-  --success-glow: rgba(16, 185, 129, 0.15);
-  --warning: #f59e0b;
-  --warning-glow: rgba(245, 158, 11, 0.15);
-  --error: #ef4444;
-  --error-glow: rgba(239, 68, 68, 0.15);
-  --critical: #dc2626;
-  --critical-glow: rgba(220, 38, 38, 0.2);
-
-  /* Grid */
-  --grid-line: rgba(99, 102, 241, 0.04);
-  --grid-dot: rgba(99, 102, 241, 0.08);
-
-  /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
-  --shadow-glow: 0 0 20px var(--accent-glow);
-
-  /* Scrollbar */
-  --scrollbar-track: #111118;
-  --scrollbar-thumb: #2a2a3a;
-  --scrollbar-thumb-hover: #3a3a4a;
+  color-scheme: dark;
+  --bg: #08090a;
+  --bg-2: #0c0d0e;
+  --surface: #0f1011;
+  --raised: #161718;
+  --sunken: #060707;
+  --hover: rgba(255, 255, 255, 0.04);
+  --active: rgba(255, 255, 255, 0.07);
+  --line: #1d1f23;
+  --line-2: #2a2c31;
+  --line-3: #3a3d43;
+  --fg: #f7f8f8;
+  --fg-2: #d0d6e0;
+  --fg-3: #8a8f98;
+  /* ≥ 4.5:1 on every dark surface (raised included) — it carries real text (nav groups, time). */
+  --fg-4: #7c818a;
+  --primary-bg: #e4f222;
+  --primary-fg: #08090a;
+  --primary-hover: #eef75a;
+  --signal: #e4f222;
+  --signal-ink: #e4f222;
+  --signal-ink-hover: #eef75a;
+  --signal-soft: rgba(228, 242, 34, 0.12);
+  /* Text on a --signal (lime) fill; lime is light in both themes, so this stays dark. */
+  --on-signal: #08090a;
+  --mark: rgba(228, 242, 34, 0.18);
+  --ok: #4cb782;
+  --warn: #f2c94c;
+  --err: #f2994a;
+  --crit: #eb5757;
+  --info: #4ea7fc;
+  --ai: #a78bfa;
+  --sev-trace: #8a8f98;
+  --sev-debug: #a4a9b1;
+  --sev-info: #4ea7fc;
+  --sev-warn: #f2c94c;
+  --sev-error: #f2994a;
+  --sev-crit: #eb5757;
+  --on-crit: #08090a;
+  --ring: #e4f222;
+  --scrim: rgba(0, 0, 0, 0.6);
+  --pop: 0 0 0 1px var(--line-2), 0 18px 48px -16px rgba(0, 0, 0, 0.75);
+  --heat-0: #141518;
+  --heat-1: #2b2a1a;
+  --heat-2: #5b5a1d;
+  --heat-3: #a3a51f;
+  --heat-4: #e4f222;
 }
 
 :root[data-theme="light"] {
-  /* Backgrounds */
-  --bg-primary: #f8f8fc;
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #f0f0f8;
-  --bg-glass: rgba(0, 0, 0, 0.02);
-  --bg-glass-hover: rgba(0, 0, 0, 0.04);
-
-  /* Borders */
-  --border: rgba(0, 0, 0, 0.06);
-  --border-hover: rgba(0, 0, 0, 0.1);
-  --border-active: rgba(79, 70, 229, 0.4);
-
-  /* Text */
-  --text-primary: #0a0a1a;
-  --text-secondary: #5a5a7a;
-  --text-muted: #9a9ab0;
-
-  /* Accent */
-  --accent: #4f46e5;
-  --accent-hover: #6366f1;
-  --accent-glow: rgba(79, 70, 229, 0.1);
-  --accent-glow-strong: rgba(79, 70, 229, 0.2);
-
-  /* Semantic */
-  --success: #059669;
-  --success-glow: rgba(5, 150, 105, 0.1);
-  --warning: #d97706;
-  --warning-glow: rgba(217, 119, 6, 0.1);
-  --error: #dc2626;
-  --error-glow: rgba(220, 38, 38, 0.1);
-  --critical: #b91c1c;
-  --critical-glow: rgba(185, 28, 28, 0.15);
-
-  /* Grid */
-  --grid-line: rgba(79, 70, 229, 0.03);
-  --grid-dot: rgba(79, 70, 229, 0.06);
-
-  /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
-  --shadow-glow: 0 0 20px var(--accent-glow);
-
-  /* Scrollbar */
-  --scrollbar-track: #f0f0f8;
-  --scrollbar-thumb: #d0d0e0;
-  --scrollbar-thumb-hover: #b0b0c8;
+  color-scheme: light;
+  --bg: #fafafa;
+  --bg-2: #f4f4f5;
+  --surface: #ffffff;
+  --raised: #ffffff;
+  --sunken: #f4f4f5;
+  --hover: rgba(0, 0, 0, 0.035);
+  --active: rgba(0, 0, 0, 0.06);
+  --line: #ebebeb;
+  --line-2: #dedede;
+  --line-3: #c9c9c9;
+  --fg: #171717;
+  --fg-2: #4d4d4d;
+  --fg-3: #5c5c5c;
+  /* ≥ 4.5:1 on --bg-2/--sunken; was #8f8f8f (2.9:1). */
+  --fg-4: #6e6e6e;
+  --primary-bg: #171717;
+  --primary-fg: #ffffff;
+  --primary-hover: #383838;
+  --signal: #e4f222;
+  --signal-ink: #5c6600;
+  --signal-ink-hover: #454d00;
+  --signal-soft: rgba(92, 102, 0, 0.09);
+  --on-signal: #08090a;
+  --mark: #eaf55b;
+  --ok: #16702f;
+  --warn: #7d5300;
+  --err: #a14300;
+  --crit: #b91c28;
+  --info: #0757ba;
+  --ai: #7140c8;
+  --sev-trace: #57606a;
+  --sev-debug: #424a53;
+  --sev-info: #0757ba;
+  --sev-warn: #7d5300;
+  --sev-error: #a14300;
+  --sev-crit: #b91c28;
+  --on-crit: #ffffff;
+  --ring: #171717;
+  --scrim: rgba(23, 23, 23, 0.28);
+  --pop: 0 0 0 1px var(--line-2), 0 18px 40px -18px rgba(0, 0, 0, 0.22);
+  --heat-0: #f0f0f0;
+  --heat-1: #f5f9c4;
+  --heat-2: #e4f222;
+  --heat-3: #9aa300;
+  --heat-4: #4f5600;
 }
 
-/* Default to dark theme */
-:root:not([data-theme]) {
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #111118;
-  --bg-tertiary: #1a1a24;
-  --bg-glass: rgba(255, 255, 255, 0.03);
-  --bg-glass-hover: rgba(255, 255, 255, 0.06);
-  --border: rgba(255, 255, 255, 0.06);
-  --border-hover: rgba(255, 255, 255, 0.1);
-  --border-active: rgba(99, 102, 241, 0.4);
-  --text-primary: #f0f0f8;
-  --text-secondary: #8b8ba8;
-  --text-muted: #4a4a6a;
-  --accent: #6366f1;
-  --accent-hover: #818cf8;
-  --accent-glow: rgba(99, 102, 241, 0.15);
-  --accent-glow-strong: rgba(99, 102, 241, 0.3);
-  --success: #10b981;
-  --success-glow: rgba(16, 185, 129, 0.15);
-  --warning: #f59e0b;
-  --warning-glow: rgba(245, 158, 11, 0.15);
-  --error: #ef4444;
-  --error-glow: rgba(239, 68, 68, 0.15);
-  --critical: #dc2626;
-  --critical-glow: rgba(220, 38, 38, 0.2);
-  --grid-line: rgba(99, 102, 241, 0.04);
-  --grid-dot: rgba(99, 102, 241, 0.08);
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
-  --shadow-glow: 0 0 20px var(--accent-glow);
-  --scrollbar-track: #111118;
-  --scrollbar-thumb: #2a2a3a;
-  --scrollbar-thumb-hover: #3a3a4a;
-}
+/* ---------- 2 · SCALE ---------- */
 
-/* Severity Colors (consistent across both themes) */
 :root {
-  --severity-trace: #64748b;
-  --severity-debug: #6366f1;
-  --severity-info: #3b82f6;
-  --severity-warn: #f59e0b;
-  --severity-error: #ef4444;
-  --severity-critical: #dc2626;
+  --font: var(--font-inter), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --mono: var(--font-jetbrains), "JetBrains Mono", ui-monospace, monospace;
+  --r-xs: 4px;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-full: 999px;
+  --h-ctl: 36px;
+  --h-sm: 30px;
+  --h-row: 40px;
+  --t-1: 120ms;
+  --t-2: 200ms;
+  --t-3: 320ms;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
 }
 
-/* ============================================================
-   Tailwind v4 Theme Configuration
-   ============================================================ */
+@media (max-width: 760px) {
+  :root {
+    --h-ctl: 44px;
+    --h-sm: 40px;
+    --h-row: 48px;
+  }
+}
+
+/* ---------- 3 · TAILWIND MAPPING (same semantic names as before, Instrument values) ---------- */
 
 @theme inline {
-  /* Colors mapped from CSS variables */
-  --color-bg-primary: var(--bg-primary);
-  --color-bg-secondary: var(--bg-secondary);
-  --color-bg-tertiary: var(--bg-tertiary);
-  --color-bg-glass: var(--bg-glass);
-  --color-bg-glass-hover: var(--bg-glass-hover);
+  --color-bg-primary: var(--bg);
+  --color-bg-secondary: var(--surface);
+  --color-bg-tertiary: var(--bg-2);
+  --color-bg-raised: var(--raised);
+  --color-bg-sunken: var(--sunken);
+  --color-bg-glass: var(--hover);
+  --color-bg-glass-hover: var(--active);
 
-  --color-border-default: var(--border);
-  --color-border-hover: var(--border-hover);
-  --color-border-active: var(--border-active);
+  --color-border-default: var(--line);
+  --color-border-strong: var(--line-2);
+  --color-border-hover: var(--line-3);
+  --color-border-active: var(--fg-3);
 
-  --color-text-primary: var(--text-primary);
-  --color-text-secondary: var(--text-secondary);
-  --color-text-muted: var(--text-muted);
+  --color-text-primary: var(--fg);
+  --color-text-secondary: var(--fg-2);
+  --color-text-muted: var(--fg-3);
+  --color-text-faint: var(--fg-4);
 
-  --color-accent: var(--accent);
-  --color-accent-hover: var(--accent-hover);
-  --color-accent-glow: var(--accent-glow);
-  --color-accent-glow-strong: var(--accent-glow-strong);
+  /* "accent" is Instrument's signal ink: lime on midnight, olive on paper. Filled primary
+     surfaces use primary/on-primary (lime/black in dark, black/white in light). */
+  --color-accent: var(--signal-ink);
+  --color-accent-hover: var(--signal-ink-hover);
+  --color-accent-glow: var(--signal-soft);
+  --color-accent-glow-strong: var(--mark);
+  --color-primary: var(--primary-bg);
+  --color-primary-hover: var(--primary-hover);
+  --color-on-primary: var(--primary-fg);
+  --color-signal: var(--signal);
+  --color-on-signal: var(--on-signal);
+  --color-on-critical: var(--on-crit);
 
-  --color-success: var(--success);
-  --color-success-glow: var(--success-glow);
-  --color-warning: var(--warning);
-  --color-warning-glow: var(--warning-glow);
-  --color-error: var(--error);
-  --color-error-glow: var(--error-glow);
-  --color-critical: var(--critical);
-  --color-critical-glow: var(--critical-glow);
+  --color-success: var(--ok);
+  --color-success-glow: color-mix(in srgb, var(--ok) 13%, transparent);
+  --color-warning: var(--warn);
+  --color-warning-glow: color-mix(in srgb, var(--warn) 13%, transparent);
+  --color-error: var(--crit);
+  --color-error-glow: color-mix(in srgb, var(--crit) 13%, transparent);
+  --color-critical: var(--crit);
+  --color-critical-glow: color-mix(in srgb, var(--crit) 18%, transparent);
+  --color-info: var(--info);
+  --color-ai: var(--ai);
 
-  --color-severity-trace: var(--severity-trace);
-  --color-severity-debug: var(--severity-debug);
-  --color-severity-info: var(--severity-info);
-  --color-severity-warn: var(--severity-warn);
-  --color-severity-error: var(--severity-error);
-  --color-severity-critical: var(--severity-critical);
+  /* Severity — the only place these colours are defined (TRACE…CRITICAL). */
+  --color-severity-trace: var(--sev-trace);
+  --color-severity-debug: var(--sev-debug);
+  --color-severity-info: var(--sev-info);
+  --color-severity-warn: var(--sev-warn);
+  --color-severity-error: var(--sev-error);
+  --color-severity-critical: var(--sev-crit);
 
-  /* Fonts */
-  --font-display: "Space Grotesk", system-ui, sans-serif;
-  --font-body: "Inter", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --color-heat-0: var(--heat-0);
+  --color-heat-1: var(--heat-1);
+  --color-heat-2: var(--heat-2);
+  --color-heat-3: var(--heat-3);
+  --color-heat-4: var(--heat-4);
 
-  /* Shadows */
-  --shadow-sm: var(--shadow-sm);
-  --shadow-md: var(--shadow-md);
-  --shadow-lg: var(--shadow-lg);
-  --shadow-glow: var(--shadow-glow);
+  --font-display: var(--font);
+  --font-body: var(--font);
+  --font-sans: var(--font);
+  --font-mono: var(--mono);
 
-  /* Animations */
-  --animate-pulse-slow: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  --animate-slide-in-right: slide-in-right 0.3s ease-out;
-  --animate-slide-in-up: slide-in-up 0.3s ease-out;
-  --animate-fade-in: fade-in 0.2s ease-out;
-  --animate-count-up: count-up 1s ease-out;
-  --animate-glow-pulse: glow-pulse 2s ease-in-out infinite;
-}
+  /* Hairlines, not shadows: only layers (menu, modal, toast) get --pop. */
+  --shadow-sm: 0 0 0 1px var(--line);
+  --shadow-md: 0 0 0 1px var(--line-2);
+  --shadow-lg: var(--pop);
+  --shadow-glow: 0 0 0 1px var(--line-3);
 
-/* ============================================================
-   Keyframes
-   ============================================================ */
+  --radius-sm: var(--r-xs);
+  --radius-md: var(--r-sm);
+  --radius-lg: var(--r-sm);
+  --radius-xl: var(--r-md);
+  --radius-2xl: var(--r-lg);
 
-@keyframes pulse-slow {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.6;
-  }
+  --animate-fade-in: fade var(--t-2) var(--ease);
+  --animate-slide-in-up: up var(--t-3) var(--ease);
+  --animate-slide-in-right: slide-in-right var(--t-3) var(--ease);
+  --animate-glow-pulse: blink 1.4s ease-in-out infinite;
+  --animate-pulse-slow: blink 3s ease-in-out infinite;
 }
 
 @keyframes slide-in-right {
   from {
-    transform: translateX(100%);
+    transform: translateX(16px);
     opacity: 0;
   }
   to {
-    transform: translateX(0);
+    transform: none;
     opacity: 1;
   }
 }
 
-@keyframes slide-in-up {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes glow-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 5px var(--accent-glow);
-  }
-  50% {
-    box-shadow: 0 0 20px var(--accent-glow-strong);
-  }
-}
-
-@keyframes count-up {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ============================================================
-   Base Styles
-   ============================================================ */
+/* ---------- 4 · BASE ---------- */
 
 html {
   scroll-behavior: smooth;
 }
 
 body {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  font-family: var(--font-body);
-  line-height: 1.6;
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.55;
+  font-feature-settings: "cv01", "cv11", "ss03";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition:
+    background-color var(--t-3) var(--ease),
+    color var(--t-3) var(--ease);
 }
-
-/* ============================================================
-   Grid Pattern Background (Dark Mode Dot Matrix)
-   ============================================================ */
-
-.bg-grid-pattern {
-  background-image: radial-gradient(circle, var(--grid-dot) 1px, transparent 1px);
-  background-size: 24px 24px;
-}
-
-/* ============================================================
-   Glassmorphism Utility
-   ============================================================ */
-
-.glass {
-  background: var(--bg-glass);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--border);
-}
-
-.glass-hover:hover {
-  background: var(--bg-glass-hover);
-  border-color: var(--border-hover);
-}
-
-/* ============================================================
-   Accent Glow Background Effect
-   ============================================================ */
-
-.bg-accent-glow {
-  position: relative;
-}
-
-.bg-accent-glow::before {
-  content: "";
-  position: absolute;
-  top: -200px;
-  right: -200px;
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* ============================================================
-   Custom Scrollbar
-   ============================================================ */
-
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--scrollbar-track);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--scrollbar-thumb-hover);
-}
-
-/* Firefox scrollbar */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
-}
-
-/* ============================================================
-   Severity Badge Styles
-   ============================================================ */
-
-.severity-trace {
-  color: var(--severity-trace);
-  background: rgba(100, 116, 139, 0.1);
-}
-
-.severity-debug {
-  color: var(--severity-debug);
-  background: rgba(99, 102, 241, 0.1);
-}
-
-.severity-info {
-  color: var(--severity-info);
-  background: rgba(59, 130, 246, 0.1);
-}
-
-.severity-warn {
-  color: var(--severity-warn);
-  background: rgba(245, 158, 11, 0.1);
-}
-
-.severity-error {
-  color: var(--severity-error);
-  background: rgba(239, 68, 68, 0.1);
-}
-
-.severity-critical {
-  color: var(--severity-critical);
-  background: rgba(220, 38, 38, 0.15);
-  animation: glow-pulse 2s ease-in-out infinite;
-}
-
-/* ============================================================
-   Focus Styles (Accessibility)
-   ============================================================ */
 
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--ring);
   outline-offset: 2px;
 }
 
-/* ============================================================
-   Selection
-   ============================================================ */
-
 ::selection {
-  background: var(--accent-glow-strong);
-  color: var(--text-primary);
+  background: var(--mark);
+  color: var(--fg);
 }
 
-/* ============================================================
-   Transitions
-   ============================================================ */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-3) transparent;
+}
 
-.transition-theme {
-  transition:
-    background-color 0.3s ease,
-    color 0.3s ease,
-    border-color 0.3s ease;
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }

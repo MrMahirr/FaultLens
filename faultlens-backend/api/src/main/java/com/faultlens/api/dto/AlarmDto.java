@@ -20,6 +20,8 @@ public class AlarmDto {
     private String ruleName;
     private Long sourceId;
     private String severity;
+    /** Rule that raised the alarm; null for built-in sources (rule_id e.g. AI_ANALYSIS). */
+    private Long alarmRuleId;
     private AlarmStatus status;
     private String message;
     private Instant triggeredAt;

@@ -1,8 +1,20 @@
 spring:
+  # Alarm e-mails (P07). SMTP_HOST empty -> the e-mail channel is off (Slack/in-app still work).
+  mail:
+    host: ${SMTP_HOST:}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail.smtp.auth: ${SMTP_AUTH:true}
+      mail.smtp.starttls.enable: ${SMTP_STARTTLS:true}
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 10000
+      mail.smtp.writetimeout: 10000
   lifecycle:
     timeout-per-shutdown-phase: 30s
   application:
-    name: faultlens-api9
+    name: faultlens-api
   threads:
     virtual:
       enabled: true
@@ -25,6 +37,10 @@ spring:
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: true
+    postgresql:
+      # Session-level migration lock: the default transactional lock keeps a transaction open,
+      # and CREATE INDEX CONCURRENTLY (V18) waits for it forever.
+      transactional-lock: false
   kafka:
     bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
     consumer:
@@ -41,33 +57,78 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
-  mail:
-    host: ${SMTP_HOST:localhost}
-    port: ${SMTP_PORT:1025}
-    username: ${SMTP_USER:}
-    password: ${SMTP_PASS:}
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
 
 server:
   port: ${PORT:3500}
   shutdown: graceful
 
+# OpenAPI document (/v3/api-docs). Keys sorted so contracts/openapi.json diffs stay minimal.
+springdoc:
+  writer-with-order-by-keys: true
+
 management:
+  # Optional separate port for actuator (P08). Prometheus scrapes /actuator/prometheus there
+  # without credentials, so publish this port only to the monitoring network, never publicly.
+  # Empty -> actuator stays on the main port and /actuator/prometheus needs an ADMIN token.
+  server:
+    port: ${MANAGEMENT_PORT:}
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info,metrics,prometheus
+  metrics:
+    tags:
+      application: faultlens
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+        faultlens.analysis.duration: true
+  otlp:
+    metrics:
+      export:
+        enabled: false # metrics go to Prometheus
+  logging:
+    export:
+      otlp:
+        enabled: false
+  tracing:
+    sampling:
+      probability: ${TRACING_SAMPLING_PROBABILITY:0.1}
+    export:
+      otlp:
+        # Traces (log-raw -> processing -> analysis -> alarm) to an OTLP collector, e.g. Jaeger
+        # from docker-compose.observability.yml. Off unless TRACING_EXPORT_ENABLED=true.
+        enabled: ${TRACING_EXPORT_ENABLED:false}
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:http://localhost:4318/v1/traces}
+  health:
+    # An unreachable or unset SMTP server must not mark the API DOWN (e-mail is one optional channel).
+    mail:
+      enabled: false
+  endpoint:
+    health:
+      probes:
+        # /livez and /readyz on the main port, also when actuator moved to MANAGEMENT_PORT:
+        # container health checks keep working either way.
+        enabled: true
+        add-additional-paths: true
 
 faultlens:
   jwt:
     # >= 32 bytes. Unset -> random per-process key (sessions end on restart). Generate: openssl rand -base64 48
     secret: ${JWT_SECRET:}
-    expiration-ms: 86400000
+    # Access tokens are short-lived (15 min); the SPA renews them with the refresh cookie.
+    expiration-ms: ${JWT_EXPIRATION_MS:900000}
+  auth:
+    # Single-use refresh token (HttpOnly cookie, rotated in Redis on every refresh).
+    refresh-ttl: ${REFRESH_TOKEN_TTL:P7D}
+    # Keep true in production (HTTPS). Browsers accept Secure cookies on http://localhost.
+    refresh-cookie-secure: ${REFRESH_COOKIE_SECURE:true}
+    login-max-failures: 5
+    login-lock-duration: PT15M
   collector:
     file:
       # Comma-separated directories LOCAL_FILE sources may read; anything else is rejected.
@@ -84,6 +145,13 @@ faultlens:
       model: gpt-4o-mini
   cors:
     allowed-origins: ${CORS_ORIGINS:http://localhost:3000}
+  notifications:
+    mail-from: ${SMTP_FROM:FaultLens <faultlens@localhost>}
+    # Link to the dashboard in e-mails / webhook payloads.
+    app-url: ${APP_URL:http://localhost:3000}
+    webhook:
+      # Generic webhooks may only reach public addresses (SSRF guard). true for on-prem receivers.
+      allow-private-hosts: ${WEBHOOK_ALLOW_PRIVATE_HOSTS:false}
   security:
     # Initial password for the 'admin' account (min 8 chars). Empty -> a random one is generated
     # and logged once at startup. Either way it must be changed at first login.

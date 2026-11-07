@@ -10,22 +10,17 @@ interface PageHeaderProps {
   className?: string;
 }
 
-/* ── Component ─────────────────────────────────────────────── */
+/* ── Component (Instrument .page-head) ─────────────────────── */
 
 function PageHeader({ title, description, action, className }: PageHeaderProps) {
   return (
-    <div
-      className={cn(
-        "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6",
-        className,
-      )}
-    >
-      <div>
-        <h1 className="text-2xl font-bold font-display text-text-primary">{title}</h1>
-        {description && <p className="mt-1 text-sm text-text-secondary">{description}</p>}
+    <div className={cn("page-head mb-5", className)}>
+      <div className="min-w-0">
+        <h1 className="h1">{title}</h1>
+        {description && <p className="mt-1.5 small t3">{description}</p>}
       </div>
 
-      {action && <div className="shrink-0">{action}</div>}
+      {action && <div className="shrink-0 flex flex-wrap items-center gap-2">{action}</div>}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { act, renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@/test/rtl";
 import { http, HttpResponse } from "msw";
 import toast from "react-hot-toast";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -118,7 +118,7 @@ describe("alarm mutations", () => {
       `${API}/alarms/7/resolve`,
       "Alarm çözüldü olarak işaretlendi.",
     ],
-    ["delete", useDeleteAlarmMutation, "delete", `${API}/alarms/7`, "Alarm başarıyla silindi."],
+    ["delete", useDeleteAlarmMutation, "delete", `${API}/alarms/7`, "Alarm silindi."],
   ] as const)(
     "%s calls the endpoint, toasts and refreshes lists + stats",
     async (_, useHook, method, url, message) => {
@@ -171,6 +171,6 @@ describe("alarm mutations", () => {
       await result.current.mutateAsync(7).catch(() => {});
     });
 
-    expect(error).toHaveBeenCalledWith("Alarm silinirken bir hata oluştu.");
+    expect(error).toHaveBeenCalledWith("Alarm silinemedi.");
   });
 });

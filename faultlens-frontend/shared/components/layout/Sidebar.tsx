@@ -1,171 +1,233 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import {
   LayoutDashboard,
   ScrollText,
   Server,
   Brain,
   Rocket,
-  ChevronLeft,
-  ChevronRight,
-  Hexagon,
-  Home,
+  ChevronsLeft,
+  ChevronsRight,
   Bell,
   Settings,
+  X,
 } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { useUIStore } from "@/shared/store/ui.store";
+import { useAuthStore } from "@/features/auth/store/auth.store";
 import { Tooltip } from "@/shared/components/ui/Tooltip";
+import { BrandMark } from "@/shared/components/layout/BrandMark";
+import { useFocusTrap } from "@/shared/hooks/useFocusTrap";
+import { DESKTOP_QUERY, useMediaQuery } from "@/shared/hooks/useMediaQuery";
 
-/* ── Types ─────────────────────────────────────────────────── */
+/* ── Nav model (Instrument: Gözlem · Altyapı · Yanıt) ──────── */
+
+type NavKey = "dashboard" | "logs" | "analyses" | "sources" | "deployments" | "alarms" | "settings";
 
 interface NavItem {
-  label: string;
+  key: NavKey;
   href: string;
   icon: React.ReactNode;
 }
 
-/* ── Nav Items ─────────────────────────────────────────────── */
-
-const NAV_ITEMS: NavItem[] = [
-  { label: "Anasayfa", href: "/", icon: <Home size={20} /> },
-  { label: "Panel", href: "/dashboard", icon: <LayoutDashboard size={20} /> },
-  { label: "Loglar", href: "/logs", icon: <ScrollText size={20} /> },
-  { label: "Kaynaklar", href: "/sources", icon: <Server size={20} /> },
-  { label: "Analizler", href: "/analyses", icon: <Brain size={20} /> },
-  { label: "Dağıtımlar", href: "/deployments", icon: <Rocket size={20} /> },
-  { label: "Alarmlar", href: "/alarms", icon: <Bell size={20} /> },
-  { label: "Ayarlar", href: "/settings", icon: <Settings size={20} /> },
+const GROUPS: { key: "observe" | "infra" | "respond"; items: NavItem[] }[] = [
+  {
+    key: "observe",
+    items: [
+      { key: "dashboard", href: "/dashboard", icon: <LayoutDashboard size={16} /> },
+      { key: "logs", href: "/logs", icon: <ScrollText size={16} /> },
+      { key: "analyses", href: "/analyses", icon: <Brain size={16} /> },
+    ],
+  },
+  {
+    key: "infra",
+    items: [
+      { key: "sources", href: "/sources", icon: <Server size={16} /> },
+      { key: "deployments", href: "/deployments", icon: <Rocket size={16} /> },
+    ],
+  },
+  {
+    key: "respond",
+    items: [{ key: "alarms", href: "/alarms", icon: <Bell size={16} /> }],
+  },
 ];
+
+const SETTINGS_ITEM: NavItem = {
+  key: "settings",
+  href: "/settings",
+  icon: <Settings size={16} />,
+};
 
 /* ── Component ─────────────────────────────────────────────── */
 
+/**
+ * lg and up: a fixed rail, expanded (240px) or icon-only (64px), persisted.
+ * Below lg: an off-canvas drawer over a scrim (always expanded), opened from the Topbar; it
+ * traps focus, closes on Esc, on the scrim and after navigating, and is inert while closed.
+ */
 function Sidebar() {
+  const t = useTranslations("nav");
   const pathname = usePathname();
   const sidebarOpen = useUIStore((state) => state.sidebarOpen);
   const toggleSidebar = useUIStore((state) => state.toggleSidebar);
+  const mobileNavOpen = useUIStore((state) => state.mobileNavOpen);
+  const setMobileNavOpen = useUIStore((state) => state.setMobileNavOpen);
+  const user = useAuthStore((state) => state.user);
+  // Server render assumes desktop: the drawer is closed there anyway, so nothing flashes.
+  const isDesktop = useMediaQuery(DESKTOP_QUERY, true);
+  const drawerOpen = !isDesktop && mobileNavOpen;
+  const expanded = isDesktop ? sidebarOpen : true;
+  const asideRef = useRef<HTMLElement>(null);
 
-  const isActive = (href: string) => {
-    if (href === "/") return pathname === "/";
-    if (href === "/dashboard") return pathname === "/dashboard";
-    return pathname?.startsWith(href) ?? false;
+  useFocusTrap(asideRef, drawerOpen);
+
+  // A link was followed, or the window grew past lg: the drawer has done its job.
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [pathname, isDesktop, setMobileNavOpen]);
+
+  useEffect(() => {
+    if (!drawerOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => e.key === "Escape" && setMobileNavOpen(false);
+    document.addEventListener("keydown", onKeyDown);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [drawerOpen, setMobileNavOpen]);
+
+  const isActive = (href: string) =>
+    href === "/dashboard" ? pathname === href : (pathname?.startsWith(href) ?? false);
+
+  const renderItem = (item: NavItem) => {
+    const active = isActive(item.href);
+    const link = (
+      <Link
+        href={item.href}
+        className={cn("nav", !expanded && "justify-center px-0 w-10")}
+        aria-current={active ? "page" : undefined}
+        aria-label={expanded ? undefined : t(item.key)}
+      >
+        <span aria-hidden="true" className="inline-flex">
+          {item.icon}
+        </span>
+        {expanded && <span className="truncate">{t(item.key)}</span>}
+      </Link>
+    );
+
+    return expanded ? (
+      <li key={item.href}>{link}</li>
+    ) : (
+      <li key={item.href}>
+        <Tooltip content={t(item.key)} position="right">
+          {link}
+        </Tooltip>
+      </li>
+    );
   };
 
   return (
-    <motion.aside
-      layout
-      className={cn(
-        "fixed left-0 top-0 h-screen z-40",
-        "bg-bg-secondary border-r border-border-default",
-        "flex flex-col transition-theme",
-        "overflow-hidden",
-      )}
-      animate={{ width: sidebarOpen ? 240 : 64 }}
-      transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-    >
-      {/* ── Logo ───────────────────────────────────── */}
-      <div className="flex items-center h-16 px-4 border-b border-border-default shrink-0">
-        <Link href="/dashboard" className="flex items-center gap-2.5 overflow-hidden">
-          <div className="shrink-0 w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
-            <Hexagon size={18} className="text-accent" />
-          </div>
-          <motion.span
-            className="font-display font-bold text-lg text-text-primary whitespace-nowrap"
-            animate={{ opacity: sidebarOpen ? 1 : 0, width: sidebarOpen ? "auto" : 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            Fault<span className="text-accent">Lens</span>
-          </motion.span>
-        </Link>
-      </div>
-
-      {/* ── Navigation ─────────────────────────────── */}
-      <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
-        {NAV_ITEMS.map((item) => {
-          const active = isActive(item.href);
-
-          // `key` is set on the wrapping <Tooltip>/<div>; spreading it here
-          // would trigger React's "key spread into JSX" warning.
-          const linkProps = {
-            href: item.href,
-            className: cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-lg",
-              "transition-all duration-200 group relative",
-              active
-                ? "bg-accent/10 text-accent"
-                : "text-text-secondary hover:text-text-primary hover:bg-bg-tertiary",
-            ),
-          };
-
-          const linkInner = (
-            <>
-              {/* Active indicator */}
-              {active && (
-                <motion.div
-                  layoutId="sidebar-active"
-                  className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-accent rounded-full"
-                  transition={{ type: "spring", damping: 20, stiffness: 300 }}
-                />
-              )}
-
-              <span className="shrink-0">{item.icon}</span>
-
-              <motion.span
-                className="text-sm font-medium whitespace-nowrap overflow-hidden"
-                animate={{
-                  opacity: sidebarOpen ? 1 : 0,
-                  width: sidebarOpen ? "auto" : 0,
-                }}
-                transition={{ duration: 0.2 }}
-              >
-                {item.label}
-              </motion.span>
-            </>
-          );
-
-          // "/" is the standalone landing page (outside the dashboard layout),
-          // so it gets a full page load instead of client-side navigation.
-          const linkContent =
-            item.href === "/" ? (
-              <a {...linkProps}>{linkInner}</a>
-            ) : (
-              <Link {...linkProps}>{linkInner}</Link>
-            );
-
-          // Show tooltip when sidebar is collapsed
-          if (!sidebarOpen) {
-            return (
-              <Tooltip key={item.href} content={item.label} position="right">
-                {linkContent}
-              </Tooltip>
-            );
-          }
-
-          return <div key={item.href}>{linkContent}</div>;
-        })}
-      </nav>
-
-      {/* ── Collapse Toggle ────────────────────────── */}
-      <div className="p-2 border-t border-border-default shrink-0">
+    <>
+      {drawerOpen && (
         <button
-          onClick={toggleSidebar}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-tertiary transition-colors cursor-pointer"
-          aria-label={sidebarOpen ? "Sidebar'ı kapat" : "Sidebar'ı aç"}
-        >
-          {sidebarOpen ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
-          <motion.span
-            className="text-xs whitespace-nowrap overflow-hidden"
-            animate={{ opacity: sidebarOpen ? 1 : 0, width: sidebarOpen ? "auto" : 0 }}
-            transition={{ duration: 0.2 }}
+          type="button"
+          className="drawer-scrim lg:hidden"
+          tabIndex={-1}
+          aria-hidden="true"
+          onClick={() => setMobileNavOpen(false)}
+        />
+      )}
+
+      <aside
+        ref={asideRef}
+        id="app-sidebar"
+        aria-label={t("label")}
+        // Off-screen drawer: out of the tab order and the accessibility tree.
+        inert={!isDesktop && !mobileNavOpen}
+        role={drawerOpen ? "dialog" : undefined}
+        aria-modal={drawerOpen || undefined}
+        className={cn(
+          "fixed left-0 top-0 h-dvh z-40 flex flex-col gap-0.5 py-3",
+          "bg-bg-tertiary border-r border-border-default overflow-hidden",
+          "transition-[width,transform] duration-200 ease-[cubic-bezier(.2,0,0,1)]",
+          expanded ? "w-60 px-2.5" : "w-16 px-3 items-center",
+          // Drawer position below lg; always in place from lg up.
+          mobileNavOpen ? "translate-x-0 shadow-lg" : "-translate-x-full",
+          "lg:translate-x-0 lg:shadow-none",
+        )}
+      >
+        {/* Brand (+ close on phones) */}
+        <div className={cn("flex items-center mb-1", expanded && "justify-between")}>
+          <Link href="/dashboard" className="brand" aria-label="FaultLens">
+            <BrandMark />
+            {expanded && <span>FaultLens</span>}
+          </Link>
+          {!isDesktop && (
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm btn-icon"
+              aria-label={t("close")}
+              onClick={() => setMobileNavOpen(false)}
+            >
+              <X size={16} aria-hidden="true" />
+            </button>
+          )}
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto w-full" aria-label={t("main")}>
+          {GROUPS.map((group) => (
+            <div key={group.key}>
+              {expanded ? (
+                <p className="nav-group">{t(`groups.${group.key}`)}</p>
+              ) : (
+                <div className="hr my-2" aria-hidden="true" />
+              )}
+              <ul className="flex flex-col gap-0.5">{group.items.map(renderItem)}</ul>
+            </div>
+          ))}
+        </nav>
+
+        {/* Settings + user */}
+        <ul className="flex flex-col gap-0.5 w-full">{renderItem(SETTINGS_ITEM)}</ul>
+
+        {user && expanded && (
+          <div className="mt-2 flex items-center gap-2.5 px-2 py-2 rounded-md border border-border-default bg-bg-secondary">
+            <span className="avatar" aria-hidden="true">
+              {user.username.slice(0, 1).toUpperCase()}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="small font-medium truncate">{user.username}</p>
+            </div>
+            <span className="badge mono ol">{user.role}</span>
+          </div>
+        )}
+
+        {/* Rail width toggle: desktop only (the drawer has its own close button). */}
+        {isDesktop && (
+          <button
+            type="button"
+            onClick={toggleSidebar}
+            className={cn("nav mt-1 text-text-muted", !expanded && "justify-center px-0 w-10")}
+            aria-label={expanded ? t("collapse") : t("expand")}
+            aria-expanded={expanded}
           >
-            Daralt
-          </motion.span>
-        </button>
-      </div>
-    </motion.aside>
+            {expanded ? (
+              <ChevronsLeft size={16} aria-hidden="true" />
+            ) : (
+              <ChevronsRight size={16} aria-hidden="true" />
+            )}
+            {expanded && <span className="xs">{t("collapse")}</span>}
+          </button>
+        )}
+      </aside>
+    </>
   );
 }
 

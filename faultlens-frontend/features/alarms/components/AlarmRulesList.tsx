@@ -1,106 +1,136 @@
 "use client";
 
 import { useMemo } from "react";
+import { useTranslations } from "next-intl";
+import { Power, PowerOff, Trash2 } from "lucide-react";
+import { useCan } from "@/features/auth/hooks/useCan";
 import { DataTable, type DataTableColumnDef } from "@/shared/components/ui/Table";
 import { Badge } from "@/shared/components/ui/Badge";
 import { Button } from "@/shared/components/ui/Button";
-import { AlarmRule } from "../types/alarm.types";
-import { Severity } from "@/shared/types/common.types";
-import { Power, PowerOff, Trash2 } from "lucide-react";
-import { useAlarmStore } from "../store/alarm.store";
+import { SeverityBadge } from "@/shared/components/ui/SeverityBadge";
+import { useConfirm } from "@/shared/components/ui/ConfirmDialog";
+import {
+  useAlarmRulesQuery,
+  useDeleteAlarmRuleMutation,
+  useToggleAlarmRuleMutation,
+} from "../api/useAlarmRules";
+import { describeRule } from "../lib/ruleForm";
+import type { AlarmRule } from "../types/alarm.types";
 
 export function AlarmRulesList() {
-  const { rules, toggleRule, deleteRule } = useAlarmStore();
+  const t = useTranslations("alarms");
+  const tDescribe = useTranslations("alarms.rules.describe");
+  const { data: rules, isLoading } = useAlarmRulesQuery();
+  const toggleRule = useToggleAlarmRuleMutation();
+  const deleteRule = useDeleteAlarmRuleMutation();
+  const canEdit = useCan("edit");
+  const { confirm, dialog } = useConfirm();
+  const { mutate: toggle } = toggleRule;
+  const isMutating = toggleRule.isPending || deleteRule.isPending;
 
   const columns = useMemo<DataTableColumnDef<AlarmRule>[]>(
     () => [
       {
         accessorKey: "name",
-        header: "Kural Adı",
-        cell: ({ row }) => <div className="font-medium text-text-primary">{row.original.name}</div>,
+        header: t("rules.columns.name"),
+        cell: ({ row }) => (
+          <div className="font-medium text-text-primary min-w-[8rem]">{row.original.name}</div>
+        ),
       },
       {
-        accessorKey: "condition",
-        header: "Koşul",
+        id: "condition",
+        header: t("rules.columns.condition"),
         cell: ({ row }) => (
-          <code className="px-2 py-1 bg-bg-tertiary rounded text-xs text-text-secondary font-mono">
-            {row.original.condition}
+          <code className="mono px-1.5 py-0.5 well text-text-secondary">
+            {describeRule(row.original, tDescribe)}
           </code>
         ),
       },
       {
         accessorKey: "severity",
-        header: "Tetiklenecek Seviye",
-        cell: ({ row }) => {
-          const severity = row.original.severity;
-          let variant: "error" | "warning" | "info" | "success" = "info";
-          if (severity === Severity.CRITICAL || severity === Severity.ERROR) {
-            variant = "error";
-          } else if (severity === Severity.WARN) {
-            variant = "warning";
-          }
-          return <Badge variant={variant}>{severity}</Badge>;
-        },
+        header: t("rules.columns.severity"),
+        cell: ({ row }) => <SeverityBadge severity={row.original.severity} orAbove />,
       },
       {
-        accessorKey: "isActive",
-        header: "Durum",
-        cell: ({ row }) => {
-          const isActive = row.original.isActive;
-          return (
-            <Badge variant={isActive ? "success" : "default"}>{isActive ? "Aktif" : "Pasif"}</Badge>
-          );
-        },
+        id: "scope",
+        header: t("rules.columns.channels"),
+        cell: ({ row }) => (
+          <span className="xs text-text-secondary whitespace-nowrap">
+            {row.original.channels.map((c) => t(`channel.${c}`)).join(", ")}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "enabled",
+        header: t("rules.columns.status"),
+        cell: ({ row }) => (
+          <Badge variant={row.original.enabled ? "success" : "default"} dot>
+            {row.original.enabled ? t("rules.active") : t("rules.inactive")}
+          </Badge>
+        ),
       },
       {
         id: "actions",
-        header: "Aksiyon",
+        header: t("rules.columns.actions"),
         cell: ({ row }) => {
           const rule = row.original;
+          if (!canEdit) return null;
+          const toggleLabel = rule.enabled ? t("rules.deactivate") : t("rules.activate");
           return (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 whitespace-nowrap">
               <Button
                 variant="ghost"
                 size="sm"
-                icon={rule.isActive ? <PowerOff size={14} /> : <Power size={14} />}
+                icon={
+                  rule.enabled ? (
+                    <PowerOff size={14} aria-hidden="true" />
+                  ) : (
+                    <Power size={14} aria-hidden="true" />
+                  )
+                }
                 onClick={(e) => {
                   e.stopPropagation();
-                  toggleRule(rule.id);
+                  toggle({ id: rule.id, enabled: !rule.enabled });
                 }}
-                title={rule.isActive ? "Pasife Al" : "Aktifleştir"}
-                className={rule.isActive ? "text-warning" : "text-success"}
-              >
-                {rule.isActive ? "Pasife Al" : "Aktifleştir"}
-              </Button>
+                disabled={isMutating}
+                title={toggleLabel}
+                aria-label={toggleLabel}
+              />
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-error hover:bg-error/10 hover:text-error"
-                icon={<Trash2 size={14} />}
+                className="text-error"
+                icon={<Trash2 size={14} aria-hidden="true" />}
                 onClick={(e) => {
                   e.stopPropagation();
-                  deleteRule(rule.id);
+                  confirm({
+                    title: t("rules.deleteTitle"),
+                    description: t("rules.deleteDescription", { name: rule.name }),
+                    onConfirm: () => deleteRule.mutateAsync(rule.id),
+                  });
                 }}
-                title="Sil"
-              >
-                Sil
-              </Button>
+                disabled={isMutating}
+                title={t("rules.delete")}
+                aria-label={t("rules.delete")}
+              />
             </div>
           );
         },
       },
     ],
-    [toggleRule, deleteRule],
+    [t, tDescribe, toggle, deleteRule, confirm, isMutating, canEdit],
   );
 
   return (
-    <div className="space-y-4">
+    <>
       <DataTable
-        data={rules}
+        label={t("tabs.rules")}
+        data={rules ?? []}
         columns={columns}
-        emptyMessage="Herhangi bir kural bulunmuyor."
-        enableSorting={true}
+        loading={isLoading}
+        emptyMessage={t("rules.empty")}
       />
-    </div>
+      {dialog}
+    </>
   );
 }

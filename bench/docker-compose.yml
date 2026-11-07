@@ -1,0 +1,130 @@
+# Isolated benchmark stack (P08). Own project name, ports and volumes: it never touches the
+# development data. Start:  docker compose -p faultlens-bench -f bench/docker-compose.yml up -d --build
+# Remove everything:        docker compose -p faultlens-bench -f bench/docker-compose.yml down -v
+name: faultlens-bench
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: faultlens
+      POSTGRES_USER: faultlens
+      POSTGRES_PASSWORD: faultlens
+    command: ["postgres", "-c", "shared_buffers=512MB", "-c", "work_mem=32MB", "-c", "max_wal_size=4GB"]
+    ports:
+      - "5544:5432"
+    volumes:
+      - bench_pg:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U faultlens"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:8.10-alpine
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  kafka:
+    image: apache/kafka:4.4.0
+    ports:
+      - "9192:9192"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9192,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9192
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      CLUSTER_ID: bEnChMaRkQnSL915zEnOhQ
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_NUM_PARTITIONS: 3
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9192 > /dev/null 2>&1"]
+      interval: 5s
+      timeout: 10s
+      retries: 20
+      start_period: 15s
+
+  backend:
+    build:
+      context: ../faultlens-backend
+      dockerfile: Dockerfile
+    ports:
+      - "3600:3500"
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=faultlens
+      - DB_USER=faultlens
+      - DB_PASS=faultlens
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - KAFKA_SERVERS=kafka:29092
+      - PORT=3500
+      # Bench-only credentials (this stack holds generated data only).
+      - JWT_SECRET=bench-only-jwt-secret-not-for-production-0123456789
+      - ADMIN_INITIAL_PASSWORD=bench-admin-initial-1
+      - REFRESH_COOKIE_SECURE=false
+      - AI_ENABLED=false
+      - COLLECTOR_FILE_ALLOWED_DIRS=/var/log/bench
+    volumes:
+      - bench_logs:/var/log/bench
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    # No docker.sock: the collector must not pick up the host's containers.
+
+  # Second instance for the multi-instance test (P08): same DB/Kafka/Redis and log directory.
+  #   docker compose -p faultlens-bench -f bench/docker-compose.yml --profile multi up -d backend2
+  backend2:
+    profiles: ["multi"]
+    build:
+      context: ../faultlens-backend
+      dockerfile: Dockerfile
+    ports:
+      - "3601:3500"
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=faultlens
+      - DB_USER=faultlens
+      - DB_PASS=faultlens
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - KAFKA_SERVERS=kafka:29092
+      - PORT=3500
+      - JWT_SECRET=bench-only-jwt-secret-not-for-production-0123456789
+      - ADMIN_INITIAL_PASSWORD=bench-admin-initial-1
+      - REFRESH_COOKIE_SECURE=false
+      - AI_ENABLED=false
+      - COLLECTOR_FILE_ALLOWED_DIRS=/var/log/bench
+    volumes:
+      - bench_logs:/var/log/bench
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+volumes:
+  bench_pg:
+  bench_logs:

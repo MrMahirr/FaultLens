@@ -1,15 +1,26 @@
 import axios from "axios";
 import { useAuthStore } from "@/features/auth/store/auth.store";
 import { snakeToCamel, camelToSnake } from "@/shared/lib/caseTransform";
+import { isAuthEndpoint, refreshSession } from "@/shared/api/session";
+
+declare module "axios" {
+  interface InternalAxiosRequestConfig {
+    /** Set once a 401 has triggered a refresh, so a request is replayed at most once. */
+    _retried?: boolean;
+  }
+}
 
 /**
  * Axios API client instance.
  * - Request interceptor: her isteğe Bearer token ekler
- * - Response interceptor: 401'de logout ve /login'e redirect
+ * - Response interceptor: 401'de oturumu yeniler (refresh cookie) ve isteği bir kez tekrarlar;
+ *   yenilenemezse logout ve /login'e redirect
  */
 export const apiClient = axios.create({
   headers: { "Content-Type": "application/json" },
   timeout: 10_000,
+  // Sends the HttpOnly refresh cookie to /auth/* (login, refresh, password change set it).
+  withCredentials: true,
 });
 
 // ── Request Interceptor ─────────────────────────────────────
@@ -58,10 +69,19 @@ apiClient.interceptors.response.use(
       }
     }
 
-    if (error.response?.status === 401) {
-      useAuthStore.getState().logout();
+    const original = error.config;
+    if (error.response?.status === 401 && original && !isAuthEndpoint(original.url)) {
+      // Access token expired (15 min): renew once, then replay the request.
+      if (!original._retried && useAuthStore.getState().token) {
+        original._retried = true;
+        const token = await refreshSession();
+        if (token) {
+          original.headers.Authorization = `Bearer ${token}`;
+          return apiClient(original);
+        }
+      }
 
-      // Client-side redirect
+      useAuthStore.getState().logout();
       if (typeof window !== "undefined") {
         window.location.href = "/login";
       }

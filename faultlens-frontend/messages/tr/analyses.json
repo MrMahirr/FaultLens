@@ -1,0 +1,35 @@
+{
+  "analyses": {
+    "title": "Analizler",
+    "subtitle": "Hata gruplarının kök neden analizleri; düşük güvenli sonuçlar incelemeye düşer.",
+    "source": "Kaynak",
+    "allSources": "Tüm kaynaklar",
+    "clearHistory": "Geçmişi temizle",
+    "clearTitle": "Analiz geçmişi silinsin mi?",
+    "clearDescriptionSource": "“{name}” kaynağının tüm analizleri kalıcı olarak silinir.",
+    "clearDescriptionAll": "Tüm kaynakların analiz geçmişi kalıcı olarak silinir.",
+    "cleared": "Analiz geçmişi temizlendi.",
+    "clearFailed": "Geçmiş temizlenirken bir hata oluştu.",
+    "emptyTitle": "Henüz analiz yok",
+    "emptySource": "Bu kaynak için henüz hata analizi yapılmamış.",
+    "emptyAll": "ERROR ve CRITICAL loglar geldikçe analizler burada görünür.",
+    "engine": {
+      "RULE_BASED": "Kural tabanlı",
+      "AI": "AI"
+    },
+    "confidence": "Güven",
+    "confidenceValue": "Güven %{value}",
+    "needsReview": "İnceleme",
+    "rootCause": "Kök neden",
+    "rootCauseSummary": "Kök neden özeti",
+    "suggestion": "Öneri ve çözüm",
+    "affectedDeployment": "Deployment etkilenmiş",
+    "affectedDeploymentTitle": "Etkilenen deployment",
+    "affectedDeploymentText": "Bu hata {deployment} deployment'ı ile ilişkili olabilir.",
+    "reanalyze": "Yeniden analiz et",
+    "details": "Ayrıntılar",
+    "detailTitle": "Analiz #{id}",
+    "analyzedAt": "Analiz zamanı",
+    "list": "Analiz listesi"
+  }
+}

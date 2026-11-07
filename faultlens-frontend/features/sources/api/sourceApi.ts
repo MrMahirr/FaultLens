@@ -18,8 +18,8 @@ export const SourceApi = {
       url: Endpoints.SOURCES.TEST(id),
     });
     const isConnected = response.data.data?.connected;
-    if (isConnected === false) throw new Error("Bağlantı testi başarısız");
-    return { success: true, message: "Bağlantı başarılı" };
+    if (isConnected === false) throw new Error("connection test failed"); // UI shows its own translated text
+    return { success: true, message: "connected" };
   },
 
   testConfig: async (
@@ -31,8 +31,8 @@ export const SourceApi = {
       data,
     });
     const isConnected = response.data.data?.connected;
-    if (isConnected === false) throw new Error("Bağlantı testi başarısız");
-    return { success: true, message: "Bağlantı başarılı" };
+    if (isConnected === false) throw new Error("connection test failed"); // UI shows its own translated text
+    return { success: true, message: "connected" };
   },
 
   createSource: async (data: Partial<LogSourceDto>): Promise<LogSourceDto> => {
@@ -42,5 +42,17 @@ export const SourceApi = {
       data,
     });
     return response.data.data;
+  },
+
+  setEnabled: async (id: number, enabled: boolean): Promise<LogSourceDto> => {
+    const response = await apiClient({
+      method: HttpMethod.POST,
+      url: enabled ? Endpoints.SOURCES.ENABLE(id) : Endpoints.SOURCES.DISABLE(id),
+    });
+    return response.data.data;
+  },
+
+  deleteSource: async (id: number): Promise<void> => {
+    await apiClient({ method: HttpMethod.DELETE, url: Endpoints.SOURCES.DETAIL(id) });
   },
 };

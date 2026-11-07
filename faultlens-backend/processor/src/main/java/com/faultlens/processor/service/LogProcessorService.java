@@ -6,13 +6,13 @@ import com.faultlens.common.enums.Severity;
 import com.faultlens.processor.classifier.SeverityClassifier;
 import com.faultlens.processor.event.LogProcessedEvent;
 import com.faultlens.processor.model.LogEntry;
-import com.faultlens.processor.model.LogGroup;
 import com.faultlens.processor.parser.ParsedLog;
 import com.faultlens.processor.parser.PatternRegistry;
 import com.faultlens.processor.repository.LogEntryRepository;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -57,6 +57,8 @@ public class LogProcessorService {
      * Parses, groups, persists and forwards a batch of raw log events.
      */
     public List<LogEntryDto> processBatch(List<LogEventDto> events) {
+        // 1. Parse and classify (pure code; a bad event goes to the DLQ without touching the DB,
+        //    so it cannot abort the batch's transaction).
         List<PendingLogEntry> pendingEntries = new ArrayList<>();
         for (LogEventDto event : events) {
             try {
@@ -64,11 +66,20 @@ public class LogProcessorService {
             } catch (Exception ex) {
                 log.error("Failed to process event, sending to DLQ: {}", event, ex);
                 dlqTemplate.send("log-raw-dlq", event);
+                io.micrometer.core.instrument.Metrics.counter("faultlens.logs.dlq").increment();
             }
         }
-        
+
         if (pendingEntries.isEmpty()) {
             return List.of();
+        }
+
+        // 2. One upsert per distinct group, in a deadlock-free order.
+        Map<String, Long> groupIds = groupingService.groupAll(pendingEntries.stream()
+                .map(PendingLogEntry::candidate)
+                .toList());
+        for (PendingLogEntry pending : pendingEntries) {
+            pending.entry().setGroupId(groupIds.get(pending.fingerprint()));
         }
 
         List<LogEntry> savedEntries = entryRepository.saveAll(pendingEntries.stream()
@@ -88,10 +99,25 @@ public class LogProcessorService {
             toPublish.add(dto);
         }
 
+        countIngested(savedEntries);
+
         // Publish event so listeners can dispatch (e.g. Kafka, WebSocket) after commit
         eventPublisher.publishEvent(new LogProcessedEvent(toErrorQueue, toPublish));
 
         return dtos;
+    }
+
+    /** {@code faultlens_logs_ingested_total{source,severity}} (P08), one increment per pair per batch. */
+    private static void countIngested(List<LogEntry> entries) {
+        Map<String, Map<Severity, Long>> counts = new java.util.HashMap<>();
+        for (LogEntry entry : entries) {
+            counts.computeIfAbsent(entry.getSourceId() == null ? "none" : entry.getSourceId().toString(),
+                            key -> new java.util.EnumMap<>(Severity.class))
+                    .merge(entry.getSeverity(), 1L, Long::sum);
+        }
+        counts.forEach((source, bySeverity) -> bySeverity.forEach((severity, count) ->
+                io.micrometer.core.instrument.Metrics.counter("faultlens.logs.ingested",
+                        "source", source, "severity", severity.name()).increment(count)));
     }
 
     private PendingLogEntry toPendingEntry(LogEventDto event) {
@@ -99,10 +125,11 @@ public class LogProcessorService {
         Severity severity = severityClassifier.classify(event, parsed);
         Instant timestamp = event.getTimestamp() == null ? Instant.now() : event.getTimestamp();
         Long sourceId = extractSourceId(event);
-        LogGroup group = groupingService.group(parsed.parsedMessage(), parsed.stackTrace(), severity, sourceId, timestamp);
+        LogGroupingService.GroupCandidate candidate = new LogGroupingService.GroupCandidate(
+                parsed.parsedMessage(), parsed.stackTrace(), severity, sourceId, timestamp);
+        String fingerprint = groupingService.fingerprint(parsed.parsedMessage(), parsed.stackTrace(), severity);
         LogEntry entry = LogEntry.builder()
                 .sourceId(sourceId)
-                .groupId(group.getId())
                 .severity(severity)
                 .message(parsed.parsedMessage() == null ? event.getMessage() : parsed.parsedMessage())
                 .parsedMessage(parsed.parsedMessage())
@@ -115,7 +142,7 @@ public class LogProcessorService {
                 .cluster(event.getCluster())
                 .timestamp(timestamp)
                 .build();
-        return new PendingLogEntry(event, parsed, entry);
+        return new PendingLogEntry(event, parsed, entry, candidate, fingerprint);
     }
 
     /**
@@ -150,6 +177,7 @@ public class LogProcessorService {
         }
     }
 
-    private record PendingLogEntry(LogEventDto event, ParsedLog parsed, LogEntry entry) {
+    private record PendingLogEntry(LogEventDto event, ParsedLog parsed, LogEntry entry,
+                                   LogGroupingService.GroupCandidate candidate, String fingerprint) {
     }
 }

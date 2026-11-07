@@ -1,151 +1,228 @@
 "use client";
 
 import { useState } from "react";
-
-import { motion } from "framer-motion";
-import { MoreVertical, Wifi, WifiOff, TestTube } from "lucide-react";
-import { Card } from "@/shared/components/ui/Card";
+import { useTranslations } from "next-intl";
+import toast from "react-hot-toast";
+import { MoreVertical, Wifi, WifiOff, TestTube, Trash2, Send } from "lucide-react";
+import { Modal } from "@/shared/components/ui/Modal";
+import { LogSourceType } from "@/shared/types/common.types";
 import { Badge } from "@/shared/components/ui/Badge";
 import { Button } from "@/shared/components/ui/Button";
 import { Dropdown, type DropdownItem } from "@/shared/components/ui/Dropdown";
+import { useConfirm } from "@/shared/components/ui/ConfirmDialog";
+import { useDateFormat } from "@/shared/hooks/useDateFormat";
 import type { LogSourceDto } from "@/features/sources/types/source.types";
-import { ConnectionStatus, SOURCE_TYPE_LABELS } from "@/shared/types/common.types";
-import { formatRelativeTime } from "@/shared/lib/utils";
-import { useTestConnectionMutation } from "@/features/sources/api/useSourceMutation";
-import { cn } from "@/shared/lib/utils";
+import {
+  useDeleteSourceMutation,
+  useTestConnectionMutation,
+  useToggleSourceMutation,
+} from "@/features/sources/api/useSourceMutation";
+import { useCan } from "@/features/auth/hooks/useCan";
 import { SourceDetailModal } from "./SourceDetailModal";
-
-/* ── Status Dot ────────────────────────────────────────────── */
-
-function StatusDot({ status }: { status: ConnectionStatus }) {
-  const colors: Record<ConnectionStatus, string> = {
-    [ConnectionStatus.CONNECTED]: "bg-success",
-    [ConnectionStatus.WARNING]: "bg-warning",
-    [ConnectionStatus.DISCONNECTED]: "bg-error",
-  };
-
-  const labels: Record<ConnectionStatus, string> = {
-    [ConnectionStatus.CONNECTED]: "Bağlı",
-    [ConnectionStatus.WARNING]: "Uyarı",
-    [ConnectionStatus.DISCONNECTED]: "Bağlantı Yok",
-  };
-
-  return (
-    <div className="flex items-center gap-1.5">
-      <span className="relative flex h-2.5 w-2.5">
-        {status === ConnectionStatus.CONNECTED && (
-          <span
-            className={cn(
-              "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75",
-              colors[status],
-            )}
-          />
-        )}
-        <span className={cn("relative inline-flex rounded-full h-2.5 w-2.5", colors[status])} />
-      </span>
-      <span className="text-xs text-text-secondary">{labels[status]}</span>
-    </div>
-  );
-}
+import { SourceStatus } from "./SourceStatus";
+import { IngestSetup } from "./IngestSetup";
 
 /* ── Props ─────────────────────────────────────────────────── */
 
 interface SourceCardProps {
   source: LogSourceDto;
+  /** Position in the grid (staggered entry animation). */
   index: number;
+}
+
+function parseConfig(raw?: string): Record<string, string> {
+  try {
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
 }
 
 /* ── Component ─────────────────────────────────────────────── */
 
 function SourceCard({ source, index }: SourceCardProps) {
+  const t = useTranslations("sources");
+  const tToast = useTranslations("sources.toast");
+  const dates = useDateFormat();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showIngest, setShowIngest] = useState(false);
   const testConnection = useTestConnectionMutation();
-  const config = source.config ? JSON.parse(source.config) : {};
+  const toggleSource = useToggleSourceMutation();
+  const deleteSource = useDeleteSourceMutation();
+  const canEdit = useCan("edit");
+  const canDelete = useCan("delete");
+  const { confirm, dialog } = useConfirm();
+  const config = parseConfig(source.config);
 
-  const menuItems: DropdownItem[] = [
-    {
-      label: source.enabled ? "Devre Dışı Bırak" : "Etkinleştir",
+  // The API enforces the same rules (EDITOR: toggle/test, ADMIN: delete); hiding avoids 403s.
+  const menuItems: DropdownItem[] = [];
+  if (canEdit) {
+    menuItems.push({
+      label: source.enabled ? t("disable") : t("enable"),
       value: "toggle",
       icon: source.enabled ? <WifiOff size={14} /> : <Wifi size={14} />,
-    },
-    { label: "Sil", value: "delete", danger: true },
-  ];
+    });
+  }
+  if (canDelete) {
+    menuItems.push({
+      label: t("delete"),
+      value: "delete",
+      danger: true,
+      icon: <Trash2 size={14} />,
+    });
+  }
+
+  const handleMenu = (value: string) => {
+    if (value === "toggle") {
+      toggleSource.mutate({ id: source.id, enabled: !source.enabled });
+    } else if (value === "delete") {
+      confirm({
+        title: t("deleteTitle", { name: source.name }),
+        description: t("deleteDescription"),
+        confirmLabel: t("deleteConfirm"),
+        onConfirm: () => deleteSource.mutateAsync(source.id),
+      });
+    }
+  };
+
+  const failing = source.enabled && source.health === "ERROR" && source.lastError;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1, duration: 0.3 }}
-    >
-      <Card variant="default" hover glow onClick={() => setIsModalOpen(true)}>
-        {/* Header */}
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <StatusDot status={source.status ?? ConnectionStatus.DISCONNECTED} />
-          </div>
-          <Dropdown
-            trigger={
-              <button
-                className="p-1 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-tertiary transition-colors"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <MoreVertical size={16} />
-              </button>
-            }
-            items={menuItems}
-            onSelect={() => {}}
-          />
+    <li className={`list-none in d${Math.min(index + 1, 8)}`}>
+      <article
+        className="card p-4 h-full flex flex-col gap-3"
+        style={failing ? { boxShadow: "inset 2px 0 0 var(--crit)" } : undefined}
+        aria-labelledby={`source-${source.id}`}
+      >
+        <div className="between">
+          <SourceStatus status={source.status} />
+          {menuItems.length > 0 && (
+            <Dropdown
+              label={t("actions")}
+              trigger={
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-sm btn-icon"
+                  aria-label={t("actions")}
+                >
+                  <MoreVertical size={16} aria-hidden="true" />
+                </button>
+              }
+              items={menuItems}
+              onSelect={handleMenu}
+            />
+          )}
         </div>
 
-        {/* Name & Type */}
-        <h3 className="text-base font-semibold font-display text-text-primary mb-1">
-          {source.name}
-        </h3>
-        <Badge variant="outline" size="sm">
-          {SOURCE_TYPE_LABELS[source.type]}
-        </Badge>
+        <div>
+          {/* The name opens the detail dialog; the card itself is not a button (nested controls). */}
+          <h3 id={`source-${source.id}`} className="h3 text-[15px]">
+            <button
+              type="button"
+              className="text-left hover:underline underline-offset-4"
+              onClick={() => setIsModalOpen(true)}
+            >
+              {source.name}
+            </button>
+          </h3>
+          <div className="row mt-1.5">
+            <Badge variant="outline">{t(`types.${source.type}`)}</Badge>
+            {!source.enabled && <Badge>{t("disabledBadge")}</Badge>}
+          </div>
+        </div>
 
-        {/* Details */}
-        <div className="mt-3 space-y-1.5">
+        <dl className="stack gap-1 xs t3 m-0">
           {config.namespace && (
-            <p className="text-xs text-text-muted">
-              Namespace: <span className="text-text-secondary font-mono">{config.namespace}</span>
-            </p>
+            <div>
+              <dt className="inline">{t("namespace")}: </dt>
+              <dd className="inline mono t2 m-0">{config.namespace}</dd>
+            </div>
           )}
           {config.host && (
-            <p className="text-xs text-text-muted">
-              Host: <span className="text-text-secondary font-mono">{config.host}</span>
+            <div>
+              <dt className="inline">{t("host")}: </dt>
+              <dd className="inline mono t2 m-0">{config.host}</dd>
+            </div>
+          )}
+          <div>{t("lastLog", { time: dates.relative(source.lastSeenAt) })}</div>
+          {failing && (
+            <p
+              className="text-error break-words"
+              title={source.lastErrorAt ? dates.dateTimeLong(source.lastErrorAt) : undefined}
+              data-testid="source-last-error"
+              role="status"
+            >
+              {source.lastErrorAt
+                ? t("lastError", {
+                    time: dates.relative(source.lastErrorAt),
+                    error: source.lastError!,
+                  })
+                : t("lastErrorNoTime", { error: source.lastError! })}
             </p>
           )}
-          <p className="text-xs text-text-muted">
-            Son log: {formatRelativeTime(source.lastSeenAt)}
-          </p>
-        </div>
+          {source.enabled && source.collectorInstance && (
+            <p className="ellipsis" title={source.collectorInstance}>
+              {t.rich("collector", {
+                instance: source.collectorInstance,
+                m: (chunks) => <span className="mono">{chunks}</span>,
+              })}
+            </p>
+          )}
+        </dl>
 
-        {/* Actions */}
-        <div className="flex gap-2 mt-4">
-          <Button
-            variant="secondary"
-            size="sm"
-            fullWidth
-            icon={<TestTube size={14} />}
-            loading={testConnection.isPending}
-            onClick={(e) => {
-              e.stopPropagation();
-              testConnection.mutate(source.id);
-            }}
-          >
-            Test
-          </Button>
-        </div>
-      </Card>
+        {source.type === LogSourceType.HTTP ? (
+          <div className="mt-auto pt-1">
+            <Button
+              variant="secondary"
+              size="sm"
+              fullWidth
+              icon={<Send size={14} aria-hidden="true" />}
+              onClick={() => setShowIngest(true)}
+            >
+              {t("ingestUrl")}
+            </Button>
+          </div>
+        ) : (
+          canEdit && (
+            <div className="mt-auto pt-1">
+              <Button
+                variant="secondary"
+                size="sm"
+                fullWidth
+                icon={<TestTube size={14} aria-hidden="true" />}
+                loading={testConnection.isPending}
+                onClick={() =>
+                  testConnection.mutate(source.id, {
+                    onSuccess: () => toast.success(tToast("testOk")),
+                    onError: (error) => toast.error(error.message || tToast("connectFailed")),
+                  })
+                }
+                title={t("testHint")}
+              >
+                {t("test")}
+              </Button>
+            </div>
+          )
+        )}
+      </article>
 
       <SourceDetailModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         source={source}
       />
-    </motion.div>
+      {source.type === LogSourceType.HTTP && (
+        <Modal
+          isOpen={showIngest}
+          onClose={() => setShowIngest(false)}
+          title={source.name}
+          size="lg"
+        >
+          <IngestSetup sourceId={source.id} sourceName={source.name} />
+        </Modal>
+      )}
+      {dialog}
+    </li>
   );
 }
 

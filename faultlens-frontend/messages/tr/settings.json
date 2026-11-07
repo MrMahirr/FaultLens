@@ -1,0 +1,240 @@
+{
+  "settings": {
+    "title": "Ayarlar",
+    "subtitle": "Kişisel tercihleriniz ve sistem yapılandırması.",
+    "sections": "Ayar bölümleri",
+    "tabs": {
+      "appearance": "Görünüm",
+      "account": "Hesap",
+      "notifications": "Bildirimler",
+      "system": "Sistem",
+      "users": "Kullanıcılar",
+      "apiKeys": "API anahtarları"
+    },
+    "unsaved": "Kaydedilmemiş değişiklikler var",
+    "discard": "Vazgeç",
+    "saveChanges": "Değişiklikleri Kaydet",
+    "appearance": {
+      "title": "Görünüm",
+      "subtitle": "Tema, dil ve hareket tercihleri bu tarayıcıda saklanır.",
+      "theme": "Tema",
+      "themes": {
+        "system": "Sistem",
+        "dark": "Koyu",
+        "light": "Açık"
+      },
+      "systemResolved": "Şu an: {theme}",
+      "language": "Arayüz dili",
+      "languageHint": "Seçiminiz yalnızca sizin için geçerlidir; sistem varsayılanını yöneticiler ayarlar.",
+      "motion": "Animasyonlar",
+      "motionHint": "Kapalıyken geçiş ve giriş animasyonları gösterilmez. İşletim sisteminizde “hareketi azalt” açıksa animasyonlar zaten kısalır.",
+      "compact": "Kompakt görünüm",
+      "compactHint": "Tablolarda daha dar satırlar: aynı alanda daha çok log."
+    },
+    "account": {
+      "title": "Hesap",
+      "subtitle": "Profil bilgileriniz ve şifreniz.",
+      "profile": "Kişisel bilgiler",
+      "username": "Kullanıcı Adı",
+      "email": "E-posta Adresi",
+      "saveProfile": "Bilgileri kaydet",
+      "profileSaved": "Profil kaydedildi.",
+      "profileFailed": "Profil güncellenemedi.",
+      "security": "Güvenlik",
+      "currentPassword": "Mevcut Şifre",
+      "newPassword": "Yeni Şifre",
+      "confirmPassword": "Yeni Şifre (Tekrar)",
+      "passwordTooShort": "Yeni şifre en az 8 karakter olmalı",
+      "passwordMismatch": "Şifreler eşleşmiyor",
+      "savePassword": "Şifreyi güncelle",
+      "passwordSaved": "Şifre güncellendi.",
+      "passwordFailed": "Şifre değiştirilemedi."
+    },
+    "notifications": {
+      "title": "Bildirim tercihleri",
+      "subtitle": "Alarmları hangi kanallardan alacağınızı seçin.",
+      "toggled": "Bildirim tercihi güncellendi.",
+      "saved": "Bildirim tercihleri kaydedildi.",
+      "saveFailed": "Ayarlar kaydedilemedi.",
+      "email": {
+        "title": "E-posta",
+        "description": "Alarmları sunucunun SMTP hesabıyla profil e-posta adresinize gönderir.",
+        "noSmtp": "Sunucuda SMTP yapılandırılmamış; e-posta bildirimleri gönderilmez. Yöneticinizden <code>SMTP_HOST</code> ve ilgili ayarları tanımlamasını isteyin.",
+        "target": "Alarmlar <b>{email}</b> adresine gönderilir.",
+        "noAddress": "Profilinizde e-posta adresi yok. <link>Hesap ayarlarından ekleyin</link>.",
+        "test": "Test E-postası Gönder",
+        "testSent": "Test e-postası gönderildi.",
+        "testFailed": "E-posta gönderilemedi."
+      },
+      "slack": {
+        "title": "Slack",
+        "description": "Belirlenen kanala anlık hata ve uyarı mesajları iletir.",
+        "url": "Slack Webhook URL",
+        "urlHint": "Şifreli saklanır.",
+        "test": "Test mesajı gönder",
+        "testSent": "Test mesajı Slack kanalına gönderildi.",
+        "testFailed": "Test mesajı gönderilemedi."
+      },
+      "webhook": {
+        "title": "Webhook",
+        "description": "Alarmları JSON olarak kendi sisteminize (https) POST eder.",
+        "url": "Webhook URL",
+        "urlHint": "Herkese açık bir https:// adresi olmalı. Gövde: <code>{body}</code>",
+        "test": "Test isteği gönder",
+        "testSent": "Webhook test isteği gönderildi.",
+        "testFailed": "Webhook isteği başarısız oldu."
+      },
+      "push": {
+        "title": "Tarayıcı bildirimleri",
+        "description": "Uygulama açıkken alarmlar ekranın köşesinde ve sesli uyarıyla görünür.",
+        "testHint": "Uygulama içi bildirimi deneyin.",
+        "test": "Bildirimi tetikle",
+        "testSent": "Bildirim tetiklendi.",
+        "testFailed": "Bildirim tetiklenemedi."
+      },
+      "mobile": {
+        "title": "Mobil bildirimler",
+        "description": "Mobil uygulamaya push bildirimi gönderir."
+      },
+      "urlRequired": "Önce bir webhook URL girin."
+    },
+    "system": {
+      "title": "Sistem tercihleri",
+      "subtitle": "Tüm kullanıcılar için geçerli saklama, analiz ve dil ayarları.",
+      "saved": "Sistem tercihleri kaydedildi.",
+      "saveFailed": "Ayarlar kaydedilemedi.",
+      "retention": "Log saklama süresi",
+      "retentionHint": "Loglar bu süre sonunda veritabanından silinir.",
+      "retentionDays": "{days, plural, one {# gün} other {# gün}}",
+      "retentionForever": "Süresiz (silme)",
+      "engine": "Varsayılan analiz motoru",
+      "engineHint": "Hata grupları için kullanılacak motor.",
+      "engines": {
+        "rule": "Kural tabanlı",
+        "ai": "AI destekli"
+      },
+      "engineUnavailable": "devre dışı",
+      "aiOff": "Yapay zeka analizi bu sunucuda kapalı (AI_ENABLED / OPENAI_API_KEY tanımlı değil).",
+      "aiOffSelected": "Seçim AI olsa da analizler kural tabanlı motorla yapılıyor.",
+      "aiPrivacy": "AI seçildiğinde hata mesajı ve stack trace analiz için OpenAI'ye (ABD) gönderilir. Kişisel veri içerebilecek loglar için KVKK kapsamında açık rıza gerekebilir.",
+      "language": "Varsayılan dil",
+      "languageHint": "Kendi dilini seçmemiş kullanıcılar arayüzü bu dilde görür."
+    },
+    "users": {
+      "title": "Kullanıcılar",
+      "subtitle": "Rol değişiklikleri kullanıcının oturumu yenilendiğinde geçerli olur.",
+      "empty": "Kullanıcı yok.",
+      "you": "(siz)",
+      "roleOf": "{user} rolü",
+      "columns": {
+        "user": "Kullanıcı",
+        "role": "Rol",
+        "status": "Durum",
+        "actions": "Eylemler"
+      },
+      "pendingPassword": "Şifre değişikliği bekliyor",
+      "active": "Aktif",
+      "resetPassword": "Şifreyi Sıfırla",
+      "resetTitle": "{user} için geçici şifre",
+      "resetDescription": "Kullanıcı bir sonraki girişte şifresini değiştirmek zorunda kalır.",
+      "resetConfirm": "Sıfırla",
+      "delete": "Sil",
+      "deleteTitle": "“{user}” silinsin mi?",
+      "deleteDescription": "Kullanıcı ve bildirim ayarları kalıcı olarak silinir.",
+      "deleteConfirm": "Kullanıcıyı sil",
+      "newUser": "Yeni kullanıcı",
+      "username": "Kullanıcı Adı",
+      "email": "E-posta (isteğe bağlı)",
+      "tempPassword": "Geçici Şifre",
+      "tempPasswordHint": "Kullanıcı ilk girişte değiştirmek zorunda.",
+      "role": "Rol",
+      "create": "Kullanıcı Ekle",
+      "roles": {
+        "ADMIN": "Yönetici",
+        "EDITOR": "Editör",
+        "VIEWER": "İzleyici"
+      },
+      "roleDescriptions": {
+        "ADMIN": "Her şey: silme, sistem ayarları, kullanıcı yönetimi",
+        "EDITOR": "Kaynak ve kural düzenler, alarmları üstlenir ve çözer",
+        "VIEWER": "Yalnızca görüntüler"
+      },
+      "toast": {
+        "created": "Kullanıcı oluşturuldu; ilk girişte şifresini değiştirecek.",
+        "createFailed": "Kullanıcı oluşturulamadı.",
+        "roleChanged": "Rol güncellendi. Değişiklik kullanıcının bir sonraki oturum yenilemesinde geçerli olur.",
+        "roleFailed": "Rol güncellenemedi.",
+        "reset": "Şifre sıfırlandı; kullanıcı ilk girişte değiştirecek.",
+        "resetFailed": "Şifre sıfırlanamadı.",
+        "deleted": "Kullanıcı silindi.",
+        "deleteFailed": "Kullanıcı silinemedi."
+      }
+    },
+    "apiKeys": {
+      "title": "API anahtarları",
+      "subtitle": "CI ve entegrasyonlar için kapsamı sınırlı anahtarlar. Bir anahtar yalnızca seçilen kapsamlardaki uç noktaları çağırabilir.",
+      "create": "Yeni anahtar",
+      "empty": "Henüz API anahtarı yok.",
+      "emptyHint": "CI deployment kaydı için deployments:write kapsamlı bir anahtar oluşturun.",
+      "list": "API anahtarları",
+      "columns": {
+        "name": "Ad",
+        "key": "Anahtar",
+        "scopes": "Kapsamlar",
+        "lastUsed": "Son kullanım",
+        "status": "Durum",
+        "actions": "Eylemler"
+      },
+      "never": "Hiç kullanılmadı",
+      "active": "Etkin",
+      "revoked": "İptal edildi",
+      "expired": "Süresi doldu",
+      "expires": "Bitiş: {date}",
+      "noExpiry": "Süresiz",
+      "revoke": "İptal et",
+      "revokeTitle": "“{name}” iptal edilsin mi?",
+      "revokeDescription": "Bu anahtarı kullanan CI işleri ve entegrasyonlar hemen 401 almaya başlar. Geri alınamaz.",
+      "revokeConfirm": "Anahtarı iptal et",
+      "form": {
+        "title": "Yeni API anahtarı",
+        "name": "Ad",
+        "namePlaceholder": "Örn. github-actions-prod",
+        "scopes": "Kapsamlar",
+        "expiry": "Geçerlilik",
+        "expiryOptions": {
+          "30": "30 gün",
+          "90": "90 gün",
+          "365": "1 yıl",
+          "never": "Süresiz"
+        },
+        "submit": "Anahtarı oluştur",
+        "scopeRequired": "En az bir kapsam seçin",
+        "source": "Kaynak",
+        "sourceHint": "logs:ingest anahtarının logları bu HTTP kaynağına yazılır.",
+        "chooseSource": "HTTP kaynağı seçin",
+        "noHttpSources": "Önce Kaynaklar sayfasında HTTP / OTLP türünde bir kaynak ekleyin.",
+        "sourceRequired": "logs:ingest için bir kaynak seçin"
+      },
+      "scopeHelp": {
+        "deployments:write": "CI deployment kaydı (POST /deployments)",
+        "logs:ingest": "Uygulamalardan log gönderimi (HTTP / OTLP)",
+        "logs:read": "Logları okuma",
+        "alarms:read": "Alarmları okuma"
+      },
+      "created": {
+        "title": "Anahtar oluşturuldu",
+        "warning": "Bu anahtarı şimdi kopyalayın. Güvenlik için bir daha gösterilmez; kaybolursa iptal edip yenisini oluşturun.",
+        "copy": "Kopyala",
+        "copied": "Anahtar kopyalandı",
+        "usage": "Kullanım",
+        "done": "Kopyaladım, kapat"
+      },
+      "toast": {
+        "createFailed": "Anahtar oluşturulamadı.",
+        "revoked": "Anahtar iptal edildi.",
+        "revokeFailed": "Anahtar iptal edilemedi."
+      },
+      "sourceLabel": "Kaynak: {name}"
+    }
+  }
+}

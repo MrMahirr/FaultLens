@@ -1,4 +1,4 @@
-import { Severity, LogSourceType } from "@/shared/types/common.types";
+import { Severity } from "@/shared/types/common.types";
 import type { AnalysisResultDto } from "@/features/analyses/types/analysis.types";
 
 /* ── Log Entry DTO ─────────────────────────────────────────── */
@@ -21,11 +21,38 @@ export interface LogEntryDto {
 
 /* ── Log Filters ───────────────────────────────────────────── */
 
+/**
+ * Time window of the log list (P08). Searches are bounded by default so they stay fast as the
+ * table grows; "all" is an explicit choice (the backend also defaults to the last 24 hours).
+ */
+export type LogTimeRange = "1h" | "24h" | "7d" | "30d" | "all";
+
+export const LOG_TIME_RANGES: LogTimeRange[] = ["1h", "24h", "7d", "30d", "all"];
+
+export const DEFAULT_LOG_TIME_RANGE: LogTimeRange = "24h";
+
+const RANGE_MS: Record<Exclude<LogTimeRange, "all">, number> = {
+  "1h": 3_600_000,
+  "24h": 86_400_000,
+  "7d": 7 * 86_400_000,
+  "30d": 30 * 86_400_000,
+};
+
+/** ISO start of the window ending now; "all" starts at the epoch (an explicit unbounded query). */
+export function rangeStart(range: LogTimeRange, now = Date.now()): string {
+  return range === "all"
+    ? new Date(0).toISOString()
+    : new Date(now - RANGE_MS[range]).toISOString();
+}
+
 export interface LogFilters {
-  severity?: Severity[];
+  /** Exact severity (the API filters on one level). */
+  severity?: Severity;
   source?: string;
   namespace?: string;
   search?: string;
+  /** Window ending now; ignored when startDate is set. */
+  range?: LogTimeRange;
   startDate?: string;
   endDate?: string;
   groupId?: number;

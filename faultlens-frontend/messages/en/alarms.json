@@ -1,0 +1,123 @@
+{
+  "alarms": {
+    "title": "Alarms and rules",
+    "subtitle": "Acknowledge and resolve open alarms; manage the rules that raise them.",
+    "newRule": "New rule",
+    "tabs": {
+      "alarms": "Alarms",
+      "rules": "Rules",
+      "label": "Alarm view"
+    },
+    "stats": {
+      "active": "Active",
+      "openCritical": "Open critical",
+      "acknowledged": "Acknowledged",
+      "resolved": "Resolved"
+    },
+    "status": {
+      "ACTIVE": "Active",
+      "ACKNOWLEDGED": "Acknowledged",
+      "RESOLVED": "Resolved"
+    },
+    "channel": {
+      "IN_APP": "In-app",
+      "SLACK": "Slack",
+      "EMAIL": "Email",
+      "WEBHOOK": "Webhook"
+    },
+    "list": {
+      "title": "Alarm history",
+      "allStatuses": "All statuses",
+      "allSeverities": "All severities",
+      "statusFilter": "Status",
+      "severityFilter": "Severity",
+      "empty": "No alarms match these filters.",
+      "columns": {
+        "name": "Alarm",
+        "severity": "Severity",
+        "message": "Message",
+        "status": "Status",
+        "triggeredAt": "Triggered",
+        "actions": "Actions"
+      },
+      "acknowledge": "Acknowledge",
+      "acknowledgeHint": "Acknowledge (I am on it)",
+      "resolve": "Resolve",
+      "resolveHint": "Mark as resolved",
+      "delete": "Delete",
+      "deleteTitle": "Delete this alarm?",
+      "deleteDescription": "The alarm record is deleted permanently. To just close it, use “Resolve”."
+    },
+    "detail": {
+      "title": "Alarm details",
+      "triggeredAt": "Triggered",
+      "resolvedAt": "Resolved",
+      "severity": "Severity",
+      "message": "Message",
+      "ruleId": "Rule ID",
+      "status": "Status"
+    },
+    "rules": {
+      "empty": "No alarm rules yet. Create one with “New rule”.",
+      "columns": {
+        "name": "Rule",
+        "condition": "Condition",
+        "severity": "Severity",
+        "channels": "Channels",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "active": "Active",
+      "inactive": "Inactive",
+      "deactivate": "Deactivate",
+      "activate": "Activate",
+      "delete": "Delete",
+      "deleteTitle": "Delete this rule?",
+      "deleteDescription": "“{name}” is deleted; the alarms it raised stay in the history.",
+      "describe": {
+        "THRESHOLD": "≥ {threshold} {severity}+ logs within {minutes} min",
+        "PATTERN": "{severity}+ log matches /{pattern}/",
+        "NEW_GROUP": "A new {severity}+ error group appears"
+      }
+    },
+    "form": {
+      "title": "New alarm rule",
+      "name": "Rule name",
+      "namePlaceholder": "e.g. High error rate",
+      "type": "Rule type",
+      "types": {
+        "THRESHOLD": "Threshold — N logs within a window",
+        "PATTERN": "Pattern — message matches a regular expression",
+        "NEW_GROUP": "New error — an error group not seen before"
+      },
+      "severity": "Minimum severity",
+      "severityOption": "{severity} and above",
+      "window": "Window (minutes)",
+      "threshold": "Threshold (count)",
+      "pattern": "Pattern (regular expression)",
+      "patternPlaceholder": "e.g. Connection (refused|reset)",
+      "patternHint": "Matched against the message and stack trace",
+      "sources": "Sources (all if none selected)",
+      "noSources": "No sources registered",
+      "channels": "Notification channels",
+      "cooldown": "Cooldown (minutes)",
+      "cooldownHint": "The rule raises no further alarm within this time",
+      "preview": "Condition:",
+      "submit": "Add rule"
+    },
+    "toast": {
+      "created": "Alarm rule created.",
+      "createFailed": "The rule could not be created.",
+      "updated": "Rule updated.",
+      "updateFailed": "The rule could not be updated.",
+      "deleted": "Rule deleted.",
+      "deleteFailed": "The rule could not be deleted.",
+      "acknowledged": "Alarm acknowledged.",
+      "acknowledgeFailed": "The alarm could not be acknowledged.",
+      "resolved": "Alarm marked as resolved.",
+      "resolveFailed": "The alarm could not be resolved.",
+      "alarmDeleted": "Alarm deleted.",
+      "alarmDeleteFailed": "The alarm could not be deleted."
+    }
+  }
+}

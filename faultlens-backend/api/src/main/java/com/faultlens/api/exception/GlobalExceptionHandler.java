@@ -30,6 +30,36 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles conflicts with existing state (409).
+     */
+    @ExceptionHandler(com.faultlens.common.exception.ConflictException.class)
+    public ResponseEntity<ErrorEnvelope> handleConflict(com.faultlens.common.exception.ConflictException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ErrorEnvelope.of(ex.getErrorCode(), ex.getMessage()));
+    }
+
+    /**
+     * Handles a username locked after too many failed logins (429 + Retry-After).
+     */
+    @ExceptionHandler(com.faultlens.api.security.LoginLockedException.class)
+    public ResponseEntity<ErrorEnvelope> handleLoginLocked(com.faultlens.api.security.LoginLockedException ex) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .header("Retry-After", Long.toString(ex.getRetryAfter().toSeconds()))
+                .body(ErrorEnvelope.of(ex.getErrorCode(), ex.getMessage()));
+    }
+
+    /**
+     * Handles refused log pushes (P10 / 1.2) with their own status; 503 carries Retry-After.
+     */
+    @ExceptionHandler(com.faultlens.api.ingest.IngestRejectedException.class)
+    public ResponseEntity<ErrorEnvelope> handleIngestRejected(com.faultlens.api.ingest.IngestRejectedException ex) {
+        ResponseEntity.BodyBuilder response = ResponseEntity.status(ex.getStatus());
+        if (ex.getRetryAfterSeconds() != null) {
+            response.header("Retry-After", Long.toString(ex.getRetryAfterSeconds()));
+        }
+        return response.body(ErrorEnvelope.of(ex.getErrorCode(), ex.getMessage()));
+    }
+
+    /**
      * Handles domain exceptions.
      */
     @ExceptionHandler(FaultLensException.class)

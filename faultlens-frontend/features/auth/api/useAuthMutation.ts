@@ -1,4 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import {
   AuthApi,
   type ChangePasswordRequest,
@@ -11,6 +12,7 @@ import { getApiErrorMessage } from "@/shared/api/errors";
 
 export const useLoginMutation = () => {
   const loginStore = useAuthStore.getState().login;
+  const t = useTranslations("auth.login");
 
   return useMutation({
     mutationFn: async (data: LoginRequest) => {
@@ -19,17 +21,17 @@ export const useLoginMutation = () => {
       } catch (error) {
         // Surface the backend message (e.g. "Invalid username or password") instead of
         // axios' generic "Request failed with status code 401".
-        throw new Error(getApiErrorMessage(error, "Geçersiz kullanıcı adı veya şifre"));
+        throw new Error(getApiErrorMessage(error, t("invalid")));
       }
     },
     onSuccess: (data: LoginResponse) => {
       const payload = decodeJwt(data.token);
       let username = "admin";
-      let role = "ADMIN";
+      let role = "VIEWER";
 
       if (payload) {
         username = payload.sub;
-        role = payload.roles?.[0]?.replace("ROLE_", "") || "ADMIN";
+        role = payload.roles?.[0]?.replace("ROLE_", "") || "VIEWER";
       }
 
       loginStore(data.token, {

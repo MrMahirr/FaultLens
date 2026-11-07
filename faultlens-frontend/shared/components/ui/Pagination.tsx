@@ -2,6 +2,7 @@
 
 import { useMemo, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/shared/lib/utils";
 
 /* ── Types ─────────────────────────────────────────────────── */
@@ -65,6 +66,7 @@ function Pagination({
   siblingCount = 1,
   className,
 }: PaginationProps) {
+  const t = useTranslations("common");
   const pages = useMemo(
     () => generatePageNumbers(currentPage, totalPages, siblingCount),
     [currentPage, totalPages, siblingCount],
@@ -81,24 +83,25 @@ function Pagination({
   if (totalPages <= 1) return null;
 
   return (
-    <nav
-      role="navigation"
-      aria-label="Sayfalama"
-      className={cn("flex items-center gap-1", className)}
-    >
+    <nav aria-label={t("pagination")} className={cn("flex items-center gap-1", className)}>
       <button
+        type="button"
         onClick={handlePrev}
         disabled={currentPage === 1}
-        className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-tertiary cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-        aria-label="Önceki sayfa"
+        className="btn btn-ghost btn-sm btn-icon"
+        aria-label={t("previousPage")}
       >
-        <ChevronLeft size={16} />
+        <ChevronLeft size={16} aria-hidden="true" />
       </button>
 
       {pages.map((page, idx) => {
         if (page === "dots") {
           return (
-            <span key={`dots-${idx}`} className="px-2 py-1 text-text-muted text-sm">
+            <span
+              key={`dots-${idx}`}
+              className="px-2 py-1 text-text-muted text-sm"
+              aria-hidden="true"
+            >
               …
             </span>
           );
@@ -107,13 +110,10 @@ function Pagination({
         return (
           <button
             key={page}
+            type="button"
             onClick={() => onPageChange(page)}
-            className={cn(
-              "min-w-[32px] h-8 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer",
-              page === currentPage
-                ? "bg-accent text-white shadow-glow"
-                : "text-text-secondary hover:text-text-primary hover:bg-bg-tertiary",
-            )}
+            aria-label={t("page", { page })}
+            className={cn("btn btn-sm num", page === currentPage ? "btn-primary" : "btn-ghost")}
             aria-current={page === currentPage ? "page" : undefined}
           >
             {page}
@@ -122,12 +122,13 @@ function Pagination({
       })}
 
       <button
+        type="button"
         onClick={handleNext}
         disabled={currentPage === totalPages}
-        className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-tertiary cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-        aria-label="Sonraki sayfa"
+        className="btn btn-ghost btn-sm btn-icon"
+        aria-label={t("nextPage")}
       >
-        <ChevronRight size={16} />
+        <ChevronRight size={16} aria-hidden="true" />
       </button>
     </nav>
   );

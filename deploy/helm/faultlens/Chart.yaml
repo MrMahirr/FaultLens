@@ -1,0 +1,6 @@
+apiVersion: v2
+name: faultlens
+description: FaultLens log analysis (backend API/collector/processor/analyzer + Next.js UI)
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

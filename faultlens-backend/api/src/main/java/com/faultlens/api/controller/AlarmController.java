@@ -8,7 +8,9 @@ import com.faultlens.common.dto.ApiResponse;
 import com.faultlens.common.dto.PagedResponse;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import com.faultlens.api.security.Roles;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -50,6 +52,7 @@ public class AlarmController {
     /**
      * Acknowledges an alarm.
      */
+    @PreAuthorize(Roles.CAN_EDIT)
     @PutMapping("/{id}/ack")
     public ResponseEntity<ApiResponse<AlarmDto>> acknowledge(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(alarmService.acknowledge(id)));
@@ -58,6 +61,7 @@ public class AlarmController {
     /**
      * Resolves an alarm.
      */
+    @PreAuthorize(Roles.CAN_EDIT)
     @PutMapping("/{id}/resolve")
     public ResponseEntity<ApiResponse<AlarmDto>> resolve(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(alarmService.resolveAlarm(id)));
@@ -66,6 +70,7 @@ public class AlarmController {
     /**
      * Deletes an alarm.
      */
+    @PreAuthorize(Roles.ADMIN_ONLY)
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         alarmService.deleteAlarm(id);

@@ -1,16 +1,15 @@
+import type { Severity } from "@/shared/types/common.types";
+
 export interface DashboardStats {
+  /** WARN + ERROR + CRITICAL in the last hour. */
   totalErrors: number;
-  totalErrorsChange: number;
   activeSources: number;
   totalSources: number;
   openGroups: number;
-  analysesToday: number;
+  analysesTotal: number;
 }
 
-export interface ChartPoint {
-  time: string;
-  critical: number;
-  error: number;
-  warn: number;
-  info: number;
+export interface SeverityCount {
+  severity: Severity;
+  count: number;
 }

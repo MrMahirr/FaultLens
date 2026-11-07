@@ -4,6 +4,7 @@ import com.faultlens.analyzer.correlation.DeploymentCorrelator;
 import com.faultlens.analyzer.correlation.DeploymentCorrelator.DeploymentCorrelation;
 import com.faultlens.analyzer.engine.AiAnalysisEngine;
 import com.faultlens.analyzer.engine.AnalysisResult;
+import com.faultlens.analyzer.engine.EnginePreference;
 import com.faultlens.analyzer.engine.RuleBasedEngine;
 import com.faultlens.analyzer.model.Analysis;
 import com.faultlens.analyzer.repository.AnalysisRepository;
@@ -25,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AnalyzerService {
     private final RuleBasedEngine ruleBasedEngine;
     private final Optional<AiAnalysisEngine> aiAnalysisEngine;
+    private final Optional<EnginePreference> enginePreference;
     private final DeploymentCorrelator deploymentCorrelator;
     private final AnalysisRepository analysisRepository;
     private final LogGroupRepository logGroupRepository;
@@ -36,12 +38,19 @@ public class AnalyzerService {
     public AnalysisResultDto analyze(LogEntryDto entry) {
         LogGroup group = logGroupRepository.findById(entry.getGroupId())
                 .orElseThrow(() -> new ResourceNotFoundException("Log group not found: " + entry.getGroupId()));
+        long started = System.nanoTime();
         AnalysisResult result = selectBestResult(
                 ruleBasedEngine.analyze(entry, group),
                 aiAnalysisEngine
                         .filter(AiAnalysisEngine::isAvailable)
+                        .filter(engine -> enginePreference.map(EnginePreference::preferAi).orElse(true))
                         .map(engine -> engine.analyze(entry, group))
                         .orElse(null));
+        // faultlens_analysis_duration_seconds{engine} (P08): engines incl. the AI round trip
+        io.micrometer.core.instrument.Timer.builder("faultlens.analysis.duration")
+                .tag("engine", result.engineType() == null ? "unknown" : result.engineType())
+                .register(io.micrometer.core.instrument.Metrics.globalRegistry)
+                .record(System.nanoTime() - started, java.util.concurrent.TimeUnit.NANOSECONDS);
         result = applyDeploymentCorrelation(entry, result);
         Analysis saved = analysisRepository.save(Analysis.builder()
                 .logGroupId(group.getId())

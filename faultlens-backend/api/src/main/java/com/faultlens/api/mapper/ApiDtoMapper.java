@@ -80,6 +80,10 @@ public class ApiDtoMapper {
                 .enabled(source.isEnabled())
                 .createdAt(source.getCreatedAt())
                 .lastSeenAt(source.getLastSeenAt())
+                .health(source.getStatus())
+                .lastError(source.getLastError())
+                .lastErrorAt(source.getLastErrorAt())
+                .collectorInstance(source.getCollectorInstance())
                 .build();
     }
 

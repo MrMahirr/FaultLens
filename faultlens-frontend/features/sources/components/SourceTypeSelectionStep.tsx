@@ -1,34 +1,17 @@
-import { motion } from "framer-motion";
-import { Server, Terminal, Container, FileText } from "lucide-react";
+"use client";
+
+import { useTranslations } from "next-intl";
+import { Server, Terminal, Container, FileText, Send } from "lucide-react";
 import { LogSourceType } from "@/shared/types/common.types";
 import { cn } from "@/shared/lib/utils";
 
 const SOURCE_TYPES = [
-  {
-    type: LogSourceType.KUBERNETES,
-    label: "Kubernetes",
-    icon: <Server size={28} />,
-    description: "K8s cluster loglarını izleyin",
-  },
-  {
-    type: LogSourceType.SSH,
-    label: "SSH",
-    icon: <Terminal size={28} />,
-    description: "Uzak sunucu loglarını izleyin",
-  },
-  {
-    type: LogSourceType.DOCKER,
-    label: "Docker",
-    icon: <Container size={28} />,
-    description: "Docker container loglarını izleyin",
-  },
-  {
-    type: LogSourceType.LOCAL_FILE,
-    label: "Local File",
-    icon: <FileText size={28} />,
-    description: "Lokal makinedeki log dosyasını izleyin",
-  },
-];
+  { type: LogSourceType.KUBERNETES, icon: <Server size={20} /> },
+  { type: LogSourceType.SSH, icon: <Terminal size={20} /> },
+  { type: LogSourceType.DOCKER, icon: <Container size={20} /> },
+  { type: LogSourceType.LOCAL_FILE, icon: <FileText size={20} /> },
+  { type: LogSourceType.HTTP, icon: <Send size={20} /> },
+] as const;
 
 interface SourceTypeSelectionStepProps {
   selectedType: LogSourceType | null;
@@ -36,29 +19,37 @@ interface SourceTypeSelectionStepProps {
 }
 
 export function SourceTypeSelectionStep({ selectedType, onSelect }: SourceTypeSelectionStepProps) {
+  const t = useTranslations("sources");
   return (
-    <motion.div
-      key="step1"
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      className="grid grid-cols-3 gap-3"
-    >
-      {SOURCE_TYPES.map((item) => (
-        <button
-          key={item.type}
-          onClick={() => onSelect(item.type)}
-          className={cn(
-            "flex flex-col items-center gap-3 p-6 rounded-xl border-2 transition-all duration-200 cursor-pointer",
-            "hover:border-accent/40 hover:bg-accent/5",
-            selectedType === item.type ? "border-accent bg-accent/10" : "border-border-default",
-          )}
-        >
-          <div className="text-accent">{item.icon}</div>
-          <span className="text-sm font-medium text-text-primary">{item.label}</span>
-          <span className="text-xs text-text-muted text-center">{item.description}</span>
-        </button>
-      ))}
-    </motion.div>
+    <fieldset className="swA">
+      <legend className="label mb-2">{t("wizard.chooseType")}</legend>
+      <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
+        {SOURCE_TYPES.map((item) => {
+          const selected = selectedType === item.type;
+          return (
+            <button
+              key={item.type}
+              type="button"
+              aria-pressed={selected}
+              onClick={() => onSelect(item.type)}
+              className={cn(
+                "card hov p-4 flex flex-col items-start gap-2 text-left",
+                // Selected: a signal ring, not just a slightly lighter border.
+                selected && "bg-bg-glass-hover shadow-[0_0_0_1px_var(--signal-ink)]",
+              )}
+            >
+              <span
+                className={cn("inline-flex", selected ? "text-accent" : "t2")}
+                aria-hidden="true"
+              >
+                {item.icon}
+              </span>
+              <span className="small font-medium">{t(`types.${item.type}`)}</span>
+              <span className="xs t3">{t(`typeDescriptions.${item.type}`)}</span>
+            </button>
+          );
+        })}
+      </div>
+    </fieldset>
   );
 }

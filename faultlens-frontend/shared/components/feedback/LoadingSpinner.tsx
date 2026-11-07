@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { cn } from "@/shared/lib/utils";
 
 /* ── Types ─────────────────────────────────────────────────── */
@@ -12,15 +12,9 @@ interface LoadingSpinnerProps {
   className?: string;
 }
 
-/* ── Size Map ──────────────────────────────────────────────── */
+const sizeMap = { sm: "w-4 h-4", md: "w-6 h-6", lg: "w-9 h-9" };
 
-const sizeMap = {
-  sm: { container: 24, stroke: 2 },
-  md: { container: 40, stroke: 3 },
-  lg: { container: 56, stroke: 3 },
-};
-
-/* ── Component ─────────────────────────────────────────────── */
+/* ── Component (Instrument .spinner) ───────────────────────── */
 
 function LoadingSpinner({
   size = "md",
@@ -28,61 +22,17 @@ function LoadingSpinner({
   fullScreen = false,
   className,
 }: LoadingSpinnerProps) {
-  const { container, stroke } = sizeMap[size];
-  const radius = (container - stroke * 2) / 2;
-  const circumference = 2 * Math.PI * radius;
-
+  const t = useTranslations("common");
   const spinner = (
-    <div className={cn("flex flex-col items-center gap-3", className)}>
-      <motion.svg
-        width={container}
-        height={container}
-        viewBox={`0 0 ${container} ${container}`}
-        animate={{ rotate: 360 }}
-        transition={{
-          duration: 1,
-          repeat: Infinity,
-          ease: "linear",
-        }}
-      >
-        {/* Track */}
-        <circle
-          cx={container / 2}
-          cy={container / 2}
-          r={radius}
-          fill="none"
-          stroke="var(--bg-tertiary)"
-          strokeWidth={stroke}
-        />
-        {/* Progress */}
-        <motion.circle
-          cx={container / 2}
-          cy={container / 2}
-          r={radius}
-          fill="none"
-          stroke="var(--accent)"
-          strokeWidth={stroke}
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          initial={{ strokeDashoffset: circumference * 0.75 }}
-          animate={{
-            strokeDashoffset: [circumference * 0.75, circumference * 0.25, circumference * 0.75],
-          }}
-          transition={{
-            duration: 1.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-      </motion.svg>
-
-      {label && <p className="text-sm text-text-secondary font-medium">{label}</p>}
+    <div className={cn("flex flex-col items-center gap-3", className)} role="status">
+      <span className={cn("spinner text-text-muted", sizeMap[size])} aria-hidden="true" />
+      <span className={label ? "small t3" : "sr"}>{label ?? t("loading")}</span>
     </div>
   );
 
   if (fullScreen) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-primary/80 backdrop-blur-sm">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-primary/80">
         {spinner}
       </div>
     );

@@ -1,0 +1,35 @@
+{
+  "nav": {
+    "label": "Sidebar",
+    "main": "Main navigation",
+    "groups": { "observe": "Observe", "infra": "Infrastructure", "respond": "Respond" },
+    "dashboard": "Overview",
+    "logs": "Logs",
+    "analyses": "Analyses",
+    "sources": "Sources",
+    "deployments": "Deployments",
+    "alarms": "Alarms",
+    "settings": "Settings",
+    "collapse": "Collapse",
+    "expand": "Expand",
+    "close": "Close menu"
+  },
+  "shell": {
+    "toggleMenu": "Open menu",
+    "breadcrumb": "Breadcrumb",
+    "language": "Language",
+    "languages": { "tr": "Türkçe", "en": "English" },
+    "theme": "Theme",
+    "themes": { "system": "System", "dark": "Dark", "light": "Light" },
+    "alarms": "Alarms",
+    "activeAlarms": "{count, plural, one {# active alarm} other {# active alarms}}",
+    "userMenu": "User menu",
+    "profile": "Profile",
+    "logout": "Sign out",
+    "skipToContent": "Skip to content",
+    "loadingSession": "Loading session…",
+    "alarmToastTitle": "System alert",
+    "alarmToastFallback": "An alarm fired without details.",
+    "dismiss": "Dismiss"
+  }
+}

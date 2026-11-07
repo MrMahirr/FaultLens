@@ -1,0 +1,56 @@
+{
+  "dashboard": {
+    "title": "Overview",
+    "subtitle": "Error volume of the last hour, the live stream and source health.",
+    "summary": {
+      "title": "Analysis summary",
+      "none": "No error has been analysed yet. Root-cause analyses are summarised here as ERROR and CRITICAL logs arrive.",
+      "total": "{count, plural, one {# error analysis so far.} other {# error analyses so far.}}",
+      "latestDeployment": "The latest analysis is related to the {deployment} deployment.",
+      "latestGeneral": "The latest analysis is not tied to a specific deployment.",
+      "engineAi": "The root cause was found by AI.",
+      "engineRule": "The root cause was found by the rule-based engine.",
+      "open": "Review analyses",
+      "goTo": "Go to analyses"
+    },
+    "stats": {
+      "errors": "Errors · last hour",
+      "errorsHint": "WARN + ERROR + CRITICAL",
+      "sources": "Connected sources",
+      "sourcesHint": "Connected / total",
+      "groups": "Error groups",
+      "groupsHint": "Unique grouped errors",
+      "analyses": "Analyses",
+      "analysesHint": "Root-cause analyses in total"
+    },
+    "severity": {
+      "title": "Severity breakdown",
+      "subtitle": "Log counts in the last hour",
+      "empty": "No logs in the last hour.",
+      "count": "{severity}: {count}"
+    },
+    "feed": {
+      "title": "Live stream",
+      "subtitle": "Latest ERROR / CRITICAL logs",
+      "live": "Live",
+      "offline": "Not connected",
+      "empty": "No logs yet."
+    },
+    "topErrors": {
+      "title": "Most frequent errors",
+      "subtitle": "Grouped errors",
+      "empty": "No error groups recorded.",
+      "lastSeen": "Last: {time}",
+      "occurrences": "{count, plural, one {# time} other {# times}}"
+    },
+    "health": {
+      "title": "Source health",
+      "subtitle": "Collector connection status",
+      "empty": "No sources connected.",
+      "addSource": "Add source",
+      "lastLog": "Last log: {time}",
+      "status": { "CONNECTED": "Connected", "WARNING": "Warning", "DISCONNECTED": "Disconnected" },
+      "viewAll": "All sources"
+    }
+  }
+}

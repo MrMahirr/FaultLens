@@ -1,12 +1,15 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { useTranslations } from "next-intl";
 import { LogSourceType } from "@/shared/types/common.types";
+import type { LogSourceDto } from "@/features/sources/types/source.types";
 import {
   useTestConfigMutation,
   useCreateSourceMutation,
 } from "@/features/sources/api/useSourceMutation";
 
 export function useSourceWizard(onClose: () => void) {
+  const t = useTranslations("sources.toast");
   const [step, setStep] = useState(1);
   const [selectedType, setSelectedType] = useState<LogSourceType | null>(null);
   const [name, setName] = useState("");
@@ -16,6 +19,8 @@ export function useSourceWizard(onClose: () => void) {
   const [password, setPassword] = useState("");
   const [logFilePath, setLogFilePath] = useState("");
   const [testResult, setTestResult] = useState<"success" | "error" | null>(null);
+  /** HTTP sources: the saved source, shown in the ingest setup step (4). */
+  const [createdSource, setCreatedSource] = useState<LogSourceDto | null>(null);
 
   const testConfig = useTestConfigMutation();
   const createSource = useCreateSourceMutation();
@@ -55,17 +60,23 @@ export function useSourceWizard(onClose: () => void) {
 
   const handleSave = async () => {
     try {
-      await createSource.mutateAsync({
+      const saved = await createSource.mutateAsync({
         name,
         type: selectedType!,
         config: JSON.stringify(buildConfigObj()),
       });
+      if (selectedType === LogSourceType.HTTP) {
+        // Pushed sources need a key and client setup next; the wizard continues there.
+        setCreatedSource(saved);
+        setStep(4);
+        return;
+      }
       handleClose();
     } catch (error) {
       // e.g. LOCAL_FILE_PATH_NOT_ALLOWED: path outside COLLECTOR_FILE_ALLOWED_DIRS
       const apiError = (error as { response?: { data?: { error?: { message?: string } } } })
         ?.response?.data?.error;
-      toast.error(apiError?.message ?? "Kaynak kaydedilemedi.");
+      toast.error(apiError?.message ?? t("saveFailed"));
     }
   };
 
@@ -79,6 +90,7 @@ export function useSourceWizard(onClose: () => void) {
     setPassword("");
     setLogFilePath("");
     setTestResult(null);
+    setCreatedSource(null);
     onClose();
   };
 
@@ -101,6 +113,7 @@ export function useSourceWizard(onClose: () => void) {
     setLogFilePath,
     testResult,
     setTestResult,
+    createdSource,
 
     // Mutations state
     isTesting: testConfig.isPending,

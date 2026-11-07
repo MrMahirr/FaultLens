@@ -1,4 +1,7 @@
+"use client";
+
 import React from "react";
+import { Switch } from "@/shared/components/ui/Switch";
 
 interface NotificationToggleCardProps {
   id: string;
@@ -10,6 +13,7 @@ interface NotificationToggleCardProps {
   children?: React.ReactNode;
 }
 
+/** A notification channel: switch row, plus its settings while enabled. */
 export function NotificationToggleCard({
   id,
   title,
@@ -20,46 +24,41 @@ export function NotificationToggleCard({
   children,
 }: NotificationToggleCardProps) {
   const hasChildren = React.Children.count(children) > 0;
+  const titleId = `channel-${id}-title`;
 
   return (
-    <div className="flex flex-col">
-      <div
-        className={`flex items-center justify-between p-5 rounded-2xl border border-border-default bg-bg-tertiary/30 hover:bg-bg-tertiary/50 transition-colors ${
-          enabled && hasChildren ? "rounded-b-none border-b-0" : ""
-        }`}
-      >
-        <div className="flex items-start gap-4">
-          <div className="p-3 bg-bg-primary rounded-xl shadow-sm border border-border-default">
+    <section className="card" aria-labelledby={titleId}>
+      <div className="between p-4">
+        <div className="flex items-start gap-3 min-w-0">
+          <span
+            className="w-8 h-8 rounded-md well grid place-items-center t2 shrink-0"
+            aria-hidden="true"
+          >
             {icon}
-          </div>
-          <div>
-            <h3 className="font-medium text-text-primary">{title}</h3>
-            <p className="text-sm text-text-muted mt-0.5">{description}</p>
+          </span>
+          <div className="min-w-0">
+            <h3 id={titleId} className="h3">
+              {title}
+            </h3>
+            <p id={`channel-${id}-desc`} className="xs t3 mt-0.5">
+              {description}
+            </p>
           </div>
         </div>
 
-        <button
-          onClick={onToggle}
-          className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-            enabled ? "bg-accent" : "bg-bg-secondary border-border-default"
-          }`}
-          role="switch"
-          aria-checked={enabled}
-        >
-          <span
-            aria-hidden="true"
-            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-              enabled ? "translate-x-5" : "translate-x-0"
-            }`}
-          />
-        </button>
+        <Switch
+          checked={enabled}
+          onCheckedChange={onToggle}
+          aria-labelledby={titleId}
+          aria-describedby={`channel-${id}-desc`}
+        />
       </div>
 
       {enabled && hasChildren && (
-        <div className="pl-16 pr-5 pb-5 bg-bg-tertiary/20 rounded-b-2xl border-x border-b border-border-default animate-fade-in flex flex-col gap-4">
+        <div className="px-4 pb-4 pt-3 border-t border-border-default stack gap-3 swA">
           {children}
         </div>
       )}
-    </div>
+    </section>
   );
 }

@@ -12,31 +12,29 @@ interface SkeletonProps {
   lines?: number;
 }
 
-/* ── Component ─────────────────────────────────────────────── */
+/* ── Component (Instrument .skel — reserves space, CLS 0) ──── */
 
 function Skeleton({ className, variant = "rectangular", width, height, lines }: SkeletonProps) {
-  const baseStyles = "animate-pulse bg-bg-tertiary";
-
-  // Multiple lines of text skeleton
   if (lines && lines > 1) {
     return (
-      <div className={cn("space-y-2", className)}>
+      <div className={cn("space-y-2", className)} aria-hidden="true">
         {Array.from({ length: lines }, (_, i) => (
-          <div key={i} className={cn(baseStyles, "h-4 rounded", i === lines - 1 && "w-3/4")} />
+          <div key={i} className={cn("skel h-3.5", i === lines - 1 && "w-3/4")} />
         ))}
       </div>
     );
   }
 
   const variantStyles = {
-    text: "h-4 rounded",
+    text: "h-3.5",
     circular: "rounded-full",
-    rectangular: "rounded-lg",
+    rectangular: "rounded-md",
   };
 
   return (
     <div
-      className={cn(baseStyles, variantStyles[variant], className)}
+      aria-hidden="true"
+      className={cn("skel", variantStyles[variant], className)}
       style={{
         width: typeof width === "number" ? `${width}px` : width,
         height: typeof height === "number" ? `${height}px` : height,
@@ -49,12 +47,12 @@ function Skeleton({ className, variant = "rectangular", width, height, lines }: 
 
 function SkeletonCard() {
   return (
-    <div className="bg-bg-secondary border border-border-default rounded-xl p-5 space-y-4">
+    <div className="card p-4 space-y-4" aria-hidden="true">
       <div className="flex items-center justify-between">
         <Skeleton variant="text" className="w-24" />
-        <Skeleton variant="circular" width={32} height={32} />
+        <Skeleton variant="circular" width={28} height={28} />
       </div>
-      <Skeleton variant="text" className="w-16 h-8" />
+      <Skeleton variant="text" className="w-16 h-7" />
       <Skeleton lines={2} />
     </div>
   );
@@ -62,7 +60,7 @@ function SkeletonCard() {
 
 function SkeletonTableRow() {
   return (
-    <div className="flex items-center gap-4 p-3 border-b border-border-default">
+    <div className="flex items-center gap-4 px-4 py-3 border-b border-border-default">
       <Skeleton variant="text" className="w-20" />
       <Skeleton variant="text" className="w-16" />
       <Skeleton variant="text" className="flex-1" />
@@ -73,7 +71,7 @@ function SkeletonTableRow() {
 
 function SkeletonTable({ rows = 5 }: { rows?: number }) {
   return (
-    <div>
+    <div aria-hidden="true">
       {Array.from({ length: rows }, (_, i) => (
         <SkeletonTableRow key={i} />
       ))}

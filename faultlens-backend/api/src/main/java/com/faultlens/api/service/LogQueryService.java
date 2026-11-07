@@ -38,10 +38,18 @@ public class LogQueryService {
     private final CacheService cacheService;
     private final ApiDtoMapper mapper;
 
+    /** Window used when a log query names neither {@code from} nor {@code to} (P08). */
+    static final java.time.Duration DEFAULT_WINDOW = java.time.Duration.ofHours(24);
+
     /**
-     * Lists logs with optional filters.
+     * Lists logs with optional filters. Always bounded in time: without {@code from}/{@code to}
+     * only the last 24 hours are searched (pass an explicit, even very old, {@code from} for more),
+     * so a search or count never walks the whole table by accident.
      */
     public PagedResponse<LogEntryDto> list(Severity severity, Long sourceId, Instant from, Instant to, String search, int page, int size) {
+        if (from == null && to == null) {
+            from = Instant.now().minus(DEFAULT_WINDOW);
+        }
         Page<LogEntry> result = entryRepository.findAll(spec(severity, sourceId, from, to, search),
                 PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "timestamp")));
         return page(result.map(mapper::toLogEntryDto));

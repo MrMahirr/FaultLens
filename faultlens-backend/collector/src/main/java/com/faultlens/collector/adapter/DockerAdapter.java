@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -46,7 +45,7 @@ public class DockerAdapter implements LogSourceAdapter {
      * Streams Docker container log frames.
      */
     @Override
-    public void startStreaming(LogSource source, Consumer<LogEventDto> onEvent) {
+    public void startStreaming(LogSource source, SourceSink onEvent) {
         String sourceId = String.valueOf(source.getId());
         running.add(sourceId);
         Map<String, String> config = parseConfig(source.getConfig());
@@ -76,6 +75,7 @@ public class DockerAdapter implements LogSourceAdapter {
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         } catch (Exception ex) {
+            onEvent.error(ex);
             throw new CollectorException("Docker log streaming failed", "DOCKER_STREAM_FAILED", ex);
         } finally {
             closeActiveStream(sourceId);

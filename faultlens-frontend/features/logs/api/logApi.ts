@@ -7,6 +7,7 @@ import type {
   LogGroupDto,
   LogDetailDto,
 } from "@/features/logs/types/log.types";
+import { DEFAULT_LOG_TIME_RANGE, rangeStart } from "@/features/logs/types/log.types";
 import type { PagedResponse } from "@/shared/types/api.types";
 
 export const LogApi = {
@@ -16,8 +17,8 @@ export const LogApi = {
       size: filters.size ?? 20,
     };
 
-    if (filters.severity && filters.severity.length > 0) {
-      params.severity = filters.severity[0];
+    if (filters.severity) {
+      params.severity = filters.severity;
     }
     if (filters.search) {
       params.search = filters.search;
@@ -28,9 +29,8 @@ export const LogApi = {
         params.sourceId = sourceIdNum;
       }
     }
-    if (filters.startDate) {
-      params.from = filters.startDate;
-    }
+    // Always bounded by time (default: last 24 hours), computed at request time.
+    params.from = filters.startDate ?? rangeStart(filters.range ?? DEFAULT_LOG_TIME_RANGE);
     if (filters.endDate) {
       params.to = filters.endDate;
     }

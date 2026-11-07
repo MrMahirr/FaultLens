@@ -1,0 +1,45 @@
+{
+  "deployments": {
+    "title": "Deployments",
+    "subtitle": "Deployment geçmişi ve sonrasında başlayan hatalar.",
+    "add": "Yeni deployment",
+    "addFirst": "Deployment ekle",
+    "ci": {
+      "title": "CI/CD entegrasyonu",
+      "description": "Deployment kayıtlarını otomatik almak için CI/CD pipeline’ınıza (GitHub Actions vb.) şu isteği ekleyin. FAULTLENS_API_KEY, deployments:write kapsamlı bir API anahtarıdır ve CI sırrı olarak saklanmalıdır.",
+      "copy": "Komutu kopyala",
+      "copied": "Komut kopyalandı",
+      "createKey": "API anahtarı oluştur"
+    },
+    "search": "Servis ara",
+    "searchPlaceholder": "Servis adına göre ara…",
+    "environment": "Ortam",
+    "allEnvironments": "Tüm ortamlar",
+    "chooseEnvironment": "Ortam seçin",
+    "status": {
+      "SUCCESS": "Başarılı",
+      "FAILED": "Başarısız",
+      "ROLLED_BACK": "Geri alındı",
+      "IN_PROGRESS": "Devam ediyor"
+    },
+    "env": {
+      "PRODUCTION": "Production",
+      "STAGING": "Staging",
+      "DEVELOPMENT": "Development"
+    },
+    "by": "{user} tarafından",
+    "viewLogs": "Sonraki logları incele",
+    "emptyTitle": "Henüz deployment yok",
+    "emptyDescription": "CI'dan gönderin ya da ilk kaydı elle oluşturun.",
+    "emptyFiltered": "Bu filtrelerle deployment yok.",
+    "timeline": "Deployment zaman çizelgesi",
+    "form": {
+      "title": "Yeni deployment kaydı",
+      "service": "Servis adı",
+      "version": "Sürüm",
+      "save": "Kaydet",
+      "saved": "Deployment kaydedildi.",
+      "saveFailed": "Deployment kaydedilemedi."
+    }
+  }
+}
