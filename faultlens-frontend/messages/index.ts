@@ -10,6 +10,7 @@ import trSources from "./tr/sources.json";
 import trDeployments from "./tr/deployments.json";
 import trSettings from "./tr/settings.json";
 import trAuth from "./tr/auth.json";
+import trLanding from "./tr/landing.json";
 
 import enCommon from "./en/common.json";
 import enShell from "./en/shell.json";
@@ -21,6 +22,7 @@ import enSources from "./en/sources.json";
 import enDeployments from "./en/deployments.json";
 import enSettings from "./en/settings.json";
 import enAuth from "./en/auth.json";
+import enLanding from "./en/landing.json";
 
 /**
  * UI messages per locale, one JSON file per area (messages/<locale>/<area>.json); each file
@@ -38,6 +40,7 @@ const tr = {
   ...trDeployments,
   ...trSettings,
   ...trAuth,
+  ...trLanding,
 };
 const en = {
   ...enCommon,
@@ -50,6 +53,7 @@ const en = {
   ...enDeployments,
   ...enSettings,
   ...enAuth,
+  ...enLanding,
 };
 
 export type Messages = typeof tr;

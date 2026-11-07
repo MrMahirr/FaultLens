@@ -1,0 +1,110 @@
+{
+  "landing": {
+    "meta": {
+      "title": "FaultLens — Find the root cause in minutes"
+    },
+    "nav": {
+      "label": "Page sections",
+      "features": "Features",
+      "how": "How it works",
+      "security": "Security",
+      "login": "Sign in",
+      "start": "Get started",
+      "skip": "Skip to content"
+    },
+    "hero": {
+      "eyebrow": "Real-time log analysis",
+      "titleA": "Find the root cause",
+      "titleB": "in minutes,",
+      "titleC": "not hours.",
+      "lead": "FaultLens streams Kubernetes, Docker, SSH and CI/CD logs into one feed, groups identical errors, links them to deploys and suggests the root cause.",
+      "cta": "Get started",
+      "cta2": "How it works",
+      "metaLive": "Live stream",
+      "metaSetup": "~5 min setup",
+      "metaHost": "Self-hosted",
+      "mockAi": "AI root cause",
+      "mockCause": "v2.14.0 cut the connection pool from 50 to 10. Restore HIKARI_MAX_POOL=50.",
+      "pause": "Pause the live preview",
+      "play": "Play the live preview"
+    },
+    "sources": {
+      "label": "Supported sources",
+      "title": "SOURCES"
+    },
+    "features": {
+      "eyebrow": "Features",
+      "title": "See the signal, not the noise.",
+      "grouping": {
+        "title": "Smart grouping",
+        "body": "Thousands of lines with the same stack trace collapse into one group; multi-line events are joined."
+      },
+      "deploy": {
+        "title": "Deploy correlation",
+        "body": "See which version started each error group, so rollback calls are obvious."
+      },
+      "rca": {
+        "title": "Root-cause analysis",
+        "body": "Rule-based engine or AI, with a confidence score and a concrete fix."
+      },
+      "alerts": {
+        "title": "Flexible alerts",
+        "body": "Threshold, regex pattern or new group, with cooldowns to keep it quiet."
+      },
+      "notify": {
+        "title": "Notify anywhere",
+        "body": "In-app, Slack, email, signed webhooks, browser and mobile."
+      },
+      "rbac": {
+        "title": "Role-based access",
+        "body": "ADMIN, EDITOR, VIEWER: clear on who can change what."
+      }
+    },
+    "how": {
+      "eyebrow": "How it works",
+      "title": "Set up in three steps.",
+      "connect": {
+        "title": "Connect a source",
+        "body": "A Kubernetes namespace, a Docker container or an SSH file path."
+      },
+      "watch": {
+        "title": "Group and watch",
+        "body": "Logs stream live, errors are grouped and the dashboard builds an hourly heatmap."
+      },
+      "analyze": {
+        "title": "Analyze and notify",
+        "body": "A rule fires an alert; the root cause and fix reach your team."
+      }
+    },
+    "security": {
+      "eyebrow": "Security",
+      "title": "Your logs, your data.",
+      "body": "FaultLens runs on your infrastructure. AI analysis is optional and only sends data with your explicit consent.",
+      "sessions": {
+        "title": "Short-lived sessions",
+        "body": "Access tokens last 15 min and live in memory only; the refresh token rotates in an HttpOnly cookie."
+      },
+      "secrets": {
+        "title": "Encrypted secrets",
+        "body": "SSH keys, Slack and webhook URLs are stored encrypted and never shown again."
+      },
+      "rbac": {
+        "title": "Role-based access",
+        "body": "Deletion and system settings are ADMIN-only; every destructive action asks first."
+      },
+      "retention": {
+        "title": "Retention control",
+        "body": "From 7 to 120 days or forever; old logs are deleted nightly."
+      }
+    },
+    "cta": {
+      "title": "Be ready for the next incident.",
+      "body": "Connect your first source and see your first error group in minutes.",
+      "button": "Get started"
+    },
+    "footer": {
+      "copyright": "© {year} FaultLens",
+      "backToTop": "Back to top"
+    }
+  }
+}

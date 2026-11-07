@@ -1481,3 +1481,20 @@ select.input {
     stroke-dashoffset: 0;
   }
 }
+
+/* Scroll reveal (features/landing/components/Reveal.tsx): only blocks that start below the
+   fold wait; data-reveal="static" is the default and never hidden. */
+[data-reveal="wait"] {
+  opacity: 0;
+  transform: translateY(12px);
+}
+[data-reveal="in"] {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.5s var(--ease),
+    transform 0.5s var(--ease);
+}
+:root[data-motion="off"] {
+  scroll-behavior: auto;
+}

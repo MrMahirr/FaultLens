@@ -1,9 +1,13 @@
-import { redirect } from "next/navigation";
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
+import { LandingPage } from "@/features/landing/components/LandingPage";
 
-/**
- * "/" has no page of its own: proxy.ts already sends signed-in users to /dashboard and
- * everyone else to /login. This covers requests that bypass the proxy.
- */
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("landing.meta");
+  return { title: t("title") };
+}
+
+/** Public landing page. proxy.ts sends visitors with a live session on to /dashboard. */
 export default function RootPage() {
-  redirect("/login");
+  return <LandingPage />;
 }

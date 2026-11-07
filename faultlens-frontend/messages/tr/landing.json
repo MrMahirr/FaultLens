@@ -1,0 +1,110 @@
+{
+  "landing": {
+    "meta": {
+      "title": "FaultLens — Hata nedenini dakikalar içinde bul"
+    },
+    "nav": {
+      "label": "Sayfa bölümleri",
+      "features": "Özellikler",
+      "how": "Nasıl çalışır",
+      "security": "Güvenlik",
+      "login": "Giriş yap",
+      "start": "Başla",
+      "skip": "İçeriğe geç"
+    },
+    "hero": {
+      "eyebrow": "Gerçek zamanlı log analizi",
+      "titleA": "Hata nedenini",
+      "titleB": "dakikalar içinde",
+      "titleC": "bul.",
+      "lead": "FaultLens Kubernetes, Docker, SSH ve CI/CD loglarını tek akışta toplar, aynı hataları gruplar, deploylarla ilişkilendirir ve kök nedeni önerir.",
+      "cta": "Başla",
+      "cta2": "Nasıl çalışır?",
+      "metaLive": "Canlı akış",
+      "metaSetup": "Kurulum ~5 dk",
+      "metaHost": "Kendi sunucunda",
+      "mockAi": "AI kök neden",
+      "mockCause": "v2.14.0 bağlantı havuzunu 50 → 10 düşürdü. HIKARI_MAX_POOL=50 ile geri al.",
+      "pause": "Canlı önizlemeyi duraklat",
+      "play": "Canlı önizlemeyi oynat"
+    },
+    "sources": {
+      "label": "Desteklenen kaynaklar",
+      "title": "KAYNAKLAR"
+    },
+    "features": {
+      "eyebrow": "Özellikler",
+      "title": "Gürültüyü değil, sinyali gör.",
+      "grouping": {
+        "title": "Akıllı gruplama",
+        "body": "Aynı stack trace’e sahip binlerce satır tek gruba iner; çok satırlı olaylar birleştirilir."
+      },
+      "deploy": {
+        "title": "Deploy korelasyonu",
+        "body": "Her hata grubunun hangi sürümle başladığını görürsün; geri alma kararı netleşir."
+      },
+      "rca": {
+        "title": "Kök neden analizi",
+        "body": "Kural tabanlı motor veya AI; güven puanı ve somut öneriyle."
+      },
+      "alerts": {
+        "title": "Esnek alarmlar",
+        "body": "Eşik, regex deseni ya da yeni grup; bekleme süresiyle gürültüsüz."
+      },
+      "notify": {
+        "title": "Her kanala bildirim",
+        "body": "Uygulama içi, Slack, e-posta, imzalı webhook, tarayıcı ve mobil."
+      },
+      "rbac": {
+        "title": "Rol tabanlı erişim",
+        "body": "ADMIN, EDITOR, VIEWER; kimin neyi değiştirebileceği net."
+      }
+    },
+    "how": {
+      "eyebrow": "Nasıl çalışır",
+      "title": "Üç adımda kurulum.",
+      "connect": {
+        "title": "Kaynağı bağla",
+        "body": "Kubernetes namespace’i, Docker container’ı ya da SSH dosya yolu."
+      },
+      "watch": {
+        "title": "Grupla ve izle",
+        "body": "Loglar canlı akar, hatalar gruplanır, panoda saatlik ısı haritası oluşur."
+      },
+      "analyze": {
+        "title": "Analiz et, bildir",
+        "body": "Kural tetiklenince alarm açılır; kök neden ve öneri ekibine gider."
+      }
+    },
+    "security": {
+      "eyebrow": "Güvenlik",
+      "title": "Logların, senin verin.",
+      "body": "FaultLens kendi altyapında çalışır. AI analizi isteğe bağlıdır ve yalnızca açık onayınla veri gönderir.",
+      "sessions": {
+        "title": "Kısa ömürlü oturumlar",
+        "body": "Erişim belirteci 15 dk geçerlidir ve yalnızca bellekte tutulur; yenileme belirteci HttpOnly çerezde döner."
+      },
+      "secrets": {
+        "title": "Şifreli sırlar",
+        "body": "SSH anahtarları, Slack ve webhook adresleri şifreli saklanır, arayüzde tekrar gösterilmez."
+      },
+      "rbac": {
+        "title": "Rol tabanlı erişim",
+        "body": "Silme ve sistem ayarları yalnızca ADMIN; her yıkıcı işlem onay ister."
+      },
+      "retention": {
+        "title": "Saklama kontrolü",
+        "body": "7 günden 120 güne ya da süresiz; eski loglar her gece silinir."
+      }
+    },
+    "cta": {
+      "title": "Bir sonraki incident’ta hazır ol.",
+      "body": "İlk kaynağını bağla, ilk hata grubunu dakikalar içinde gör.",
+      "button": "Başla"
+    },
+    "footer": {
+      "copyright": "© {year} FaultLens",
+      "backToTop": "Başa dön"
+    }
+  }
+}

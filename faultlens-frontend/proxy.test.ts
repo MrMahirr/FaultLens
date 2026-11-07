@@ -41,4 +41,12 @@ describe("proxy session check", () => {
       "http://localhost:3000/dashboard",
     );
   });
+
+  it("shows the landing page to visitors and sends signed-in users to the dashboard", () => {
+    expect(proxy(request("/")).headers.get("location")).toBeNull();
+    const session = { faultlens_session: String(Math.floor(Date.now() / 1000) + 3600) };
+    expect(proxy(request("/", session)).headers.get("location")).toBe(
+      "http://localhost:3000/dashboard",
+    );
+  });
 });

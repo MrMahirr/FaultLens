@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const publicPaths = ["/login"];
+/** Reachable without a session; "/" is the public landing page. */
+const publicPaths = ["/", "/login"];
 
 /** Mirrors features/auth/store/auth.store.ts. */
 const SESSION_COOKIE = "faultlens_session";
@@ -32,14 +33,10 @@ export function proxy(request: NextRequest) {
 
   const signedIn = hasSession(request);
 
-  // If trying to access public auth paths while logged in, redirect to dashboard
+  // Signed-in users skip the landing page and the sign-in form.
   if (pathname === "/login" || pathname === "/") {
     if (signedIn) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
-    }
-    // If accessing root without a session, redirect to login
-    if (pathname === "/") {
-      return NextResponse.redirect(new URL("/login", request.url));
     }
     return NextResponse.next();
   }
