@@ -5,11 +5,10 @@ import com.faultlens.analyzer.repository.DeploymentRepository;
 import com.faultlens.api.dto.DeploymentDto;
 import com.faultlens.api.mapper.ApiDtoMapper;
 import com.faultlens.common.dto.PagedResponse;
+import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,11 +20,16 @@ public class DeploymentService {
     private final ApiDtoMapper mapper;
 
     /**
-     * Lists deployment history.
+     * Lists deployment history, newest first. {@code query} matches the service name anywhere,
+     * case-insensitively (LIKE wildcards in it are literal); {@code environment} is an exact
+     * match. Blank or null means no filter.
      */
     @Transactional(readOnly = true)
-    public PagedResponse<DeploymentDto> list(int page, int size) {
-        Page<DeploymentDto> result = repository.findAllByOrderByDeployedAtDesc(PageRequest.of(page, size))
+    public PagedResponse<DeploymentDto> list(String query, String environment, int page, int size) {
+        Page<DeploymentDto> result = repository.search(
+                        containsPattern(query),
+                        environment == null ? "" : environment.trim(),
+                        PageRequest.of(page, size))
                 .map(mapper::toDeploymentDto);
         return PagedResponse.<DeploymentDto>builder()
                 .content(result.getContent())
@@ -34,6 +38,18 @@ public class DeploymentService {
                 .totalElements(result.getTotalElements())
                 .totalPages(result.getTotalPages())
                 .build();
+    }
+
+    /** "pay_ment" → "%pay!_ment%": a lower-case LIKE pattern with ! as escape character. */
+    static String containsPattern(String query) {
+        if (query == null || query.isBlank()) {
+            return "%";
+        }
+        String escaped = query.trim().toLowerCase(Locale.ROOT)
+                .replace("!", "!!")
+                .replace("%", "!%")
+                .replace("_", "!_");
+        return "%" + escaped + "%";
     }
 
     /**

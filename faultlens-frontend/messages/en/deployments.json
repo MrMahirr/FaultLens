@@ -31,6 +31,7 @@
     "viewLogs": "Logs since this deploy",
     "emptyTitle": "No deployments yet",
     "emptyDescription": "Send them from CI or create the first record by hand.",
+    "resultCount": "{count, plural, one {# deployment} other {# deployments}}",
     "emptyFiltered": "No deployments match these filters.",
     "timeline": "Deployment timeline",
     "form": {

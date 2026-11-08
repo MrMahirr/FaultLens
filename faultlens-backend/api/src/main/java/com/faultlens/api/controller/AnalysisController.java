@@ -5,6 +5,7 @@ import com.faultlens.common.dto.ApiResponse;
 import com.faultlens.api.security.Roles;
 import com.faultlens.common.dto.PagedResponse;
 import com.faultlens.common.dto.AnalysisResultDto;
+import com.faultlens.api.dto.ClearedResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.ResponseEntity;
@@ -37,9 +38,10 @@ public class AnalysisController {
      */
     @PreAuthorize(Roles.ADMIN_ONLY)
     @org.springframework.web.bind.annotation.DeleteMapping
-    public ResponseEntity<ApiResponse<String>> deleteHistory(@RequestParam(required = false) Long sourceId) {
+    public ResponseEntity<ApiResponse<ClearedResponse>> deleteHistory(@RequestParam(required = false) Long sourceId) {
         service.deleteHistory(sourceId);
-        return ResponseEntity.ok(ApiResponse.ok("Analiz geçmişi başarıyla temizlendi."));
+        // A result, not a sentence: the UI shows its own (translated) confirmation.
+        return ResponseEntity.ok(ApiResponse.ok(new ClearedResponse(true)));
     }
 
     /**

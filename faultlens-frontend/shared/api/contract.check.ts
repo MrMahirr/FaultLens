@@ -13,7 +13,7 @@
  * Fix the DTO (or the backend), then rerun `pnpm gen:api` if the contract changed.
  */
 import type { ApiField, ApiSchema, SchemaName } from "./contract";
-import type { ApiResponse, PagedResponse } from "@/shared/types/api.types";
+import type { ApiError, ApiResponse, PagedResponse } from "@/shared/types/api.types";
 import type {
   AnalysisType,
   ConnectionStatus,
@@ -78,6 +78,9 @@ export type FieldChecks = [
   // Envelope and paging
   Expect<SameKeys<ApiResponse<unknown>, "ApiResponseString">>,
   Expect<SameKeys<PagedResponse<unknown>, "PagedResponseLogEntryDto">>,
+  // Error envelope (every operation's `default` response): getApiErrorCode reads error.code.
+  Expect<SameKeys<ApiError, "ErrorEnvelope">>,
+  Expect<SameKeys<ApiError["error"], "ErrorBody">>,
   // Logs
   Expect<SameKeys<LogEntryDto, "LogEntryDto">>,
   Expect<SameKeys<LogGroupDto, "LogGroupDto">>,

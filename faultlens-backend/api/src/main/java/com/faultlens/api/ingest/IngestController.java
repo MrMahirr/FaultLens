@@ -4,6 +4,9 @@ import com.faultlens.api.security.ApiKeyAuthFilter;
 import com.faultlens.common.dto.ApiResponse;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,6 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -48,6 +52,11 @@ public class IngestController {
     }
 
     @PostMapping(path = "/api/v1/ingest/logs", consumes = MediaType.APPLICATION_JSON_VALUE)
+    // Read raw (JsonLogDecoder); documented here. OpenApiConfig adds the array and {"logs": [...]}
+    // forms next to the single record.
+    @RequestBody(required = true, content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = @Schema(implementation = IngestLogRequest.class)))
+    @ResponseStatus(HttpStatus.ACCEPTED)
     public ResponseEntity<ApiResponse<Map<String, Integer>>> ingestJson(HttpServletRequest request) throws IOException {
         List<PushedLog> records = jsonDecoder.decode(readBody(request));
         int accepted = service.ingest(sourceOf(request), records, "json");
@@ -56,6 +65,8 @@ public class IngestController {
 
     // One OTLP operation with two encodings: both handlers share the id (OpenApiConfig).
     @Operation(operationId = "ingestOtlpLogs")
+    @RequestBody(required = true, description = "OTLP ExportLogsServiceRequest, protobuf encoding",
+            content = @Content(mediaType = "application/x-protobuf", schema = @Schema(type = "string", format = "binary")))
     @PostMapping(path = "/v1/logs", consumes = "application/x-protobuf", produces = "application/x-protobuf")
     public ResponseEntity<byte[]> ingestOtlpProtobuf(HttpServletRequest request) throws IOException {
         service.ingest(sourceOf(request), otlpDecoder.decodeProtobuf(readBody(request)), "otlp");
@@ -65,6 +76,9 @@ public class IngestController {
 
     // One OTLP operation with two encodings: both handlers share the id (OpenApiConfig).
     @Operation(operationId = "ingestOtlpLogs")
+    @RequestBody(required = true, description = "OTLP ExportLogsServiceRequest, JSON encoding",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(type = "object",
+                    description = "OTLP/HTTP JSON (resourceLogs[].scopeLogs[].logRecords[]), see opentelemetry-proto")))
     @PostMapping(path = "/v1/logs", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> ingestOtlpJson(HttpServletRequest request) throws IOException {
         service.ingest(sourceOf(request), otlpDecoder.decodeJson(readBody(request)), "otlp");

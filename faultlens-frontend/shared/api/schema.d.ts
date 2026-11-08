@@ -1060,6 +1060,43 @@ export interface components {
       status?: string;
       version?: string;
     };
+    ErrorBody: {
+      code?: string;
+      message?: string;
+      /** Format: date-time */
+      timestamp?: string;
+    };
+    ErrorEnvelope: {
+      error?: components["schemas"]["ErrorBody"];
+      success?: boolean;
+    };
+    /** @description One log record. Only `message` is required. */
+    IngestLogRequest: {
+      attributes?: {
+        [key: string]: string;
+      };
+      cluster?: string;
+      container_name?: string;
+      /**
+       * @description The log line
+       * @example PaymentGatewayTimeoutException: stripe-proxy 3000ms
+       */
+      message: string;
+      namespace?: string;
+      pod_name?: string;
+      service_name?: string;
+      /**
+       * @description TRACE, DEBUG, INFO, WARN, ERROR, CRITICAL (also: warning, fatal, err…); absent: classified by the processor
+       * @example ERROR
+       */
+      severity?: string;
+      stack_trace?: string;
+      /**
+       * @description ISO-8601 instant or epoch milliseconds; default: time of receipt
+       * @example 2026-11-07T10:00:00Z
+       */
+      timestamp?: string;
+    };
     LogDetailDto: {
       analyses?: components["schemas"]["AnalysisResultDto"][];
       log?: components["schemas"]["LogEntryDto"];
@@ -1301,6 +1338,15 @@ export interface operations {
           "*/*": components["schemas"]["ApiResponsePagedResponseAlarmDto"];
         };
       };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
     };
   };
   alarmRuleList: {
@@ -1321,6 +1367,15 @@ export interface operations {
           "*/*": components["schemas"]["ApiResponseListAlarmRuleResponse"];
         };
       };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
     };
   };
   alarmRuleCreate: {
@@ -1336,13 +1391,22 @@ export interface operations {
       };
     };
     responses: {
-      /** @description OK */
-      200: {
+      /** @description Created */
+      201: {
         headers: {
           [name: string]: unknown;
         };
         content: {
           "*/*": components["schemas"]["ApiResponseAlarmRuleResponse"];
+        };
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
         };
       };
     };
@@ -1365,6 +1429,15 @@ export interface operations {
         };
         content: {
           "*/*": components["schemas"]["ApiResponseAlarmRuleResponse"];
+        };
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
         };
       };
     };
@@ -1393,6 +1466,15 @@ export interface operations {
           "*/*": components["schemas"]["ApiResponseAlarmRuleResponse"];
         };
       };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
     };
   };
   alarmRuleDelete: {
@@ -1406,12 +1488,21 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      /** @description OK */
-      200: {
+      /** @description No Content */
+      204: {
         headers: {
           [name: string]: unknown;
         };
         content?: never;
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
       };
     };
   };
@@ -1433,6 +1524,15 @@ export interface operations {
         };
         content: {
           "*/*": components["schemas"]["ApiResponseAlarmRuleResponse"];
+        };
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
         };
       };
     };
@@ -1457,6 +1557,15 @@ export interface operations {
           "*/*": components["schemas"]["ApiResponseAlarmRuleResponse"];
         };
       };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
     };
   };
   alarmStats: {
@@ -1477,6 +1586,15 @@ export interface operations {
           "*/*": components["schemas"]["ApiResponseAlarmStatsDto"];
         };
       };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
     };
   };
   alarmDelete: {
@@ -1490,12 +1608,21 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      /** @description OK */
-      200: {
+      /** @description No Content */
+      204: {
         headers: {
           [name: string]: unknown;
         };
         content?: never;
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
       };
     };
   };
@@ -1519,6 +1646,15 @@ export interface operations {
           "*/*": components["schemas"]["ApiResponseAlarmDto"];
         };
       };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
     };
   };
   alarmResolve: {
@@ -1539,6 +1675,15 @@ export interface operations {
         };
         content: {
           "*/*": components["schemas"]["ApiResponseAlarmDto"];
+        };
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
         };
       };
     };
@@ -1565,6 +1710,15 @@ export interface operations {
           "*/*": components["schemas"]["ApiResponsePagedResponseAnalysisResultDto"];
         };
       };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
     };
   };
   analysisDeleteHistory: {
@@ -1584,7 +1738,16 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "*/*": components["schemas"]["ApiResponseString"];
+          "*/*": components["schemas"]["ApiResponseClearedResponse"];
+        };
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
         };
       };
     };
@@ -1609,6 +1772,15 @@ export interface operations {
           "*/*": components["schemas"]["ApiResponseAnalysisResultDto"];
         };
       };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
     };
   };
   analysisGet: {
@@ -1631,6 +1803,15 @@ export interface operations {
           "*/*": components["schemas"]["ApiResponseAnalysisResultDto"];
         };
       };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
     };
   };
   apiKeyList: {
@@ -1651,6 +1832,15 @@ export interface operations {
           "*/*": components["schemas"]["ApiResponseListApiKeyResponse"];
         };
       };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
     };
   };
   apiKeyCreate: {
@@ -1666,13 +1856,22 @@ export interface operations {
       };
     };
     responses: {
-      /** @description OK */
-      200: {
+      /** @description Created */
+      201: {
         headers: {
           [name: string]: unknown;
         };
         content: {
           "*/*": components["schemas"]["ApiResponseCreatedApiKeyResponse"];
+        };
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
         };
       };
     };
@@ -1688,12 +1887,21 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      /** @description OK */
-      200: {
+      /** @description No Content */
+      204: {
         headers: {
           [name: string]: unknown;
         };
         content?: never;
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
       };
     };
   };
@@ -1719,6 +1927,15 @@ export interface operations {
           "*/*": components["schemas"]["ApiResponseTokenResponse"];
         };
       };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
     };
   };
   authLogout: {
@@ -1732,12 +1949,21 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      /** @description OK */
-      200: {
+      /** @description No Content */
+      204: {
         headers: {
           [name: string]: unknown;
         };
         content?: never;
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
       };
     };
   };
@@ -1763,6 +1989,15 @@ export interface operations {
           "*/*": components["schemas"]["ApiResponseTokenResponse"];
         };
       };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
     };
   };
   authGetProfile: {
@@ -1781,6 +2016,15 @@ export interface operations {
         };
         content: {
           "*/*": components["schemas"]["ApiResponseProfileResponse"];
+        };
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
         };
       };
     };
@@ -1807,6 +2051,15 @@ export interface operations {
           "*/*": components["schemas"]["ApiResponseProfileUpdateResponse"];
         };
       };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
     };
   };
   authRefresh: {
@@ -1829,11 +2082,22 @@ export interface operations {
           "*/*": components["schemas"]["ApiResponseTokenResponse"];
         };
       };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
     };
   };
   deploymentList: {
     parameters: {
       query?: {
+        q?: string;
+        environment?: string;
         page?: number;
         size?: number;
       };
@@ -1850,6 +2114,15 @@ export interface operations {
         };
         content: {
           "*/*": components["schemas"]["ApiResponsePagedResponseDeploymentDto"];
+        };
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
         };
       };
     };
@@ -1876,6 +2149,15 @@ export interface operations {
           "*/*": components["schemas"]["ApiResponseDeploymentDto"];
         };
       };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
     };
   };
   ingestJson: {
@@ -1885,15 +2167,33 @@ export interface operations {
       path?: never;
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        "application/json":
+          | components["schemas"]["IngestLogRequest"]
+          | components["schemas"]["IngestLogRequest"][]
+          | {
+              logs: components["schemas"]["IngestLogRequest"][];
+            };
+      };
+    };
     responses: {
-      /** @description OK */
-      200: {
+      /** @description Accepted */
+      202: {
         headers: {
           [name: string]: unknown;
         };
         content: {
           "*/*": components["schemas"]["ApiResponseMapStringInteger"];
+        };
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
         };
       };
     };
@@ -1924,6 +2224,15 @@ export interface operations {
           "*/*": components["schemas"]["ApiResponsePagedResponseLogEntryDto"];
         };
       };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
     };
   };
   logClearLogs: {
@@ -1944,6 +2253,15 @@ export interface operations {
         };
         content: {
           "*/*": components["schemas"]["ApiResponseClearedResponse"];
+        };
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
         };
       };
     };
@@ -1968,6 +2286,15 @@ export interface operations {
         };
         content: {
           "*/*": components["schemas"]["ApiResponsePagedResponseLogGroupDto"];
+        };
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
         };
       };
     };
@@ -1995,6 +2322,15 @@ export interface operations {
           "*/*": components["schemas"]["ApiResponsePagedResponseLogEntryDto"];
         };
       };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
     };
   };
   logStats: {
@@ -2015,6 +2351,15 @@ export interface operations {
         };
         content: {
           "*/*": components["schemas"]["ApiResponseMapStringLong"];
+        };
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
         };
       };
     };
@@ -2039,6 +2384,15 @@ export interface operations {
           "*/*": components["schemas"]["ApiResponseLogDetailDto"];
         };
       };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
     };
   };
   settingsGetNotifications: {
@@ -2057,6 +2411,15 @@ export interface operations {
         };
         content: {
           "*/*": components["schemas"]["ApiResponseNotificationSettingsResponse"];
+        };
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
         };
       };
     };
@@ -2083,6 +2446,15 @@ export interface operations {
           "*/*": components["schemas"]["ApiResponseNotificationSettingsResponse"];
         };
       };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
     };
   };
   notificationTestTestEmail: {
@@ -2103,6 +2475,15 @@ export interface operations {
           "*/*": components["schemas"]["ApiResponseString"];
         };
       };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
     };
   };
   notificationTestTestPush: {
@@ -2121,6 +2502,15 @@ export interface operations {
         };
         content: {
           "*/*": components["schemas"]["ApiResponseString"];
+        };
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
         };
       };
     };
@@ -2147,6 +2537,15 @@ export interface operations {
           "*/*": components["schemas"]["ApiResponseString"];
         };
       };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
     };
   };
   notificationTestTestWebhook: {
@@ -2171,6 +2570,15 @@ export interface operations {
           "*/*": components["schemas"]["ApiResponseString"];
         };
       };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
     };
   };
   settingsGetSystemSettings: {
@@ -2189,6 +2597,15 @@ export interface operations {
         };
         content: {
           "*/*": components["schemas"]["ApiResponseSystemSettingsResponse"];
+        };
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
         };
       };
     };
@@ -2215,6 +2632,15 @@ export interface operations {
           "*/*": components["schemas"]["ApiResponseSystemSettingsResponse"];
         };
       };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
     };
   };
   sourceList: {
@@ -2235,6 +2661,15 @@ export interface operations {
           "*/*": components["schemas"]["ApiResponseListLogSourceDto"];
         };
       };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
     };
   };
   sourceCreate: {
@@ -2250,13 +2685,22 @@ export interface operations {
       };
     };
     responses: {
-      /** @description OK */
-      200: {
+      /** @description Created */
+      201: {
         headers: {
           [name: string]: unknown;
         };
         content: {
           "*/*": components["schemas"]["ApiResponseLogSourceDto"];
+        };
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
         };
       };
     };
@@ -2281,6 +2725,15 @@ export interface operations {
         };
         content: {
           "*/*": components["schemas"]["ApiResponseConnectionTestResponse"];
+        };
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
         };
       };
     };
@@ -2309,6 +2762,15 @@ export interface operations {
           "*/*": components["schemas"]["ApiResponseLogSourceDto"];
         };
       };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
     };
   };
   sourceDelete: {
@@ -2322,12 +2784,21 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      /** @description OK */
-      200: {
+      /** @description No Content */
+      204: {
         headers: {
           [name: string]: unknown;
         };
         content?: never;
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
       };
     };
   };
@@ -2349,6 +2820,15 @@ export interface operations {
         };
         content: {
           "*/*": components["schemas"]["ApiResponseLogSourceDto"];
+        };
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
         };
       };
     };
@@ -2373,6 +2853,15 @@ export interface operations {
           "*/*": components["schemas"]["ApiResponseLogSourceDto"];
         };
       };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
     };
   };
   sourceTest: {
@@ -2395,6 +2884,15 @@ export interface operations {
           "*/*": components["schemas"]["ApiResponseConnectionTestResponse"];
         };
       };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
     };
   };
   userList: {
@@ -2415,6 +2913,15 @@ export interface operations {
           "*/*": components["schemas"]["ApiResponseListUserResponse"];
         };
       };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
     };
   };
   userCreate: {
@@ -2430,13 +2937,22 @@ export interface operations {
       };
     };
     responses: {
-      /** @description OK */
-      200: {
+      /** @description Created */
+      201: {
         headers: {
           [name: string]: unknown;
         };
         content: {
           "*/*": components["schemas"]["ApiResponseUserResponse"];
+        };
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
         };
       };
     };
@@ -2452,12 +2968,21 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      /** @description OK */
-      200: {
+      /** @description No Content */
+      204: {
         headers: {
           [name: string]: unknown;
         };
         content?: never;
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
       };
     };
   };
@@ -2483,6 +3008,15 @@ export interface operations {
         };
         content: {
           "*/*": components["schemas"]["ApiResponseUserResponse"];
+        };
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
         };
       };
     };
@@ -2511,6 +3045,15 @@ export interface operations {
           "*/*": components["schemas"]["ApiResponseUserResponse"];
         };
       };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
     };
   };
   ingestOtlpLogs: {
@@ -2520,7 +3063,13 @@ export interface operations {
       path?: never;
       cookie?: never;
     };
-    requestBody?: never;
+    /** @description OTLP ExportLogsServiceRequest, protobuf or JSON encoding */
+    requestBody: {
+      content: {
+        "application/json": Record<string, never>;
+        "application/x-protobuf": unknown;
+      };
+    };
     responses: {
       /** @description OK */
       200: {
@@ -2532,6 +3081,15 @@ export interface operations {
             [key: string]: unknown;
           };
           "application/x-protobuf": string;
+        };
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
         };
       };
     };

@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -42,6 +43,7 @@ public class AlarmRuleController {
 
     @PreAuthorize(Roles.CAN_EDIT)
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<ApiResponse<AlarmRuleResponse>> create(@Valid @RequestBody AlarmRuleRequest request,
                                                                  Principal principal) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -69,6 +71,7 @@ public class AlarmRuleController {
 
     @PreAuthorize(Roles.CAN_EDIT)
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();

@@ -4,14 +4,29 @@ import { HttpMethod } from "@/shared/api/methods";
 import type { DeploymentDto } from "@/features/deployments/types/deployment.types";
 import type { ApiResponse, PagedResponse } from "@/shared/types/api.types";
 
+export interface DeploymentListParams {
+  /** Part of the service name, case-insensitive. */
+  q?: string;
+  environment?: string;
+  /** Zero-based. */
+  page: number;
+  size: number;
+}
+
 export const DeploymentApi = {
-  /** Latest page (API default: 50, newest first); GET /deployments is paged. */
-  getDeployments: async (): Promise<DeploymentDto[]> => {
+  /** One page, newest first; the service search and environment filter run on the server. */
+  getDeployments: async (params: DeploymentListParams): Promise<PagedResponse<DeploymentDto>> => {
     const response = await apiClient<ApiResponse<PagedResponse<DeploymentDto>>>({
       method: HttpMethod.GET,
       url: Endpoints.DEPLOYMENTS.LIST,
+      params: {
+        q: params.q || undefined,
+        environment: params.environment || undefined,
+        page: params.page,
+        size: params.size,
+      },
     });
-    return response.data.data.content;
+    return response.data.data;
   },
 
   createDeployment: async (data: Partial<DeploymentDto>): Promise<DeploymentDto> => {

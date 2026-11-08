@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -49,6 +50,7 @@ public class SourceController {
      */
     @PreAuthorize(Roles.CAN_EDIT)
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<ApiResponse<LogSourceDto>> create(@Valid @RequestBody LogSourceCreateRequest source) {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(toDto(service.create(source))));
     }
@@ -67,6 +69,7 @@ public class SourceController {
      */
     @PreAuthorize(Roles.ADMIN_ONLY)
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();

@@ -44,9 +44,11 @@ class DeploymentControllerTest {
         dto.setDeployedAt(Instant.now());
 
         PagedResponse<DeploymentDto> response = new PagedResponse<>(List.of(dto), 0, 1, 1L, 1);
-        when(service.list(anyInt(), anyInt())).thenReturn(response);
+        when(service.list(any(), any(), anyInt(), anyInt())).thenReturn(response);
 
         mockMvc.perform(get("/api/v1/deployments")
+                        .param("q", "auth")
+                        .param("environment", "production")
                         .param("page", "0")
                         .param("size", "10"))
                 .andExpect(status().isOk())
@@ -55,7 +57,7 @@ class DeploymentControllerTest {
                 .andExpect(jsonPath("$.data.content[0].version").value("v1.0.0"))
                 .andExpect(jsonPath("$.data.content[0].environment").value("production"));
 
-        verify(service).list(0, 10);
+        verify(service).list("auth", "production", 0, 10);
     }
 
     @Test

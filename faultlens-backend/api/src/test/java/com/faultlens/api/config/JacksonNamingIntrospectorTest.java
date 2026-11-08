@@ -7,6 +7,8 @@ import com.faultlens.api.dto.AlarmDto;
 import io.swagger.v3.core.converter.AnnotatedType;
 import io.swagger.v3.core.converter.ModelConverters;
 import io.swagger.v3.oas.models.media.Schema;
+import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.Positive;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.PropertyNamingStrategies;
@@ -31,10 +33,16 @@ class JacksonNamingIntrospectorTest {
     @JsonNaming(PropertyNamingStrategies.KebabCaseStrategy.class)
     record Kebab(String retryCount) {}
 
+    record Constrained(@Nullable String note, @Positive int count) {}
+
     private static Map<String, Schema> resolve(Class<?> type) {
         ModelConverters converters = new ModelConverters();
         converters.addConverter(new OpenApiConfig().wireNamingModelResolver());
         return converters.readAll(new AnnotatedType(type));
+    }
+
+    private static Schema<?> property(Class<?> type, String name) {
+        return (Schema<?>) resolve(type).get(type.getSimpleName()).getProperties().get(name);
     }
 
     private static Iterable<String> properties(Class<?> type) {
@@ -67,5 +75,16 @@ class JacksonNamingIntrospectorTest {
         Iterable<String> json = JsonMapper.builder().build()
                 .readTree(JsonMapper.builder().build().writeValueAsString(alarm)).propertyNames();
         assertThat(properties(AlarmDto.class)).containsExactlyInAnyOrderElementsOf(json);
+    }
+
+    /**
+     * The document is OpenAPI 3.1, so are its schemas: nullability as a type array (not the 3.0
+     * `nullable` flag), exclusiveMinimum as a number (not the 3.0 boolean).
+     */
+    @Test
+    void emitsOpenApi31Schemas() {
+        assertThat(property(Constrained.class, "note").getTypes()).containsExactlyInAnyOrder("string", "null");
+        assertThat(property(Constrained.class, "note").getNullable()).isNull();
+        assertThat(property(Constrained.class, "count").getExclusiveMinimumValue()).isEqualByComparingTo("0");
     }
 }

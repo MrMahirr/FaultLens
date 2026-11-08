@@ -10,7 +10,7 @@
     "description" : "This FaultLens instance"
   } ],
   "security" : [ {
-    "Bearer Authentication" : [ ]
+    "bearerAuth" : [ ]
   } ],
   "paths" : {
     "/api/v1/alarms" : {
@@ -63,8 +63,23 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "apiKey" : [ "alarms:read" ]
+        } ],
         "tags" : [ "alarm-controller" ]
       }
     },
@@ -81,8 +96,23 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "apiKey" : [ "alarms:read" ]
+        } ],
         "tags" : [ "alarm-rule-controller" ]
       },
       "post" : {
@@ -98,7 +128,7 @@
           "required" : true
         },
         "responses" : {
-          "200" : {
+          "201" : {
             "content" : {
               "*/*" : {
                 "schema" : {
@@ -106,7 +136,17 @@
                 }
               }
             },
-            "description" : "OK"
+            "description" : "Created"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "alarm-rule-controller" ]
@@ -125,8 +165,18 @@
           }
         } ],
         "responses" : {
-          "200" : {
-            "description" : "OK"
+          "204" : {
+            "description" : "No Content"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "alarm-rule-controller" ]
@@ -152,8 +202,23 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "apiKey" : [ "alarms:read" ]
+        } ],
         "tags" : [ "alarm-rule-controller" ]
       },
       "put" : {
@@ -187,6 +252,16 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "alarm-rule-controller" ]
@@ -214,6 +289,16 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "alarm-rule-controller" ]
@@ -241,6 +326,16 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "alarm-rule-controller" ]
@@ -259,8 +354,23 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "apiKey" : [ "alarms:read" ]
+        } ],
         "tags" : [ "alarm-controller" ]
       }
     },
@@ -277,8 +387,18 @@
           }
         } ],
         "responses" : {
-          "200" : {
-            "description" : "OK"
+          "204" : {
+            "description" : "No Content"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "alarm-controller" ]
@@ -306,6 +426,16 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "alarm-controller" ]
@@ -333,6 +463,16 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "alarm-controller" ]
@@ -355,11 +495,21 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseString"
+                  "$ref" : "#/components/schemas/ApiResponseClearedResponse"
                 }
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "analysis-controller" ]
@@ -403,6 +553,16 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "analysis-controller" ]
@@ -430,6 +590,16 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "analysis-controller" ]
@@ -457,6 +627,16 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "analysis-controller" ]
@@ -475,6 +655,16 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "api-key-controller" ]
@@ -492,7 +682,7 @@
           "required" : true
         },
         "responses" : {
-          "200" : {
+          "201" : {
             "content" : {
               "*/*" : {
                 "schema" : {
@@ -500,7 +690,17 @@
                 }
               }
             },
-            "description" : "OK"
+            "description" : "Created"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "api-key-controller" ]
@@ -519,8 +719,18 @@
           }
         } ],
         "responses" : {
-          "200" : {
-            "description" : "OK"
+          "204" : {
+            "description" : "No Content"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "api-key-controller" ]
@@ -549,6 +759,16 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "auth-controller" ]
@@ -566,8 +786,18 @@
           }
         } ],
         "responses" : {
-          "200" : {
-            "description" : "OK"
+          "204" : {
+            "description" : "No Content"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "auth-controller" ]
@@ -596,6 +826,16 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "auth-controller" ]
@@ -614,6 +854,16 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "auth-controller" ]
@@ -640,6 +890,16 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "auth-controller" ]
@@ -666,6 +926,16 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "auth-controller" ]
@@ -676,12 +946,27 @@
         "operationId" : "deploymentList",
         "parameters" : [ {
           "in" : "query",
+          "name" : "q",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "environment",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
           "name" : "page",
           "required" : false,
           "schema" : {
             "type" : "integer",
             "format" : "int32",
-            "default" : 0
+            "default" : 0,
+            "minimum" : 0
           }
         }, {
           "in" : "query",
@@ -690,7 +975,9 @@
           "schema" : {
             "type" : "integer",
             "format" : "int32",
-            "default" : 50
+            "default" : 50,
+            "maximum" : 200,
+            "minimum" : 1
           }
         } ],
         "responses" : {
@@ -703,6 +990,16 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "deployment-controller" ]
@@ -729,16 +1026,59 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "apiKey" : [ "deployments:write" ]
+        } ],
         "tags" : [ "deployment-controller" ]
       }
     },
     "/api/v1/ingest/logs" : {
       "post" : {
         "operationId" : "ingestJson",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "oneOf" : [ {
+                  "$ref" : "#/components/schemas/IngestLogRequest"
+                }, {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/IngestLogRequest"
+                  }
+                }, {
+                  "type" : "object",
+                  "properties" : {
+                    "logs" : {
+                      "type" : "array",
+                      "items" : {
+                        "$ref" : "#/components/schemas/IngestLogRequest"
+                      }
+                    }
+                  },
+                  "required" : [ "logs" ]
+                } ]
+              }
+            }
+          },
+          "required" : true
+        },
         "responses" : {
-          "200" : {
+          "202" : {
             "content" : {
               "*/*" : {
                 "schema" : {
@@ -746,9 +1086,22 @@
                 }
               }
             },
-            "description" : "OK"
+            "description" : "Accepted"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
+        "security" : [ {
+          "apiKey" : [ "logs:ingest" ]
+        } ],
         "tags" : [ "ingest-controller" ]
       }
     },
@@ -826,8 +1179,23 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "apiKey" : [ "logs:read" ]
+        } ],
         "tags" : [ "log-controller" ]
       }
     },
@@ -853,6 +1221,16 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "log-controller" ]
@@ -901,8 +1279,23 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "apiKey" : [ "logs:read" ]
+        } ],
         "tags" : [ "log-controller" ]
       }
     },
@@ -949,8 +1342,23 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "apiKey" : [ "logs:read" ]
+        } ],
         "tags" : [ "log-controller" ]
       }
     },
@@ -977,8 +1385,23 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "apiKey" : [ "logs:read" ]
+        } ],
         "tags" : [ "log-controller" ]
       }
     },
@@ -1004,8 +1427,23 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "apiKey" : [ "logs:read" ]
+        } ],
         "tags" : [ "log-controller" ]
       }
     },
@@ -1022,6 +1460,16 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "settings-controller" ]
@@ -1048,6 +1496,16 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "settings-controller" ]
@@ -1066,6 +1524,16 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "notification-test-controller" ]
@@ -1084,6 +1552,16 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "notification-test-controller" ]
@@ -1112,6 +1590,16 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "notification-test-controller" ]
@@ -1140,6 +1628,16 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "notification-test-controller" ]
@@ -1158,6 +1656,16 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "settings-controller" ]
@@ -1184,6 +1692,16 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "settings-controller" ]
@@ -1202,6 +1720,16 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "source-controller" ]
@@ -1219,7 +1747,7 @@
           "required" : true
         },
         "responses" : {
-          "200" : {
+          "201" : {
             "content" : {
               "*/*" : {
                 "schema" : {
@@ -1227,7 +1755,17 @@
                 }
               }
             },
-            "description" : "OK"
+            "description" : "Created"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "source-controller" ]
@@ -1256,6 +1794,16 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "source-controller" ]
@@ -1274,8 +1822,18 @@
           }
         } ],
         "responses" : {
-          "200" : {
-            "description" : "OK"
+          "204" : {
+            "description" : "No Content"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "source-controller" ]
@@ -1311,6 +1869,16 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "source-controller" ]
@@ -1338,6 +1906,16 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "source-controller" ]
@@ -1365,6 +1943,16 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "source-controller" ]
@@ -1392,6 +1980,16 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "source-controller" ]
@@ -1410,6 +2008,16 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "user-controller" ]
@@ -1427,7 +2035,7 @@
           "required" : true
         },
         "responses" : {
-          "200" : {
+          "201" : {
             "content" : {
               "*/*" : {
                 "schema" : {
@@ -1435,7 +2043,17 @@
                 }
               }
             },
-            "description" : "OK"
+            "description" : "Created"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "user-controller" ]
@@ -1454,8 +2072,18 @@
           }
         } ],
         "responses" : {
-          "200" : {
-            "description" : "OK"
+          "204" : {
+            "description" : "No Content"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "user-controller" ]
@@ -1493,6 +2121,16 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "user-controller" ]
@@ -1530,6 +2168,16 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
         "tags" : [ "user-controller" ]
@@ -1538,6 +2186,23 @@
     "/v1/logs" : {
       "post" : {
         "operationId" : "ingestOtlpLogs",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "object",
+                "description" : "OTLP/HTTP JSON (resourceLogs[].scopeLogs[].logRecords[]), see opentelemetry-proto"
+              }
+            },
+            "application/x-protobuf" : {
+              "schema" : {
+                "format" : "binary"
+              }
+            }
+          },
+          "description" : "OTLP ExportLogsServiceRequest, protobuf or JSON encoding",
+          "required" : true
+        },
         "responses" : {
           "200" : {
             "content" : {
@@ -1555,8 +2220,21 @@
               }
             },
             "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
           }
         },
+        "security" : [ {
+          "apiKey" : [ "logs:ingest" ]
+        } ],
         "tags" : [ "ingest-controller" ]
       }
     }
@@ -1564,6 +2242,7 @@
   "components" : {
     "schemas" : {
       "AlarmDto" : {
+        "type" : "object",
         "properties" : {
           "alarm_rule_id" : {
             "type" : "integer",
@@ -1604,6 +2283,7 @@
         }
       },
       "AlarmRuleRequest" : {
+        "type" : "object",
         "properties" : {
           "channels" : {
             "type" : "array",
@@ -1662,6 +2342,7 @@
         "required" : [ "name", "severity", "type" ]
       },
       "AlarmRuleResponse" : {
+        "type" : "object",
         "properties" : {
           "channels" : {
             "type" : "array",
@@ -1724,6 +2405,7 @@
         }
       },
       "AlarmStatsDto" : {
+        "type" : "object",
         "properties" : {
           "acknowledged" : {
             "type" : "integer",
@@ -1744,6 +2426,7 @@
         }
       },
       "AnalysisResultDto" : {
+        "type" : "object",
         "properties" : {
           "affected_deployment" : {
             "type" : "string"
@@ -1784,6 +2467,7 @@
         }
       },
       "ApiKeyResponse" : {
+        "type" : "object",
         "properties" : {
           "active" : {
             "type" : "boolean"
@@ -1833,6 +2517,7 @@
         }
       },
       "ApiResponseAlarmDto" : {
+        "type" : "object",
         "properties" : {
           "data" : {
             "$ref" : "#/components/schemas/AlarmDto"
@@ -1850,6 +2535,7 @@
         }
       },
       "ApiResponseAlarmRuleResponse" : {
+        "type" : "object",
         "properties" : {
           "data" : {
             "$ref" : "#/components/schemas/AlarmRuleResponse"
@@ -1867,6 +2553,7 @@
         }
       },
       "ApiResponseAlarmStatsDto" : {
+        "type" : "object",
         "properties" : {
           "data" : {
             "$ref" : "#/components/schemas/AlarmStatsDto"
@@ -1884,6 +2571,7 @@
         }
       },
       "ApiResponseAnalysisResultDto" : {
+        "type" : "object",
         "properties" : {
           "data" : {
             "$ref" : "#/components/schemas/AnalysisResultDto"
@@ -1901,6 +2589,7 @@
         }
       },
       "ApiResponseClearedResponse" : {
+        "type" : "object",
         "properties" : {
           "data" : {
             "$ref" : "#/components/schemas/ClearedResponse"
@@ -1918,6 +2607,7 @@
         }
       },
       "ApiResponseConnectionTestResponse" : {
+        "type" : "object",
         "properties" : {
           "data" : {
             "$ref" : "#/components/schemas/ConnectionTestResponse"
@@ -1935,6 +2625,7 @@
         }
       },
       "ApiResponseCreatedApiKeyResponse" : {
+        "type" : "object",
         "properties" : {
           "data" : {
             "$ref" : "#/components/schemas/CreatedApiKeyResponse"
@@ -1952,6 +2643,7 @@
         }
       },
       "ApiResponseDeploymentDto" : {
+        "type" : "object",
         "properties" : {
           "data" : {
             "$ref" : "#/components/schemas/DeploymentDto"
@@ -1969,6 +2661,7 @@
         }
       },
       "ApiResponseListAlarmRuleResponse" : {
+        "type" : "object",
         "properties" : {
           "data" : {
             "type" : "array",
@@ -1989,6 +2682,7 @@
         }
       },
       "ApiResponseListApiKeyResponse" : {
+        "type" : "object",
         "properties" : {
           "data" : {
             "type" : "array",
@@ -2009,6 +2703,7 @@
         }
       },
       "ApiResponseListLogSourceDto" : {
+        "type" : "object",
         "properties" : {
           "data" : {
             "type" : "array",
@@ -2029,6 +2724,7 @@
         }
       },
       "ApiResponseListUserResponse" : {
+        "type" : "object",
         "properties" : {
           "data" : {
             "type" : "array",
@@ -2049,6 +2745,7 @@
         }
       },
       "ApiResponseLogDetailDto" : {
+        "type" : "object",
         "properties" : {
           "data" : {
             "$ref" : "#/components/schemas/LogDetailDto"
@@ -2066,6 +2763,7 @@
         }
       },
       "ApiResponseLogSourceDto" : {
+        "type" : "object",
         "properties" : {
           "data" : {
             "$ref" : "#/components/schemas/LogSourceDto"
@@ -2083,6 +2781,7 @@
         }
       },
       "ApiResponseMapStringInteger" : {
+        "type" : "object",
         "properties" : {
           "data" : {
             "type" : "object",
@@ -2104,6 +2803,7 @@
         }
       },
       "ApiResponseMapStringLong" : {
+        "type" : "object",
         "properties" : {
           "data" : {
             "type" : "object",
@@ -2125,6 +2825,7 @@
         }
       },
       "ApiResponseNotificationSettingsResponse" : {
+        "type" : "object",
         "properties" : {
           "data" : {
             "$ref" : "#/components/schemas/NotificationSettingsResponse"
@@ -2142,6 +2843,7 @@
         }
       },
       "ApiResponsePagedResponseAlarmDto" : {
+        "type" : "object",
         "properties" : {
           "data" : {
             "$ref" : "#/components/schemas/PagedResponseAlarmDto"
@@ -2159,6 +2861,7 @@
         }
       },
       "ApiResponsePagedResponseAnalysisResultDto" : {
+        "type" : "object",
         "properties" : {
           "data" : {
             "$ref" : "#/components/schemas/PagedResponseAnalysisResultDto"
@@ -2176,6 +2879,7 @@
         }
       },
       "ApiResponsePagedResponseDeploymentDto" : {
+        "type" : "object",
         "properties" : {
           "data" : {
             "$ref" : "#/components/schemas/PagedResponseDeploymentDto"
@@ -2193,6 +2897,7 @@
         }
       },
       "ApiResponsePagedResponseLogEntryDto" : {
+        "type" : "object",
         "properties" : {
           "data" : {
             "$ref" : "#/components/schemas/PagedResponseLogEntryDto"
@@ -2210,6 +2915,7 @@
         }
       },
       "ApiResponsePagedResponseLogGroupDto" : {
+        "type" : "object",
         "properties" : {
           "data" : {
             "$ref" : "#/components/schemas/PagedResponseLogGroupDto"
@@ -2227,6 +2933,7 @@
         }
       },
       "ApiResponseProfileResponse" : {
+        "type" : "object",
         "properties" : {
           "data" : {
             "$ref" : "#/components/schemas/ProfileResponse"
@@ -2244,6 +2951,7 @@
         }
       },
       "ApiResponseProfileUpdateResponse" : {
+        "type" : "object",
         "properties" : {
           "data" : {
             "$ref" : "#/components/schemas/ProfileUpdateResponse"
@@ -2261,6 +2969,7 @@
         }
       },
       "ApiResponseString" : {
+        "type" : "object",
         "properties" : {
           "data" : {
             "type" : "string"
@@ -2278,6 +2987,7 @@
         }
       },
       "ApiResponseSystemSettingsResponse" : {
+        "type" : "object",
         "properties" : {
           "data" : {
             "$ref" : "#/components/schemas/SystemSettingsResponse"
@@ -2295,6 +3005,7 @@
         }
       },
       "ApiResponseTokenResponse" : {
+        "type" : "object",
         "properties" : {
           "data" : {
             "$ref" : "#/components/schemas/TokenResponse"
@@ -2312,6 +3023,7 @@
         }
       },
       "ApiResponseUserResponse" : {
+        "type" : "object",
         "properties" : {
           "data" : {
             "$ref" : "#/components/schemas/UserResponse"
@@ -2329,6 +3041,7 @@
         }
       },
       "ChangePasswordRequest" : {
+        "type" : "object",
         "properties" : {
           "current_password" : {
             "type" : "string",
@@ -2343,6 +3056,7 @@
         "required" : [ "current_password", "new_password" ]
       },
       "ClearedResponse" : {
+        "type" : "object",
         "properties" : {
           "cleared" : {
             "type" : "boolean"
@@ -2350,6 +3064,7 @@
         }
       },
       "ConnectionTestResponse" : {
+        "type" : "object",
         "properties" : {
           "connected" : {
             "type" : "boolean"
@@ -2357,6 +3072,7 @@
         }
       },
       "CreateApiKeyRequest" : {
+        "type" : "object",
         "properties" : {
           "expires_in_days" : {
             "type" : "integer",
@@ -2385,6 +3101,7 @@
         "required" : [ "name", "scopes" ]
       },
       "CreateUserRequest" : {
+        "type" : "object",
         "properties" : {
           "email" : {
             "type" : "string",
@@ -2411,6 +3128,7 @@
         "required" : [ "password", "role", "username" ]
       },
       "CreatedApiKeyResponse" : {
+        "type" : "object",
         "properties" : {
           "key" : {
             "$ref" : "#/components/schemas/ApiKeyResponse"
@@ -2421,6 +3139,7 @@
         }
       },
       "DeploymentDto" : {
+        "type" : "object",
         "properties" : {
           "deployed_at" : {
             "type" : "string",
@@ -2452,7 +3171,80 @@
         },
         "required" : [ "deployed_at", "service_name" ]
       },
+      "ErrorBody" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string"
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "timestamp" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "ErrorEnvelope" : {
+        "type" : "object",
+        "properties" : {
+          "error" : {
+            "$ref" : "#/components/schemas/ErrorBody"
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "IngestLogRequest" : {
+        "type" : "object",
+        "description" : "One log record. Only `message` is required.",
+        "properties" : {
+          "attributes" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            }
+          },
+          "cluster" : {
+            "type" : "string"
+          },
+          "container_name" : {
+            "type" : "string"
+          },
+          "message" : {
+            "type" : "string",
+            "description" : "The log line",
+            "example" : "PaymentGatewayTimeoutException: stripe-proxy 3000ms"
+          },
+          "namespace" : {
+            "type" : "string"
+          },
+          "pod_name" : {
+            "type" : "string"
+          },
+          "service_name" : {
+            "type" : "string"
+          },
+          "severity" : {
+            "type" : "string",
+            "description" : "TRACE, DEBUG, INFO, WARN, ERROR, CRITICAL (also: warning, fatal, err…); absent: classified by the processor",
+            "example" : "ERROR"
+          },
+          "stack_trace" : {
+            "type" : "string"
+          },
+          "timestamp" : {
+            "type" : "string",
+            "description" : "ISO-8601 instant or epoch milliseconds; default: time of receipt",
+            "example" : "2026-11-07T10:00:00Z"
+          }
+        },
+        "required" : [ "message" ]
+      },
       "LogDetailDto" : {
+        "type" : "object",
         "properties" : {
           "analyses" : {
             "type" : "array",
@@ -2466,6 +3258,7 @@
         }
       },
       "LogEntryDto" : {
+        "type" : "object",
         "properties" : {
           "cluster" : {
             "type" : "string"
@@ -2514,6 +3307,7 @@
         }
       },
       "LogGroupDto" : {
+        "type" : "object",
         "properties" : {
           "count" : {
             "type" : "integer",
@@ -2544,6 +3338,7 @@
         }
       },
       "LogSourceCreateRequest" : {
+        "type" : "object",
         "properties" : {
           "config" : {
             "type" : "string"
@@ -2563,6 +3358,7 @@
         "required" : [ "name", "type" ]
       },
       "LogSourceDto" : {
+        "type" : "object",
         "properties" : {
           "collector_instance" : {
             "type" : "string"
@@ -2609,6 +3405,7 @@
         }
       },
       "LogSourceUpdateRequest" : {
+        "type" : "object",
         "properties" : {
           "config" : {
             "type" : "string"
@@ -2628,6 +3425,7 @@
         "required" : [ "name", "type" ]
       },
       "LoginRequest" : {
+        "type" : "object",
         "properties" : {
           "password" : {
             "type" : "string",
@@ -2641,6 +3439,7 @@
         "required" : [ "password", "username" ]
       },
       "NotificationSettingsResponse" : {
+        "type" : "object",
         "properties" : {
           "email" : {
             "type" : "string"
@@ -2672,6 +3471,7 @@
         }
       },
       "PagedResponseAlarmDto" : {
+        "type" : "object",
         "properties" : {
           "content" : {
             "type" : "array",
@@ -2698,6 +3498,7 @@
         }
       },
       "PagedResponseAnalysisResultDto" : {
+        "type" : "object",
         "properties" : {
           "content" : {
             "type" : "array",
@@ -2724,6 +3525,7 @@
         }
       },
       "PagedResponseDeploymentDto" : {
+        "type" : "object",
         "properties" : {
           "content" : {
             "type" : "array",
@@ -2750,6 +3552,7 @@
         }
       },
       "PagedResponseLogEntryDto" : {
+        "type" : "object",
         "properties" : {
           "content" : {
             "type" : "array",
@@ -2776,6 +3579,7 @@
         }
       },
       "PagedResponseLogGroupDto" : {
+        "type" : "object",
         "properties" : {
           "content" : {
             "type" : "array",
@@ -2802,6 +3606,7 @@
         }
       },
       "ProfileResponse" : {
+        "type" : "object",
         "properties" : {
           "email" : {
             "type" : "string"
@@ -2815,6 +3620,7 @@
         }
       },
       "ProfileUpdateResponse" : {
+        "type" : "object",
         "properties" : {
           "email" : {
             "type" : "string"
@@ -2835,6 +3641,7 @@
         }
       },
       "ResetPasswordRequest" : {
+        "type" : "object",
         "properties" : {
           "password" : {
             "type" : "string",
@@ -2845,6 +3652,7 @@
         "required" : [ "password" ]
       },
       "SlackTestRequest" : {
+        "type" : "object",
         "properties" : {
           "webhook_url" : {
             "type" : "string"
@@ -2852,6 +3660,7 @@
         }
       },
       "SystemSettingsResponse" : {
+        "type" : "object",
         "properties" : {
           "ai_available" : {
             "type" : "boolean"
@@ -2869,6 +3678,7 @@
         }
       },
       "TokenResponse" : {
+        "type" : "object",
         "properties" : {
           "expires_at" : {
             "type" : "string",
@@ -2883,6 +3693,7 @@
         }
       },
       "UpdateNotificationRequest" : {
+        "type" : "object",
         "properties" : {
           "email_enabled" : {
             "type" : "boolean"
@@ -2912,6 +3723,7 @@
         }
       },
       "UpdateProfileRequest" : {
+        "type" : "object",
         "properties" : {
           "email" : {
             "type" : "string"
@@ -2924,6 +3736,7 @@
         "required" : [ "username" ]
       },
       "UpdateRoleRequest" : {
+        "type" : "object",
         "properties" : {
           "role" : {
             "type" : "string",
@@ -2934,6 +3747,7 @@
         "required" : [ "role" ]
       },
       "UpdateSystemSettingsRequest" : {
+        "type" : "object",
         "properties" : {
           "default_engine" : {
             "type" : "string",
@@ -2953,6 +3767,7 @@
         "required" : [ "default_engine", "language", "log_retention_days" ]
       },
       "UserResponse" : {
+        "type" : "object",
         "properties" : {
           "created_at" : {
             "type" : "string",
@@ -2977,6 +3792,7 @@
         }
       },
       "WebhookTestRequest" : {
+        "type" : "object",
         "properties" : {
           "webhook_url" : {
             "type" : "string"
@@ -2985,9 +3801,15 @@
       }
     },
     "securitySchemes" : {
-      "Bearer Authentication" : {
+      "apiKey" : {
+        "description" : "FaultLens API key (flk_…), created under Settings > API keys. `Authorization: Bearer flk_…` is accepted too. A key only reaches the endpoints of its scopes.",
+        "in" : "header",
+        "name" : "X-FaultLens-Key",
+        "type" : "apiKey"
+      },
+      "bearerAuth" : {
         "bearerFormat" : "JWT",
-        "name" : "Bearer Authentication",
+        "description" : "User access token (JWT, 15 min) from POST /api/v1/auth/login",
         "scheme" : "bearer",
         "type" : "http"
       }

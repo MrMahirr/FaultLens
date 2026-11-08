@@ -20,7 +20,17 @@ checks its DTOs against them at compile time (`shared/api/contract.check.ts`).
 - `OpenApiContractIT` fails when the API and the committed file differ, and also checks the main
   schemas against the real JSON field names pinned by `ApiContractIT`.
 - Controllers return concrete types (`ApiResponse<PagedResponse<LogEntryDto>>`, never
-  `ApiResponse<?>`), otherwise the response is published as an untyped object.
+  `ApiResponse<?>`), otherwise the response is published as an untyped object; the IT walks every
+  response schema and fails on a shapeless object (one documented exception: the empty OTLP reply).
+- **Operation ids** are `<controller><Method>` (`sourceList`, `logGroupEntries`), never numbered.
+- **Success status**: handlers that answer 201/202/204 carry `@ResponseStatus`, so the document says
+  so (`ResponseStatusTest` enforces it for every `ResponseEntity<Void>` handler).
+- **Errors**: every operation has a `default` response, the error envelope
+  `{"success": false, "error": {"code", "message", "timestamp"}}` (`ErrorEnvelope`, `ErrorBody`).
+- **Credentials** (`securitySchemes`): `bearerAuth` (user JWT) is the default; operations an API-key
+  scope covers list `apiKey` (`X-FaultLens-Key` or `Authorization: Bearer flk_…`) with the scope.
+  Derived from `ApiKeyScope`; ingest endpoints take an API key only.
+- The document is OpenAPI 3.1 throughout (schemas included: nullability as a type array).
 - After an intended API change:
 
   ```bash
@@ -373,7 +383,16 @@ Requires authentication.
     "notes": "Enabled performance optimizations and standard security updates."
   }
   ```
-- **Response (`201 Created`):** Returns the saved `DeploymentDto`.
+- **Response (`200 OK`):** Returns the saved `DeploymentDto`.
+
+### C. List Deployments
+- **Method:** `GET`
+- **Path:** `/api/v1/deployments?q=&environment=&page=0&size=50`
+- **Query Parameters:** `q` part of the service name (case-insensitive; `%` and `_` are literal),
+  `environment` exact match, `page` (from 0), `size` (1-200, default 50). Filtering and paging run in
+  the database, newest first.
+- **Response (`200 OK`):** a page (`content`, `page`, `size`, `total_elements`, `total_pages`) of
+  `DeploymentDto` (`id, service_name, version, environment, deployed_at, deployed_by, status, notes`).
 
 ---
 

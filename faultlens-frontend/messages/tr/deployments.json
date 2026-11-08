@@ -31,6 +31,7 @@
     "viewLogs": "Sonraki logları incele",
     "emptyTitle": "Henüz deployment yok",
     "emptyDescription": "CI'dan gönderin ya da ilk kaydı elle oluşturun.",
+    "resultCount": "{count, plural, one {# deployment} other {# deployment}}",
     "emptyFiltered": "Bu filtrelerle deployment yok.",
     "timeline": "Deployment zaman çizelgesi",
     "form": {

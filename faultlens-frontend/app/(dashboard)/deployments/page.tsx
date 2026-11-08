@@ -14,6 +14,7 @@ import { Modal } from "@/shared/components/ui/Modal";
 import { Input } from "@/shared/components/ui/Input";
 import { DropdownSelect } from "@/shared/components/ui/Dropdown";
 import { EmptyState } from "@/shared/components/feedback/EmptyState";
+import { Pagination } from "@/shared/components/ui/Pagination";
 import { SkeletonCard } from "@/shared/components/ui/Skeleton";
 import { useDateFormat } from "@/shared/hooks/useDateFormat";
 import { useUrlState } from "@/shared/hooks/useUrlState";
@@ -49,13 +50,13 @@ const STATUS_DOT: Record<DeploymentStatus, string> = {
 };
 
 const ENVIRONMENTS = Object.values(DeploymentEnvironment);
+const PAGE_SIZE = 20;
 const EMPTY_FORM = { serviceName: "", version: "", environment: "" };
 
 function DeploymentsView() {
   const t = useTranslations("deployments");
   const tCommon = useTranslations("common");
   const dates = useDateFormat();
-  const { data: deployments, isLoading } = useDeploymentsQuery();
   const createDeployment = useCreateDeploymentMutation();
   const canEdit = useCan("edit");
   const isAdmin = useCan("manageUsers");
@@ -69,18 +70,25 @@ function DeploymentsView() {
   const [searchQuery, setSearchQuery] = useState(urlQuery);
   const debouncedQuery = useDebounce(searchQuery, 300);
   useEffect(() => {
-    if (debouncedQuery !== urlQuery) update({ q: debouncedQuery });
+    // A new search starts again at page 1.
+    if (debouncedQuery !== urlQuery) update({ q: debouncedQuery, page: undefined });
   }, [debouncedQuery, urlQuery, update]);
   const envParam = params.get("env");
   const envFilter = ENVIRONMENTS.includes(envParam as DeploymentEnvironment)
     ? (envParam as DeploymentEnvironment)
     : undefined;
+  const page = Math.max(0, (Number(params.get("page")) || 1) - 1);
 
-  const filteredDeployments = deployments?.filter(
-    (d) =>
-      d.serviceName.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      (!envFilter || d.environment === envFilter),
-  );
+  // Filtered and paged on the server: every matching deployment is reachable, not only the
+  // newest page.
+  const { data, isLoading } = useDeploymentsQuery({
+    q: urlQuery,
+    environment: envFilter,
+    page,
+    size: PAGE_SIZE,
+  });
+  const deployments = data?.content ?? [];
+  const totalPages = data?.totalPages ?? 0;
 
   const envOptions = ENVIRONMENTS.map((env) => ({ label: t(`env.${env}`), value: env }));
 
@@ -175,9 +183,14 @@ function DeploymentsView() {
           label={t("environment")}
           value={envFilter ?? ""}
           options={[{ label: t("allEnvironments"), value: "" }, ...envOptions]}
-          onChange={(v) => update({ env: v })}
+          onChange={(v) => update({ env: v, page: undefined })}
           className="sm:w-56 [&_.label]:sr-only"
         />
+        {data && (
+          <span className="xs t3 mono sm:ml-auto self-center" aria-live="polite">
+            {t("resultCount", { count: data.totalElements })}
+          </span>
+        )}
       </div>
 
       {isLoading ? (
@@ -186,60 +199,71 @@ function DeploymentsView() {
             <SkeletonCard key={i} />
           ))}
         </div>
-      ) : filteredDeployments && filteredDeployments.length > 0 ? (
-        <ol className="relative m-0 p-0 list-none stack gap-3" aria-label={t("timeline")}>
-          {/* Timeline rail */}
-          <span
-            className="absolute left-[11px] top-2 bottom-2 w-px bg-border-strong"
-            aria-hidden="true"
-          />
+      ) : deployments.length > 0 ? (
+        <>
+          <ol className="relative m-0 p-0 list-none stack gap-3" aria-label={t("timeline")}>
+            {/* Timeline rail */}
+            <span
+              className="absolute left-[11px] top-2 bottom-2 w-px bg-border-strong"
+              aria-hidden="true"
+            />
 
-          {filteredDeployments.map((deployment, index) => (
-            <li key={deployment.id} className={`relative pl-9 in d${Math.min(index + 1, 8)}`}>
-              <span
-                className="absolute left-[6px] top-5 w-[11px] h-[11px] rounded-full border-2 border-bg-primary"
-                style={{ background: STATUS_DOT[deployment.status] }}
-                aria-hidden="true"
-              />
+            {deployments.map((deployment, index) => (
+              <li key={deployment.id} className={`relative pl-9 in d${Math.min(index + 1, 8)}`}>
+                <span
+                  className="absolute left-[6px] top-5 w-[11px] h-[11px] rounded-full border-2 border-bg-primary"
+                  style={{ background: STATUS_DOT[deployment.status] }}
+                  aria-hidden="true"
+                />
 
-              <article className="card p-4 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="row mb-1">
-                    <h3 className="h3 text-[15px]">{deployment.serviceName}</h3>
-                    <span className="badge mono c-signal">{deployment.version}</span>
-                  </div>
-                  <p className="xs t3 row gap-3">
-                    <time dateTime={deployment.deployedAt}>
-                      {dates.dateTime(deployment.deployedAt)}
-                    </time>
-                    {deployment.deployedBy && (
-                      <span>{t("by", { user: deployment.deployedBy })}</span>
+                <article className="card p-4 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <div className="row mb-1">
+                      <h3 className="h3 text-[15px]">{deployment.serviceName}</h3>
+                      <span className="badge mono c-signal">{deployment.version}</span>
+                    </div>
+                    <p className="xs t3 row gap-3">
+                      <time dateTime={deployment.deployedAt}>
+                        {dates.dateTime(deployment.deployedAt)}
+                      </time>
+                      {deployment.deployedBy && (
+                        <span>{t("by", { user: deployment.deployedBy })}</span>
+                      )}
+                    </p>
+                    {deployment.notes && (
+                      <p className="small t2 mt-2 whitespace-pre-line">{deployment.notes}</p>
                     )}
-                  </p>
-                  {deployment.notes && (
-                    <p className="small t2 mt-2 whitespace-pre-line">{deployment.notes}</p>
-                  )}
-                </div>
-
-                <div className="flex flex-col items-start sm:items-end gap-2.5 shrink-0">
-                  <div className="row">
-                    <Badge variant={STATUS_BADGE[deployment.status]} dot>
-                      {t(`status.${deployment.status}`)}
-                    </Badge>
-                    <Badge variant="outline">{t(`env.${deployment.environment}`)}</Badge>
                   </div>
-                  <Link
-                    href={`/logs?from=${encodeURIComponent(deployment.deployedAt)}&range=all`}
-                    className="btn btn-sm"
-                  >
-                    <ExternalLink size={13} aria-hidden="true" />
-                    {t("viewLogs")}
-                  </Link>
-                </div>
-              </article>
-            </li>
-          ))}
-        </ol>
+
+                  <div className="flex flex-col items-start sm:items-end gap-2.5 shrink-0">
+                    <div className="row">
+                      <Badge variant={STATUS_BADGE[deployment.status]} dot>
+                        {t(`status.${deployment.status}`)}
+                      </Badge>
+                      <Badge variant="outline">{t(`env.${deployment.environment}`)}</Badge>
+                    </div>
+                    <Link
+                      href={`/logs?from=${encodeURIComponent(deployment.deployedAt)}&range=all`}
+                      className="btn btn-sm"
+                    >
+                      <ExternalLink size={13} aria-hidden="true" />
+                      {t("viewLogs")}
+                    </Link>
+                  </div>
+                </article>
+              </li>
+            ))}
+          </ol>
+          {totalPages > 1 && (
+            <div className="flex justify-center">
+              <Pagination
+                currentPage={page + 1}
+                totalPages={totalPages}
+                onPageChange={(p) => update({ page: p > 1 ? p : undefined })}
+              />
+            </div>
+          )}
+        </>
       ) : (
         <div className="card">
           <EmptyState
@@ -252,7 +276,7 @@ function DeploymentsView() {
                     label: tCommon("clearFilters"),
                     onClick: () => {
                       setSearchQuery("");
-                      update({ q: undefined, env: undefined });
+                      update({ q: undefined, env: undefined, page: undefined });
                     },
                   }
                 : canEdit
