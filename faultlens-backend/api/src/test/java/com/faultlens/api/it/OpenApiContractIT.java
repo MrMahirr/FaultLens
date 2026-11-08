@@ -13,9 +13,11 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import tools.jackson.core.util.DefaultIndenter;
+import tools.jackson.core.util.DefaultPrettyPrinter;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.ObjectWriter;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
@@ -36,9 +38,16 @@ class OpenApiContractIT extends AbstractIntegrationTest {
     private static final Path CONTRACT = Path.of("..", "..", "contracts", "openapi.json");
     private static final Path GENERATED = Path.of("target", "openapi.json");
 
-    private static final ObjectMapper PRETTY = JsonMapper.builder()
-            .enable(SerializationFeature.INDENT_OUTPUT)
-            .build();
+    private static final ObjectMapper MAPPER = JsonMapper.builder().build();
+
+    /**
+     * Jackson's default pretty printer, but with an LF line feed instead of the system line
+     * separator: on Windows INDENT_OUTPUT writes CRLF, so the contract regenerated there differed
+     * byte for byte from one generated on Linux (and mixed CRLF with the final LF). Arrays stay
+     * on one line, as with the default printer.
+     */
+    private static final ObjectWriter PRETTY = MAPPER.writer()
+            .with(new DefaultPrettyPrinter().withObjectIndenter(new DefaultIndenter("  ", "\n")));
 
     /** OpenAPI component schema → the JSON field set ApiContractIT pins for it. */
     private static final Map<String, Set<String>> WIRE_FIELDS = Map.ofEntries(
@@ -103,7 +112,7 @@ class OpenApiContractIT extends AbstractIntegrationTest {
         assertThat(CONTRACT)
                 .as("contracts/openapi.json is missing; run this IT with -Dcontracts.update=true")
                 .exists();
-        JsonNode committed = PRETTY.readTree(Files.readString(CONTRACT, StandardCharsets.UTF_8));
+        JsonNode committed = MAPPER.readTree(Files.readString(CONTRACT, StandardCharsets.UTF_8));
         assertThat(actual)
                 .as("""
                         The API changed but contracts/openapi.json did not. Compare it with
