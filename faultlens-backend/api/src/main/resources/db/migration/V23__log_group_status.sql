@@ -3,15 +3,18 @@
 --
 -- Rollback (manual, no data worth keeping is lost):
 --   DROP TABLE log_group_events;
+--   ALTER TABLE log_groups DROP CONSTRAINT log_groups_status_check;
 --   DROP INDEX idx_log_groups_status_last_seen;
 --   ALTER TABLE log_groups DROP COLUMN status, DROP COLUMN resolved_at, DROP COLUMN resolved_by,
 --     DROP COLUMN ignore_until, DROP COLUMN regressed_at, DROP COLUMN regression_count;
 --   DELETE FROM alarm_rules WHERE type = 'REGRESSION';  -- then restore the V15 type check.
 
 -- Adding columns with constant defaults is a metadata-only change in PostgreSQL (no rewrite).
+-- The status check is added NOT VALID (no scan under this ACCESS EXCLUSIVE lock, which would
+-- block the processor's upserts for its length) and validated in V25 under a lock that lets
+-- writes through. New and updated rows are checked from here on either way.
 ALTER TABLE log_groups
-    ADD COLUMN status           VARCHAR(16)  NOT NULL DEFAULT 'UNRESOLVED'
-        CHECK (status IN ('UNRESOLVED', 'RESOLVED', 'IGNORED')),
+    ADD COLUMN status           VARCHAR(16)  NOT NULL DEFAULT 'UNRESOLVED',
     ADD COLUMN resolved_at      TIMESTAMPTZ,
     -- Username, like alarm_rules.created_by: survives the user being deleted.
     ADD COLUMN resolved_by      VARCHAR(100),
@@ -19,6 +22,8 @@ ALTER TABLE log_groups
     ADD COLUMN ignore_until     TIMESTAMPTZ,
     ADD COLUMN regressed_at     TIMESTAMPTZ,
     ADD COLUMN regression_count INT          NOT NULL DEFAULT 0;
+ALTER TABLE log_groups ADD CONSTRAINT log_groups_status_check
+    CHECK (status IN ('UNRESOLVED', 'RESOLVED', 'IGNORED')) NOT VALID;
 
 -- Groups view: "unresolved, most recent first".
 CREATE INDEX idx_log_groups_status_last_seen ON log_groups (status, last_seen_at DESC);

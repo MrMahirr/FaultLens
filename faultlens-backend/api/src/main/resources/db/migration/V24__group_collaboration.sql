@@ -12,9 +12,14 @@ ALTER TABLE log_groups
     ADD COLUMN assignee       VARCHAR(100),
     ADD COLUMN assigned_at    TIMESTAMPTZ,
     -- New entries of this group go to merged_into_id (processor); NULL = not merged.
-    ADD COLUMN merged_into_id BIGINT REFERENCES log_groups (id) ON DELETE SET NULL,
-    ADD COLUMN merged_at      TIMESTAMPTZ,
-    ADD CONSTRAINT log_groups_not_merged_into_self CHECK (merged_into_id IS NULL OR merged_into_id <> id);
+    ADD COLUMN merged_into_id BIGINT,
+    ADD COLUMN merged_at      TIMESTAMPTZ;
+-- NOT VALID like V23's status check: no full scan under ACCESS EXCLUSIVE; both are validated
+-- in V25 under a lock that lets writes through. New and updated rows are checked from here on.
+ALTER TABLE log_groups ADD CONSTRAINT log_groups_merged_into_fk
+    FOREIGN KEY (merged_into_id) REFERENCES log_groups (id) ON DELETE SET NULL NOT VALID;
+ALTER TABLE log_groups ADD CONSTRAINT log_groups_not_merged_into_self
+    CHECK (merged_into_id IS NULL OR merged_into_id <> id) NOT VALID;
 
 -- "Assigned to me".
 CREATE INDEX idx_log_groups_assignee ON log_groups (assignee) WHERE assignee IS NOT NULL;

@@ -143,6 +143,19 @@ class GroupLifecycleIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void lifecycleConstraintsAreValidatedAfterMigrating() {
+        // V23/V24 add them NOT VALID (no scan under ACCESS EXCLUSIVE); V25 validates them.
+        assertThat(jdbc.queryForList("""
+                select conname from pg_constraint
+                 where conrelid = 'log_groups'::regclass and convalidated
+                   and conname in ('log_groups_status_check', 'log_groups_merged_into_fk',
+                                   'log_groups_not_merged_into_self')
+                """, String.class)).hasSize(3);
+        assertThat(jdbc.queryForObject("select count(*) from pg_constraint"
+                + " where conrelid = 'log_groups'::regclass and not convalidated", Long.class)).isZero();
+    }
+
+    @Test
     void invalidChangesAreRejected() {
         String token = adminToken();
         long groupId = process(marker(), Instant.now());
