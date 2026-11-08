@@ -80,7 +80,8 @@ history survives a user being deleted.
   Past entries stay where they are; merged groups leave the list; merges never chain (groups
   merged into the source are re-pointed to the target, and nothing can be merged into a merged
   group). Undo (`/unmerge`) is ADMIN only; entries routed meanwhile stay in the target. A merge
-  racing a batch that already read the merge map lets that batch's entries land in the source.
+  racing a batch that already read the merge map is caught by the upsert (`RETURNING
+  merged_into_id`): the entries still go to the target, only the source's count takes them.
 
 ## Not done (yet)
 
