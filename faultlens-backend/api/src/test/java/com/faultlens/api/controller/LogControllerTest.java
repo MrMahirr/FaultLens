@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.faultlens.api.dto.LogDetailDto;
 import com.faultlens.api.exception.GlobalExceptionHandler;
 import com.faultlens.api.dto.LogGroupDtos.GroupStatusUpdateRequest;
+import com.faultlens.api.service.LogContextService;
 import com.faultlens.api.service.LogGroupCollaborationService;
 import com.faultlens.api.service.LogGroupLifecycleService;
 import com.faultlens.api.service.LogQueryService;
@@ -39,7 +40,8 @@ class LogControllerTest {
     void setUp() {
         service = mock(LogQueryService.class);
         lifecycle = mock(LogGroupLifecycleService.class);
-        mockMvc = MockMvcBuilders.standaloneSetup(new LogController(service, lifecycle, mock(LogGroupCollaborationService.class)))
+        mockMvc = MockMvcBuilders.standaloneSetup(new LogController(service, lifecycle, mock(LogGroupCollaborationService.class),
+                        mock(LogContextService.class)))
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
     }

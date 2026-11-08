@@ -2,6 +2,7 @@
 
 import { use } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ArrowLeft, FileQuestion } from "lucide-react";
 import { SeverityBadge } from "@/shared/components/ui/SeverityBadge";
@@ -11,10 +12,12 @@ import { useDateFormat } from "@/shared/hooks/useDateFormat";
 import { useLogDetailQuery } from "@/features/logs/api/useLogQuery";
 import { StackTrace } from "@/features/logs/components/StackTrace";
 import { LogAnalyses } from "@/features/logs/components/LogAnalyses";
+import { LogContext } from "@/features/logs/components/LogContext";
 
 export default function LogDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const t = useTranslations("logs.detail");
   const dates = useDateFormat();
+  const router = useRouter();
   const { id } = use(params);
   const logId = parseInt(id, 10);
   const { data: detailData, isLoading, error } = useLogDetailQuery(logId);
@@ -84,6 +87,11 @@ export default function LogDetailPage({ params }: { params: Promise<{ id: string
           <StackTrace trace={log.stackTrace} />
         </section>
       )}
+
+      <section className="field">
+        <h2 className="eyebrow">{t("tabs.context")}</h2>
+        <LogContext log={log} onSelect={(entry) => router.push(`/logs/${entry.id}`)} />
+      </section>
 
       <section className="field">
         <h2 className="eyebrow">{t("analysis")}</h2>

@@ -23,6 +23,7 @@ export const Endpoints = {
   LOGS: {
     LIST: `${BASE}/logs`,
     DETAIL: (id: number) => `${BASE}/logs/${id}`,
+    CONTEXT: (id: number) => `${BASE}/logs/${id}/context`,
     GROUPS: `${BASE}/logs/groups`,
     GROUP: (groupId: number) => `${BASE}/logs/groups/${groupId}`,
     GROUP_ENTRIES: (groupId: number) => `${BASE}/logs/groups/${groupId}/entries`,

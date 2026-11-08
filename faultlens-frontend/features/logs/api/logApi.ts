@@ -11,6 +11,7 @@ import type {
   LogGroupListParams,
   GroupStatusUpdate,
   LogDetailDto,
+  LogContextDto,
 } from "@/features/logs/types/log.types";
 import { DEFAULT_LOG_TIME_RANGE, rangeStart } from "@/features/logs/types/log.types";
 import type { PagedResponse } from "@/shared/types/api.types";
@@ -62,6 +63,15 @@ export const LogApi = {
   },
 
   /** Without statuses the API leaves IGNORED groups out. */
+  getLogContext: async (id: number, before: number, after: number): Promise<LogContextDto> => {
+    const response = await apiClient({
+      method: HttpMethod.GET,
+      url: Endpoints.LOGS.CONTEXT(id),
+      params: { before, after },
+    });
+    return response.data.data;
+  },
+
   getLogGroups: async (params: LogGroupListParams = {}): Promise<PagedResponse<LogGroupDto>> => {
     const response = await apiClient({
       method: HttpMethod.GET,

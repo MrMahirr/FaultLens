@@ -66,7 +66,12 @@
       "notFound": "Log not found.",
       "back": "Back to logs",
       "loading": "Loading log…",
-      "logNumber": "Log #{id}"
+      "logNumber": "Log #{id}",
+      "tabs": {
+        "label": "Log view",
+        "details": "Details",
+        "context": "Context"
+      }
     },
     "groupFilter": "Group #{id}",
     "removeGroupFilter": "Remove group filter",
@@ -209,6 +214,16 @@
         "by": "by {user}",
         "open": "Open group"
       }
+    },
+    "context": {
+      "label": "Log context",
+      "loading": "Loading context…",
+      "failed": "Could not load the context.",
+      "scopePod": "Same source and pod ({pod}), ±{minutes} min",
+      "scopeSource": "Same source (no pod), ±{minutes} min",
+      "loadBefore": "Older lines",
+      "loadAfter": "Newer lines",
+      "alone": "No other lines from the same place in this window."
     }
   }
 }

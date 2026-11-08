@@ -1938,6 +1938,70 @@
         "tags" : [ "log-controller" ]
       }
     },
+    "/api/v1/logs/{id}/context" : {
+      "get" : {
+        "operationId" : "logContext",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "query",
+          "name" : "before",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 50,
+            "maximum" : 200,
+            "minimum" : 0
+          }
+        }, {
+          "in" : "query",
+          "name" : "after",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 50,
+            "maximum" : 200,
+            "minimum" : 0
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseLogContextDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "apiKey" : [ "logs:read" ]
+        } ],
+        "tags" : [ "log-controller" ]
+      }
+    },
     "/api/v1/settings/notifications" : {
       "get" : {
         "operationId" : "settingsGetNotifications",
@@ -3298,6 +3362,24 @@
           }
         }
       },
+      "ApiResponseLogContextDto" : {
+        "type" : "object",
+        "properties" : {
+          "data" : {
+            "$ref" : "#/components/schemas/LogContextDto"
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "success" : {
+            "type" : "boolean"
+          },
+          "timestamp" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
       "ApiResponseLogDetailDto" : {
         "type" : "object",
         "properties" : {
@@ -3875,6 +3957,31 @@
           }
         },
         "required" : [ "message" ]
+      },
+      "LogContextDto" : {
+        "type" : "object",
+        "properties" : {
+          "anchor_id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "entries" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/LogEntryDto"
+            }
+          },
+          "has_more_after" : {
+            "type" : "boolean"
+          },
+          "has_more_before" : {
+            "type" : "boolean"
+          },
+          "window_minutes" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
       },
       "LogDetailDto" : {
         "type" : "object",

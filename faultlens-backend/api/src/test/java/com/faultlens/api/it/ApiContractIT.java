@@ -54,6 +54,8 @@ class ApiContractIT extends AbstractIntegrationTest {
             "regressed_at", "regression_count", "assignee", "assigned_at", "merged_into_id", "merged_at");
     static final Set<String> LOG_GROUP_EVENT = Set.of("id", "type", "actor", "from_status", "ignore_until",
             "regression_count", "assignee", "related_group_id", "created_at");
+    static final Set<String> LOG_CONTEXT = Set.of("anchor_id", "entries", "has_more_before", "has_more_after",
+            "window_minutes");
     static final Set<String> LOG_GROUP_COMMENT = Set.of("id", "group_id", "author", "body", "created_at", "edited_at");
     static final Set<String> LOG_STATS = Set.of("TRACE", "DEBUG", "INFO", "WARN", "ERROR", "CRITICAL", "total");
     static final Set<String> ANALYSIS = Set.of("id", "log_group_id", "log_entry_id", "source_id", "root_cause",

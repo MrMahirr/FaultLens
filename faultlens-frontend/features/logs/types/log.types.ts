@@ -171,3 +171,13 @@ export interface LogDetailDto {
   log: LogEntryDto;
   analyses: AnalysisResultDto[];
 }
+
+/** GET /logs/{id}/context (P10 / 2.3): same source and pod, oldest first, the anchor included. */
+export interface LogContextDto {
+  anchorId: number;
+  entries: LogEntryDto[];
+  hasMoreBefore: boolean;
+  hasMoreAfter: boolean;
+  /** Entries are looked for within ± this many minutes of the anchor. */
+  windowMinutes: number;
+}

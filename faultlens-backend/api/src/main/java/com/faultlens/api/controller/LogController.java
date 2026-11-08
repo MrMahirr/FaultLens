@@ -6,6 +6,8 @@ import com.faultlens.api.dto.LogGroupDtos.CommentRequest;
 import com.faultlens.api.dto.LogGroupDtos.GroupStatusUpdateRequest;
 import com.faultlens.api.dto.LogGroupDtos.LogGroupCommentDto;
 import com.faultlens.api.dto.LogGroupDtos.MergeRequest;
+import com.faultlens.api.dto.LogContextDto;
+import com.faultlens.api.service.LogContextService;
 import com.faultlens.api.service.LogGroupCollaborationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -54,6 +56,7 @@ public class LogController {
     private final LogQueryService service;
     private final LogGroupLifecycleService lifecycle;
     private final LogGroupCollaborationService collaboration;
+    private final LogContextService contextService;
 
     /**
      * Lists logs with pagination and filters.
@@ -76,6 +79,19 @@ public class LogController {
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<LogDetailDto>> detail(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(service.detail(id)));
+    }
+
+    /**
+     * The entries of the same source and pod around this one (P10 / 2.3), oldest first, the entry
+     * itself included; within ±60 minutes. Load more by asking for the first / last entry's
+     * context with {@code after=0} / {@code before=0}.
+     */
+    @GetMapping("/{id}/context")
+    public ResponseEntity<ApiResponse<LogContextDto>> context(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "50") @Min(0) @Max(LogContextService.MAX_LINES) int before,
+            @RequestParam(defaultValue = "50") @Min(0) @Max(LogContextService.MAX_LINES) int after) {
+        return ResponseEntity.ok(ApiResponse.ok(contextService.context(id, before, after)));
     }
 
     /**

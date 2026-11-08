@@ -564,6 +564,22 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/logs/{id}/context": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["logContext"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/settings/notifications": {
     parameters: {
       query?: never;
@@ -1052,6 +1068,13 @@ export interface components {
       /** Format: date-time */
       timestamp?: string;
     };
+    ApiResponseLogContextDto: {
+      data?: components["schemas"]["LogContextDto"];
+      message?: string;
+      success?: boolean;
+      /** Format: date-time */
+      timestamp?: string;
+    };
     ApiResponseLogDetailDto: {
       data?: components["schemas"]["LogDetailDto"];
       message?: string;
@@ -1274,6 +1297,15 @@ export interface components {
        * @example 2026-11-07T10:00:00Z
        */
       timestamp?: string;
+    };
+    LogContextDto: {
+      /** Format: int64 */
+      anchor_id?: number;
+      entries?: components["schemas"]["LogEntryDto"][];
+      has_more_after?: boolean;
+      has_more_before?: boolean;
+      /** Format: int32 */
+      window_minutes?: number;
     };
     LogDetailDto: {
       analyses?: components["schemas"]["AnalysisResultDto"][];
@@ -2989,6 +3021,40 @@ export interface operations {
         };
         content: {
           "*/*": components["schemas"]["ApiResponseLogDetailDto"];
+        };
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
+    };
+  };
+  logContext: {
+    parameters: {
+      query?: {
+        before?: number;
+        after?: number;
+      };
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "*/*": components["schemas"]["ApiResponseLogContextDto"];
         };
       };
       /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */

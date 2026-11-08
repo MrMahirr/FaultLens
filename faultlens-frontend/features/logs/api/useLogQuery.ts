@@ -7,6 +7,7 @@ export const logKeys = {
   lists: () => [...logKeys.all, "list"] as const,
   list: (filters: LogFilters) => [...logKeys.lists(), filters] as const,
   detail: (id: number) => [...logKeys.all, "detail", id] as const,
+  context: (id: number) => [...logKeys.all, "context", id] as const,
   groups: () => [...logKeys.all, "groups"] as const,
   groupList: (params: LogGroupListParams) => [...logKeys.groups(), "list", params] as const,
   group: (id: number) => [...logKeys.groups(), "detail", id] as const,
@@ -74,4 +75,12 @@ export const useAssignableUsersQuery = (enabled: boolean) =>
     queryFn: () => LogApi.getAssignableUsers(),
     enabled,
     staleTime: 5 * 60_000,
+  });
+
+/** The first page of an entry's context (±50 lines); "load more" pages are fetched directly. */
+export const useLogContextQuery = (id: number, lines = 50) =>
+  useQuery({
+    queryKey: logKeys.context(id),
+    queryFn: () => LogApi.getLogContext(id, lines, lines),
+    enabled: id > 0,
   });

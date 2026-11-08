@@ -136,7 +136,14 @@ function LogsView() {
       )}
 
       <AnimatePresence>
-        {selectedLog && <LogDetailPanel key="log-detail" log={selectedLog} onClose={closeDetail} />}
+        {selectedLog && (
+          <LogDetailPanel
+            key="log-detail"
+            log={selectedLog}
+            onClose={closeDetail}
+            onSelect={setSelectedLog}
+          />
+        )}
       </AnimatePresence>
     </>
   );

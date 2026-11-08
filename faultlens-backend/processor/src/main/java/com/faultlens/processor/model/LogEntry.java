@@ -28,7 +28,9 @@ import lombok.NoArgsConstructor;
                 @Index(name = "idx_log_entries_timestamp", columnList = "timestamp DESC"),
                 @Index(name = "idx_log_entries_severity", columnList = "severity"),
                 @Index(name = "idx_log_entries_group", columnList = "group_id"),
-                @Index(name = "idx_log_entries_source_ts", columnList = "source_id,timestamp DESC")
+                @Index(name = "idx_log_entries_source_ts", columnList = "source_id,timestamp DESC"),
+                // P10 / 2.3, created by the V26 Java migration (partition by partition, concurrently)
+                @Index(name = "idx_log_entries_context", columnList = "source_id,pod_name,timestamp,id")
         }
 )
 public class LogEntry {

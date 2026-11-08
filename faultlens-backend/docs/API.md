@@ -332,6 +332,18 @@ Requires authentication.
 - **Path:** `/api/v1/logs/{id}`
 - **Response (`200 OK`):** Returns `LogDetailDto` containing detailed properties, host/service name, stack trace, and correlation list.
 
+### C2. Get Log Context (P10 / 2.3)
+- **Method:** `GET`
+- **Path:** `/api/v1/logs/{id}/context`
+- **Query Parameters:** `before` (int, 0–200, default 50), `after` (int, 0–200, default 50)
+- **Response (`200 OK`):** `LogContextDto` — `{ anchor_id, entries, has_more_before, has_more_after,
+  window_minutes }`. `entries` are the entries of the **same source and pod** (pod null matches
+  null) within ±60 minutes, oldest first, ordered by `(timestamp, id)`, the entry itself included.
+  To load more, ask for the context of the first entry with `after=0` (or the last with
+  `before=0`); paging from an edge neither skips nor repeats. 404 `LOG_NOT_FOUND`.
+- Served by `idx_log_entries_context (source_id, pod_name, timestamp, id)` (V26, built per partition
+  concurrently).
+
 ### D. Get Real-time Analytics Statistics
 - **Method:** `GET`
 - **Path:** `/api/v1/logs/stats`

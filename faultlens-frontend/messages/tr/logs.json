@@ -66,7 +66,12 @@
       "notFound": "Log bulunamadı.",
       "back": "Loglara dön",
       "loading": "Log yükleniyor…",
-      "logNumber": "Log #{id}"
+      "logNumber": "Log #{id}",
+      "tabs": {
+        "label": "Log görünümü",
+        "details": "Ayrıntılar",
+        "context": "Bağlam"
+      }
     },
     "groupFilter": "Grup #{id}",
     "removeGroupFilter": "Grup filtresini kaldır",
@@ -209,6 +214,16 @@
         "by": "{user} tarafından",
         "open": "Grubu aç"
       }
+    },
+    "context": {
+      "label": "Log bağlamı",
+      "loading": "Bağlam yükleniyor…",
+      "failed": "Bağlam yüklenemedi.",
+      "scopePod": "Aynı kaynak ve pod ({pod}), ±{minutes} dk",
+      "scopeSource": "Aynı kaynak (pod bilgisi yok), ±{minutes} dk",
+      "loadBefore": "Daha eski satırlar",
+      "loadAfter": "Daha yeni satırlar",
+      "alone": "Bu pencerede aynı yerden başka satır yok."
     }
   }
 }
