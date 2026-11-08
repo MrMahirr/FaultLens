@@ -71,6 +71,88 @@
     "groupFilter": "Group #{id}",
     "removeGroupFilter": "Remove group filter",
     "sinceFilter": "Since {time}",
-    "removeSinceFilter": "Remove start filter"
+    "removeSinceFilter": "Remove start filter",
+    "nav": {
+      "label": "Log views",
+      "entries": "Entries",
+      "groups": "Error groups"
+    },
+    "groups": {
+      "title": "Error groups",
+      "subtitle": "Repeats of the same error are collected in one group. Resolve or ignore them; a resolved group that shows up again is reopened as a regression.",
+      "table": "Error group list",
+      "resultCount": "{count, plural, one {# group} other {# groups}}",
+      "statusFilter": "Status",
+      "statusTabs": {
+        "UNRESOLVED": "Unresolved",
+        "RESOLVED": "Resolved",
+        "IGNORED": "Ignored",
+        "all": "All"
+      },
+      "status": {
+        "UNRESOLVED": "Unresolved",
+        "RESOLVED": "Resolved",
+        "IGNORED": "Ignored"
+      },
+      "columns": {
+        "message": "Error",
+        "severity": "Severity",
+        "count": "Count",
+        "firstSeen": "First seen",
+        "lastSeen": "Last seen",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "regressionBadge": "{count, plural, one {# regression} other {# regressions}}",
+      "regressionHint": "Seen again after it was resolved",
+      "ignoredUntil": "until {time}",
+      "actions": {
+        "menu": "Group actions",
+        "resolve": "Resolve",
+        "reopen": "Reopen",
+        "ignore": "Ignore",
+        "ignoreFor": {
+          "1h": "Ignore for 1 hour",
+          "24h": "Ignore for 24 hours",
+          "7d": "Ignore for 7 days",
+          "forever": "Ignore until I reopen it"
+        },
+        "resolved": "Group marked as resolved",
+        "ignored": "Group ignored",
+        "reopened": "Group reopened",
+        "undo": "Undo",
+        "conflict": "The group changed meanwhile; the list was refreshed.",
+        "failed": "Could not update the group."
+      },
+      "empty": {
+        "UNRESOLVED": "No unresolved error groups",
+        "RESOLVED": "No resolved error groups",
+        "IGNORED": "No ignored error groups",
+        "all": "No error groups yet"
+      },
+      "emptyHint": "New errors are grouped here as they arrive.",
+      "detail": {
+        "back": "Back to error groups",
+        "notFound": "Error group not found",
+        "summary": "Summary",
+        "occurrences": "Total entries",
+        "regressions": "Regressions",
+        "resolvedBy": "by {user}, {time}",
+        "timeline": "Timeline",
+        "timelineEmpty": "No events for this group yet (groups from before 2.1 start empty).",
+        "system": "System",
+        "recent": "Recent entries",
+        "viewAll": "Open all entries in Logs",
+        "events": {
+          "CREATED": "First seen",
+          "RESOLVED": "Resolved",
+          "IGNORED": "Ignored",
+          "IGNORED_UNTIL": "Ignored until {time}",
+          "REOPENED": "Reopened",
+          "REGRESSED": "Regression: seen again after it was resolved ({count}×)",
+          "UNIGNORED": "Ignore period ran out; reopened by a new entry"
+        }
+      }
+    }
   }
 }

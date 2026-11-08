@@ -622,10 +622,12 @@ select.input {
   transform: scaleX(0);
   transition: transform var(--t-2) var(--ease);
 }
-.tab[aria-selected="true"] {
+.tab[aria-selected="true"],
+.tab[aria-current="page"] {
   color: var(--fg);
 }
-.tab[aria-selected="true"]::after {
+.tab[aria-selected="true"]::after,
+.tab[aria-current="page"]::after {
   transform: scaleX(1);
 }
 .tab .n {

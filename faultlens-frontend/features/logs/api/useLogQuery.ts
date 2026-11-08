@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { LogApi } from "./logApi";
-import type { LogFilters } from "@/features/logs/types/log.types";
+import type { LogFilters, LogGroupListParams } from "@/features/logs/types/log.types";
 
 export const logKeys = {
   all: ["logs"] as const,
@@ -8,6 +8,9 @@ export const logKeys = {
   list: (filters: LogFilters) => [...logKeys.lists(), filters] as const,
   detail: (id: number) => [...logKeys.all, "detail", id] as const,
   groups: () => [...logKeys.all, "groups"] as const,
+  groupList: (params: LogGroupListParams) => [...logKeys.groups(), "list", params] as const,
+  group: (id: number) => [...logKeys.groups(), "detail", id] as const,
+  groupEvents: (id: number) => [...logKeys.groups(), "events", id] as const,
   stats: () => [...logKeys.all, "stats"] as const,
 };
 
@@ -24,8 +27,29 @@ export const useLogDetailQuery = (id: number) =>
     enabled: id > 0,
   });
 
-export const useLogGroupsQuery = () =>
+/**
+ * Polls so a regression (a resolved group reopened by new logs) shows up without a reload; the
+ * previous page stays on screen while the next one loads.
+ */
+export const useLogGroupsQuery = (params: LogGroupListParams = {}) =>
   useQuery({
-    queryKey: logKeys.groups(),
-    queryFn: () => LogApi.getLogGroups(),
+    queryKey: logKeys.groupList(params),
+    queryFn: () => LogApi.getLogGroups(params),
+    placeholderData: keepPreviousData,
+    refetchInterval: 15_000,
+  });
+
+export const useLogGroupQuery = (id: number) =>
+  useQuery({
+    queryKey: logKeys.group(id),
+    queryFn: () => LogApi.getLogGroup(id),
+    enabled: id > 0,
+    refetchInterval: 15_000,
+  });
+
+export const useLogGroupEventsQuery = (id: number) =>
+  useQuery({
+    queryKey: logKeys.groupEvents(id),
+    queryFn: () => LogApi.getLogGroupEvents(id),
+    enabled: id > 0,
   });

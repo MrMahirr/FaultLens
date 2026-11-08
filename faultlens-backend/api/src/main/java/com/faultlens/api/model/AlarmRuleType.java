@@ -7,5 +7,7 @@ public enum AlarmRuleType {
     /** A matching entry whose message matches {@code pattern}. */
     PATTERN,
     /** A new log group (an error never seen before) of at least the rule's severity. */
-    NEW_GROUP
+    NEW_GROUP,
+    /** A RESOLVED log group seen again (P10 / 2.1, ADR 0004), of at least the rule's severity. */
+    REGRESSION
 }

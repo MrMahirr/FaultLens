@@ -4,6 +4,7 @@ import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { PageHeader } from "@/shared/components/layout/PageHeader";
+import { LogsNav } from "@/features/logs/components/LogsNav";
 import { Pagination } from "@/shared/components/ui/Pagination";
 import { LogTable } from "@/features/logs/components/LogTable";
 import { LogFiltersBar } from "@/features/logs/components/LogFilters";
@@ -91,6 +92,8 @@ function LogsView() {
           )
         }
       />
+
+      <LogsNav />
 
       <LogFiltersBar
         filters={filters}

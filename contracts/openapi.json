@@ -1248,6 +1248,18 @@
             "enum" : [ "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "CRITICAL" ]
           }
         }, {
+          "description" : "Statuses to list (repeat or comma-separate); default UNRESOLVED,RESOLVED",
+          "in" : "query",
+          "name" : "status",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "UNRESOLVED", "RESOLVED", "IGNORED" ]
+            }
+          }
+        }, {
           "in" : "query",
           "name" : "page",
           "required" : false,
@@ -1299,6 +1311,93 @@
         "tags" : [ "log-controller" ]
       }
     },
+    "/api/v1/logs/groups/{id}" : {
+      "get" : {
+        "operationId" : "logGroup",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseLogGroupDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "apiKey" : [ "logs:read" ]
+        } ],
+        "tags" : [ "log-controller" ]
+      },
+      "patch" : {
+        "operationId" : "logUpdateGroupStatus",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/GroupStatusUpdateRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseLogGroupDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
+          }
+        },
+        "tags" : [ "log-controller" ]
+      }
+    },
     "/api/v1/logs/groups/{id}/entries" : {
       "get" : {
         "operationId" : "logGroupEntries",
@@ -1338,6 +1437,48 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponsePagedResponseLogEntryDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description" : "Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY)"
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "apiKey" : [ "logs:read" ]
+        } ],
+        "tags" : [ "log-controller" ]
+      }
+    },
+    "/api/v1/logs/groups/{id}/events" : {
+      "get" : {
+        "operationId" : "logGroupEvents",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListLogGroupEventDto"
                 }
               }
             },
@@ -2330,7 +2471,7 @@
           },
           "type" : {
             "type" : "string",
-            "enum" : [ "THRESHOLD", "PATTERN", "NEW_GROUP" ]
+            "enum" : [ "THRESHOLD", "PATTERN", "NEW_GROUP", "REGRESSION" ]
           },
           "window_sec" : {
             "type" : "integer",
@@ -2392,7 +2533,7 @@
           },
           "type" : {
             "type" : "string",
-            "enum" : [ "THRESHOLD", "PATTERN", "NEW_GROUP" ]
+            "enum" : [ "THRESHOLD", "PATTERN", "NEW_GROUP", "REGRESSION" ]
           },
           "updated_at" : {
             "type" : "string",
@@ -2702,6 +2843,27 @@
           }
         }
       },
+      "ApiResponseListLogGroupEventDto" : {
+        "type" : "object",
+        "properties" : {
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/LogGroupEventDto"
+            }
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "success" : {
+            "type" : "boolean"
+          },
+          "timestamp" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
       "ApiResponseListLogSourceDto" : {
         "type" : "object",
         "properties" : {
@@ -2749,6 +2911,24 @@
         "properties" : {
           "data" : {
             "$ref" : "#/components/schemas/LogDetailDto"
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "success" : {
+            "type" : "boolean"
+          },
+          "timestamp" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "ApiResponseLogGroupDto" : {
+        "type" : "object",
+        "properties" : {
+          "data" : {
+            "$ref" : "#/components/schemas/LogGroupDto"
           },
           "message" : {
             "type" : "string"
@@ -3197,6 +3377,20 @@
           }
         }
       },
+      "GroupStatusUpdateRequest" : {
+        "type" : "object",
+        "properties" : {
+          "ignore_until" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "UNRESOLVED", "RESOLVED", "IGNORED" ]
+          }
+        },
+        "required" : [ "status" ]
+      },
       "IngestLogRequest" : {
         "type" : "object",
         "description" : "One log record. Only `message` is required.",
@@ -3327,13 +3521,72 @@
             "type" : "integer",
             "format" : "int64"
           },
+          "ignore_until" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
           "last_seen_at" : {
             "type" : "string",
             "format" : "date-time"
           },
+          "regressed_at" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "regression_count" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "resolved_at" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "resolved_by" : {
+            "type" : "string"
+          },
           "severity" : {
             "type" : "string",
             "enum" : [ "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "CRITICAL" ]
+          },
+          "source_id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "UNRESOLVED", "RESOLVED", "IGNORED" ]
+          }
+        }
+      },
+      "LogGroupEventDto" : {
+        "type" : "object",
+        "properties" : {
+          "actor" : {
+            "type" : "string"
+          },
+          "created_at" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "from_status" : {
+            "type" : "string",
+            "enum" : [ "UNRESOLVED", "RESOLVED", "IGNORED" ]
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "ignore_until" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "regression_count" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "type" : {
+            "type" : "string",
+            "enum" : [ "CREATED", "RESOLVED", "IGNORED", "REOPENED", "REGRESSED", "UNIGNORED" ]
           }
         }
       },

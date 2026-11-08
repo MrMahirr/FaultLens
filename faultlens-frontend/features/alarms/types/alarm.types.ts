@@ -11,6 +11,7 @@ export enum AlarmRuleType {
   THRESHOLD = "THRESHOLD",
   PATTERN = "PATTERN",
   NEW_GROUP = "NEW_GROUP",
+  REGRESSION = "REGRESSION",
 }
 
 export enum AlarmChannel {

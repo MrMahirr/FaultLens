@@ -1,6 +1,8 @@
 package com.faultlens.processor.repository;
 
+import com.faultlens.common.enums.GroupStatus;
 import com.faultlens.common.enums.Severity;
+import java.util.Collection;
 import com.faultlens.processor.model.LogGroup;
 import java.util.Optional;
 import jakarta.persistence.LockModeType;
@@ -33,4 +35,11 @@ public interface LogGroupRepository extends JpaRepository<LogGroup, Long> {
      * Finds recent groups.
      */
     Page<LogGroup> findAllByOrderByLastSeenAtDesc(Pageable pageable);
+
+    /**
+     * Groups in the given statuses, optionally of one severity (P10 / 2.1). Sorted by the pageable.
+     */
+    @Query("select g from LogGroup g where g.status in :statuses and (:severity is null or g.severity = :severity)")
+    Page<LogGroup> search(@Param("statuses") Collection<GroupStatus> statuses, @Param("severity") Severity severity,
+                          Pageable pageable);
 }

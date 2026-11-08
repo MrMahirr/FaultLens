@@ -20,7 +20,15 @@ import type {
   LogSourceType,
   Severity,
 } from "@/shared/types/common.types";
-import type { LogDetailDto, LogEntryDto, LogGroupDto } from "@/features/logs/types/log.types";
+import type {
+  GroupStatus,
+  GroupStatusUpdate,
+  LogDetailDto,
+  LogEntryDto,
+  LogGroupDto,
+  LogGroupEventDto,
+  LogGroupEventType,
+} from "@/features/logs/types/log.types";
 import type {
   Alarm,
   AlarmChannel,
@@ -84,6 +92,8 @@ export type FieldChecks = [
   // Logs
   Expect<SameKeys<LogEntryDto, "LogEntryDto">>,
   Expect<SameKeys<LogGroupDto, "LogGroupDto">>,
+  Expect<SameKeys<LogGroupEventDto, "LogGroupEventDto">>,
+  Expect<SameKeys<GroupStatusUpdate, "GroupStatusUpdateRequest">>,
   Expect<SameKeys<LogDetailDto, "LogDetailDto">>,
   // Alarms
   Expect<SameKeys<Alarm, "AlarmDto">>,
@@ -114,6 +124,8 @@ export type EnumChecks = [
   Expect<SameValues<`${LogSourceType}`, ApiField<"LogSourceDto", "type">>>,
   Expect<SameValues<`${ConnectionStatus}`, ApiField<"LogSourceDto", "status">>>,
   Expect<SameValues<`${AlarmStatus}`, ApiField<"AlarmDto", "status">>>,
+  Expect<SameValues<`${GroupStatus}`, ApiField<"LogGroupDto", "status">>>,
+  Expect<SameValues<`${LogGroupEventType}`, ApiField<"LogGroupEventDto", "type">>>,
   Expect<SameValues<`${AlarmRuleType}`, ApiField<"AlarmRuleResponse", "type">>>,
   Expect<SameValues<`${AlarmChannel}`, Item<ApiField<"AlarmRuleResponse", "channels">>>>,
 ];

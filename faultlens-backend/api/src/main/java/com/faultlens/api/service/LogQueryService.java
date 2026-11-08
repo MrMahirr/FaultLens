@@ -9,7 +9,11 @@ import com.faultlens.common.dto.AnalysisResultDto;
 import com.faultlens.common.dto.LogEntryDto;
 import com.faultlens.common.dto.LogGroupDto;
 import com.faultlens.common.dto.PagedResponse;
+import com.faultlens.common.enums.GroupStatus;
 import com.faultlens.common.enums.Severity;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.Set;
 import com.faultlens.common.exception.ResourceNotFoundException;
 import com.faultlens.processor.model.LogEntry;
 import com.faultlens.processor.repository.LogEntryRepository;
@@ -69,16 +73,17 @@ public class LogQueryService {
                 .build();
     }
 
+    /** Statuses listed when the client asks for none: everything except muted groups. */
+    static final Set<GroupStatus> DEFAULT_GROUP_STATUSES = EnumSet.of(GroupStatus.UNRESOLVED, GroupStatus.RESOLVED);
+
     /**
-     * Lists log groups.
+     * Lists log groups, most recently seen first. Without {@code statuses}, IGNORED groups are
+     * left out (P10 / 2.1).
      */
-    public PagedResponse<LogGroupDto> groups(Severity severity, int page, int size) {
-        PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "lastSeenAt"));
-        Page<LogGroupDto> result = (severity == null
-                ? groupRepository.findAllByOrderByLastSeenAtDesc(pageable)
-                : groupRepository.findBySeverityOrderByLastSeenAtDesc(severity, pageable))
-                .map(mapper::toLogGroupDto);
-        return page(result);
+    public PagedResponse<LogGroupDto> groups(Severity severity, Collection<GroupStatus> statuses, int page, int size) {
+        PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "lastSeenAt").and(Sort.by("id")));
+        Collection<GroupStatus> wanted = statuses == null || statuses.isEmpty() ? DEFAULT_GROUP_STATUSES : statuses;
+        return page(groupRepository.search(wanted, severity, pageable).map(mapper::toLogGroupDto));
     }
 
     /**

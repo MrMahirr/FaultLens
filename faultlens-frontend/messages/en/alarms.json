@@ -77,7 +77,8 @@
       "describe": {
         "THRESHOLD": "≥ {threshold} {severity}+ logs within {minutes} min",
         "PATTERN": "{severity}+ log matches /{pattern}/",
-        "NEW_GROUP": "A new {severity}+ error group appears"
+        "NEW_GROUP": "A new {severity}+ error group appears",
+        "REGRESSION": "A resolved {severity}+ error group is seen again"
       }
     },
     "form": {
@@ -88,7 +89,8 @@
       "types": {
         "THRESHOLD": "Threshold — N logs within a window",
         "PATTERN": "Pattern — message matches a regular expression",
-        "NEW_GROUP": "New error — an error group not seen before"
+        "NEW_GROUP": "New error — an error group not seen before",
+        "REGRESSION": "Regression — a resolved error group is seen again"
       },
       "severity": "Minimum severity",
       "severityOption": "{severity} and above",

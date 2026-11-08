@@ -6,11 +6,15 @@ import { TrendingUp } from "lucide-react";
 import { SeverityBadge } from "@/shared/components/ui/SeverityBadge";
 import { useDateFormat } from "@/shared/hooks/useDateFormat";
 import { useLogGroupsQuery } from "@/features/logs/api/useLogQuery";
+import { GroupStatus } from "@/features/logs/types/log.types";
 
 function TopErrorsWidget() {
   const t = useTranslations("dashboard.topErrors");
   const dates = useDateFormat();
-  const { data: logGroupsPage, isLoading } = useLogGroupsQuery();
+  const { data: logGroupsPage, isLoading } = useLogGroupsQuery({
+    statuses: [GroupStatus.UNRESOLVED],
+    size: 5,
+  });
   const topGroups = (logGroupsPage?.content ?? []).slice(0, 5);
 
   return (

@@ -48,6 +48,13 @@ public class ApiDtoMapper {
                 .count(group.getCount())
                 .firstSeenAt(group.getFirstSeenAt())
                 .lastSeenAt(group.getLastSeenAt())
+                .sourceId(group.getSourceId())
+                .status(group.getStatus())
+                .resolvedAt(group.getResolvedAt())
+                .resolvedBy(group.getResolvedBy())
+                .ignoreUntil(group.getIgnoreUntil())
+                .regressedAt(group.getRegressedAt())
+                .regressionCount(group.getRegressionCount())
                 .build();
     }
 

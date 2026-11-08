@@ -113,7 +113,7 @@ public class AlarmRuleService {
                 }
                 rule.setPattern(request.pattern());
             }
-            case NEW_GROUP -> {
+            case NEW_GROUP, REGRESSION -> {
                 // severity and sources only
             }
         }

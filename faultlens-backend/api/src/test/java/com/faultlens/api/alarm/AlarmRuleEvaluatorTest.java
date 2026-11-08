@@ -21,6 +21,7 @@ import com.faultlens.api.service.AlarmDispatcherService;
 import com.faultlens.common.dto.LogEntryDto;
 import com.faultlens.common.enums.Severity;
 import com.faultlens.processor.event.LogGroupCreatedEvent;
+import com.faultlens.processor.event.LogGroupRegressedEvent;
 import com.faultlens.processor.event.LogProcessedEvent;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -118,6 +119,46 @@ class AlarmRuleEvaluatorTest {
         evaluator.onLogsProcessed(batch(List.of(e)));
 
         verify(dispatcher).raiseForRule(any(AlarmRule.class), eq(Severity.ERROR), eq(1L), anyString());
+    }
+
+    @Test
+    void regressionRuleFiresOncePerRegression() {
+        rules(rule(4L, AlarmRuleType.REGRESSION, Severity.ERROR));
+
+        evaluator.onGroupRegressed(new LogGroupRegressedEvent(20L, Severity.ERROR, 1L, "boom", 1));
+        evaluator.onGroupRegressed(new LogGroupRegressedEvent(20L, Severity.ERROR, 1L, "boom", 1)); // same regression
+        evaluator.onGroupRegressed(new LogGroupRegressedEvent(20L, Severity.ERROR, 1L, "boom", 2)); // regressed again
+        evaluator.onGroupRegressed(new LogGroupRegressedEvent(21L, Severity.WARN, 1L, "minor", 1)); // too low
+
+        verify(dispatcher).raiseForRule(any(AlarmRule.class), eq(Severity.ERROR), eq(1L), contains("1. regresyon"));
+        verify(dispatcher).raiseForRule(any(AlarmRule.class), eq(Severity.ERROR), eq(1L), contains("2. regresyon"));
+        verify(dispatcher, times(2)).raiseForRule(any(), any(), any(), anyString());
+    }
+
+    @Test
+    void newGroupRulesIgnoreRegressionsAndViceVersa() {
+        rules(rule(3L, AlarmRuleType.NEW_GROUP, Severity.ERROR));
+        evaluator.onGroupRegressed(new LogGroupRegressedEvent(20L, Severity.ERROR, 1L, "boom", 1));
+
+        rules(rule(4L, AlarmRuleType.REGRESSION, Severity.ERROR));
+        evaluator.onGroupCreated(new LogGroupCreatedEvent(11L, Severity.ERROR, 1L, "boom"));
+
+        verify(dispatcher, never()).raiseForRule(any(), any(), any(), anyString());
+    }
+
+    @Test
+    void entriesOfIgnoredGroupsRaiseNoAlarms() {
+        rules(pattern(2L, Severity.ERROR, "boom"), threshold(1L, Severity.ERROR, 60, 2));
+
+        evaluator.onLogsProcessed(new LogProcessedEvent(List.of(), List.of(
+                entry(Severity.ERROR, 1L, 100L, "boom"),
+                entry(Severity.ERROR, 1L, 100L, "boom"),
+                entry(Severity.ERROR, 1L, 200L, "boom")), Set.of(100L)));
+
+        // Only the entry of group 200 counts: the pattern fires for it, the threshold (2) is not reached.
+        verify(counter).addAndCount(1L, 60, 1L);
+        verify(dispatcher).raiseForRule(any(AlarmRule.class), eq(Severity.ERROR), eq(1L), contains("Grup ID: 200"));
+        verify(dispatcher, times(1)).raiseForRule(any(), any(), any(), anyString());
     }
 
     @Test

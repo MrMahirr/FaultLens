@@ -289,9 +289,30 @@ Requires authentication.
 - **Path:** `/api/v1/logs/groups`
 - **Query Parameters:**
   - `page` (int, default: 0)
-  - `size` (int, default: 10)
+  - `size` (int, default: 50, max 1000)
   - `severity` (string, e.g. `ERROR`, optional)
-- **Response (`200 OK`):** Returns standard `PagedResponse<LogGroupDto>`.
+  - `status` (`UNRESOLVED`, `RESOLVED`, `IGNORED`; repeat or comma-separate; default
+    `UNRESOLVED,RESOLVED` — ignored groups are left out unless asked for)
+- **Response (`200 OK`):** Returns standard `PagedResponse<LogGroupDto>`, most recently seen first.
+  Besides counts and timestamps each group carries its lifecycle (P10 / 2.1, ADR 0004): `status`,
+  `resolved_at`, `resolved_by`, `ignore_until`, `regressed_at`, `regression_count`.
+
+### B2. Log Group Lifecycle
+- `GET /api/v1/logs/groups/{id}` → `LogGroupDto` (404 `GROUP_NOT_FOUND`).
+- `PATCH /api/v1/logs/groups/{id}` (EDITOR or ADMIN) — resolve, ignore or reopen:
+  ```json
+  { "status": "IGNORED", "ignore_until": "2026-11-09T12:00:00Z" }
+  ```
+  `ignore_until` only with `IGNORED`, in the future (else 400 `INVALID_GROUP_STATUS`); omitted =
+  ignored until reopened. 409 `GROUP_STATUS_UNCHANGED` when the group already has that status
+  (except IGNORED, which takes a new period), 409 `GROUP_STATUS_CONFLICT` when it changed
+  meanwhile (e.g. a regression reopened it). Returns the updated `LogGroupDto`.
+- `GET /api/v1/logs/groups/{id}/events` → the newest 200 timeline entries, newest first:
+  `{ id, type, actor, from_status, ignore_until, regression_count, created_at }` with `type` one of
+  `CREATED`, `RESOLVED`, `IGNORED`, `REOPENED`, `REGRESSED`, `UNIGNORED`; `actor` is null for
+  system transitions.
+- A `RESOLVED` group that receives an entry newer than its resolution is reopened as a
+  **regression** and raises `REGRESSION` alarm rules; entries of `IGNORED` groups raise no alarms.
 
 ### C. Get Log Entry Detail
 - **Method:** `GET`

@@ -71,6 +71,88 @@
     "groupFilter": "Grup #{id}",
     "removeGroupFilter": "Grup filtresini kaldır",
     "sinceFilter": "Başlangıç: {time}",
-    "removeSinceFilter": "Başlangıç filtresini kaldır"
+    "removeSinceFilter": "Başlangıç filtresini kaldır",
+    "nav": {
+      "label": "Log görünümleri",
+      "entries": "Kayıtlar",
+      "groups": "Hata grupları"
+    },
+    "groups": {
+      "title": "Hata grupları",
+      "subtitle": "Aynı hatanın tekrarları tek grupta toplanır. Çözün, yok sayın; çözülen grup tekrar görülürse regresyon olarak yeniden açılır.",
+      "table": "Hata grubu listesi",
+      "resultCount": "{count, plural, one {# grup} other {# grup}}",
+      "statusFilter": "Durum",
+      "statusTabs": {
+        "UNRESOLVED": "Çözülmemiş",
+        "RESOLVED": "Çözülmüş",
+        "IGNORED": "Yok sayılan",
+        "all": "Tümü"
+      },
+      "status": {
+        "UNRESOLVED": "Çözülmemiş",
+        "RESOLVED": "Çözüldü",
+        "IGNORED": "Yok sayıldı"
+      },
+      "columns": {
+        "message": "Hata",
+        "severity": "Seviye",
+        "count": "Adet",
+        "firstSeen": "İlk görülme",
+        "lastSeen": "Son görülme",
+        "status": "Durum",
+        "actions": "İşlemler"
+      },
+      "regressionBadge": "{count, plural, one {# regresyon} other {# regresyon}}",
+      "regressionHint": "Çözüldükten sonra tekrar görüldü",
+      "ignoredUntil": "{time} tarihine kadar",
+      "actions": {
+        "menu": "Grup işlemleri",
+        "resolve": "Çöz",
+        "reopen": "Yeniden aç",
+        "ignore": "Yok say",
+        "ignoreFor": {
+          "1h": "1 saat yok say",
+          "24h": "24 saat yok say",
+          "7d": "7 gün yok say",
+          "forever": "Ben açana kadar yok say"
+        },
+        "resolved": "Grup çözüldü olarak işaretlendi",
+        "ignored": "Grup yok sayıldı",
+        "reopened": "Grup yeniden açıldı",
+        "undo": "Geri al",
+        "conflict": "Grup bu arada değişti; liste yenilendi.",
+        "failed": "Grup güncellenemedi."
+      },
+      "empty": {
+        "UNRESOLVED": "Çözülmemiş hata grubu yok",
+        "RESOLVED": "Çözülmüş hata grubu yok",
+        "IGNORED": "Yok sayılan hata grubu yok",
+        "all": "Henüz hata grubu yok"
+      },
+      "emptyHint": "Yeni hatalar geldikçe burada gruplanır.",
+      "detail": {
+        "back": "Hata gruplarına dön",
+        "notFound": "Hata grubu bulunamadı",
+        "summary": "Özet",
+        "occurrences": "Toplam kayıt",
+        "regressions": "Regresyon",
+        "resolvedBy": "{user} tarafından, {time}",
+        "timeline": "Zaman çizelgesi",
+        "timelineEmpty": "Bu grup için henüz olay yok (2.1 öncesinden kalan gruplar boş başlar).",
+        "system": "Sistem",
+        "recent": "Son kayıtlar",
+        "viewAll": "Tüm kayıtları Loglar'da aç",
+        "events": {
+          "CREATED": "İlk kez görüldü",
+          "RESOLVED": "Çözüldü",
+          "IGNORED": "Yok sayıldı",
+          "IGNORED_UNTIL": "{time} tarihine kadar yok sayıldı",
+          "REOPENED": "Yeniden açıldı",
+          "REGRESSED": "Regresyon: çözüldükten sonra tekrar görüldü ({count}. kez)",
+          "UNIGNORED": "Yok sayma süresi doldu, yeni kayıtla yeniden açıldı"
+        }
+      }
+    }
   }
 }

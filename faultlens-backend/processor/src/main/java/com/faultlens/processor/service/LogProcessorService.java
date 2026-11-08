@@ -75,9 +75,10 @@ public class LogProcessorService {
         }
 
         // 2. One upsert per distinct group, in a deadlock-free order.
-        Map<String, Long> groupIds = groupingService.groupAll(pendingEntries.stream()
+        LogGroupingService.GroupingResult grouping = groupingService.groupAll(pendingEntries.stream()
                 .map(PendingLogEntry::candidate)
                 .toList());
+        Map<String, Long> groupIds = grouping.groupIds();
         for (PendingLogEntry pending : pendingEntries) {
             pending.entry().setGroupId(groupIds.get(pending.fingerprint()));
         }
@@ -102,7 +103,7 @@ public class LogProcessorService {
         countIngested(savedEntries);
 
         // Publish event so listeners can dispatch (e.g. Kafka, WebSocket) after commit
-        eventPublisher.publishEvent(new LogProcessedEvent(toErrorQueue, toPublish));
+        eventPublisher.publishEvent(new LogProcessedEvent(toErrorQueue, toPublish, grouping.mutedGroupIds()));
 
         return dtos;
     }

@@ -1,6 +1,16 @@
 package com.faultlens.api.controller;
 
+import com.faultlens.api.dto.LogGroupDtos.GroupStatusUpdateRequest;
+import com.faultlens.api.dto.LogGroupDtos.LogGroupEventDto;
+import com.faultlens.api.service.LogGroupLifecycleService;
 import com.faultlens.api.service.LogQueryService;
+import com.faultlens.common.enums.GroupStatus;
+import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.validation.Valid;
+import java.security.Principal;
+import java.util.List;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import com.faultlens.common.dto.ApiResponse;
 import com.faultlens.common.enums.Severity;
 import java.time.Instant;
@@ -30,6 +40,7 @@ import jakarta.validation.constraints.Min;
 @Validated
 public class LogController {
     private final LogQueryService service;
+    private final LogGroupLifecycleService lifecycle;
 
     /**
      * Lists logs with pagination and filters.
@@ -60,9 +71,40 @@ public class LogController {
     @GetMapping("/groups")
     public ResponseEntity<ApiResponse<PagedResponse<LogGroupDto>>> groups(
             @RequestParam(required = false) Severity severity,
+            @Parameter(description = "Statuses to list (repeat or comma-separate); default UNRESOLVED,RESOLVED")
+            @RequestParam(required = false) List<GroupStatus> status,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "50") @Min(1) @Max(1000) int size) {
-        return ResponseEntity.ok(ApiResponse.ok(service.groups(severity, page, size)));
+        return ResponseEntity.ok(ApiResponse.ok(service.groups(severity, status, page, size)));
+    }
+
+    /**
+     * Returns one log group.
+     */
+    @GetMapping("/groups/{id}")
+    public ResponseEntity<ApiResponse<LogGroupDto>> group(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.ok(lifecycle.get(id)));
+    }
+
+    /**
+     * Resolves, ignores or reopens a log group (P10 / 2.1). 409 when it already has that status or
+     * changed meanwhile (e.g. regressed).
+     */
+    @PreAuthorize(Roles.CAN_EDIT)
+    @PatchMapping("/groups/{id}")
+    public ResponseEntity<ApiResponse<LogGroupDto>> updateGroupStatus(@PathVariable Long id,
+                                                                      @Valid @RequestBody GroupStatusUpdateRequest request,
+                                                                      Principal principal) {
+        return ResponseEntity.ok(ApiResponse.ok(lifecycle.updateStatus(id, request,
+                principal == null ? null : principal.getName())));
+    }
+
+    /**
+     * The group's timeline, newest first (at most 200 entries).
+     */
+    @GetMapping("/groups/{id}/events")
+    public ResponseEntity<ApiResponse<List<LogGroupEventDto>>> groupEvents(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.ok(lifecycle.timeline(id)));
     }
 
     /**

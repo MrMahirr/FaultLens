@@ -1,5 +1,6 @@
 package com.faultlens.processor.model;
 
+import com.faultlens.common.enums.GroupStatus;
 import com.faultlens.common.enums.Severity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -42,6 +43,18 @@ public class LogGroup {
     private Instant lastSeenAt;
     private Long sourceId;
 
+    /** Lifecycle (P10 / 2.1). Written by SQL (LogGroupingService, LogGroupLifecycleService). */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 16)
+    private GroupStatus status;
+    private Instant resolvedAt;
+    @Column(length = 100)
+    private String resolvedBy;
+    private Instant ignoreUntil;
+    private Instant regressedAt;
+    @Column(nullable = false)
+    private Integer regressionCount;
+
     /**
      * Initializes defaults before persisting.
      */
@@ -56,6 +69,12 @@ public class LogGroup {
         }
         if (lastSeenAt == null) {
             lastSeenAt = now;
+        }
+        if (status == null) {
+            status = GroupStatus.UNRESOLVED;
+        }
+        if (regressionCount == null) {
+            regressionCount = 0;
         }
     }
 }

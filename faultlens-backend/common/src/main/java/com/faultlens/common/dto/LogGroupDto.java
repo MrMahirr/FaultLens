@@ -2,6 +2,7 @@ package com.faultlens.common.dto;
 
 import tools.jackson.databind.PropertyNamingStrategies;
 import tools.jackson.databind.annotation.JsonNaming;
+import com.faultlens.common.enums.GroupStatus;
 import com.faultlens.common.enums.Severity;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
@@ -22,4 +23,15 @@ public class LogGroupDto {
     private Long count;
     private Instant firstSeenAt;
     private Instant lastSeenAt;
+    private Long sourceId;
+    /** Lifecycle status (P10 / 2.1). */
+    private GroupStatus status;
+    private Instant resolvedAt;
+    /** Username of whoever resolved or ignored the group. */
+    private String resolvedBy;
+    /** IGNORED until this time; null = until reopened. */
+    private Instant ignoreUntil;
+    /** Last time a RESOLVED group was seen again. */
+    private Instant regressedAt;
+    private Integer regressionCount;
 }

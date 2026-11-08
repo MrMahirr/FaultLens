@@ -77,7 +77,8 @@
       "describe": {
         "THRESHOLD": "{minutes} dk içinde ≥ {threshold} adet {severity}+ log",
         "PATTERN": "{severity}+ log /{pattern}/ ile eşleşirse",
-        "NEW_GROUP": "Yeni {severity}+ hata grubu oluşursa"
+        "NEW_GROUP": "Yeni {severity}+ hata grubu oluşursa",
+        "REGRESSION": "Çözülmüş {severity}+ hata grubu tekrar görülürse"
       }
     },
     "form": {
@@ -88,7 +89,8 @@
       "types": {
         "THRESHOLD": "Eşik — belirli sürede N adet log",
         "PATTERN": "Desen — mesaj düzenli ifadeyle eşleşirse",
-        "NEW_GROUP": "Yeni hata — daha önce görülmemiş hata grubu"
+        "NEW_GROUP": "Yeni hata — daha önce görülmemiş hata grubu",
+        "REGRESSION": "Regresyon — çözülmüş hata grubu tekrar görülürse"
       },
       "severity": "En Düşük Seviye",
       "severityOption": "{severity} ve üzeri",

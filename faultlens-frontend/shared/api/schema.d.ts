@@ -388,6 +388,22 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/logs/groups/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["logGroup"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch: operations["logUpdateGroupStatus"];
+    trace?: never;
+  };
   "/api/v1/logs/groups/{id}/entries": {
     parameters: {
       query?: never;
@@ -396,6 +412,22 @@ export interface paths {
       cookie?: never;
     };
     get: operations["logGroupEntries"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/logs/groups/{id}/events": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["logGroupEvents"];
     put?: never;
     post?: never;
     delete?: never;
@@ -743,7 +775,7 @@ export interface components {
       /** Format: int32 */
       threshold?: number;
       /** @enum {string} */
-      type: "THRESHOLD" | "PATTERN" | "NEW_GROUP";
+      type: "THRESHOLD" | "PATTERN" | "NEW_GROUP" | "REGRESSION";
       /** Format: int32 */
       window_sec?: number;
     };
@@ -765,7 +797,7 @@ export interface components {
       /** Format: int32 */
       threshold?: number;
       /** @enum {string} */
-      type?: "THRESHOLD" | "PATTERN" | "NEW_GROUP";
+      type?: "THRESHOLD" | "PATTERN" | "NEW_GROUP" | "REGRESSION";
       /** Format: date-time */
       updated_at?: string;
       /** Format: int32 */
@@ -889,6 +921,13 @@ export interface components {
       /** Format: date-time */
       timestamp?: string;
     };
+    ApiResponseListLogGroupEventDto: {
+      data?: components["schemas"]["LogGroupEventDto"][];
+      message?: string;
+      success?: boolean;
+      /** Format: date-time */
+      timestamp?: string;
+    };
     ApiResponseListLogSourceDto: {
       data?: components["schemas"]["LogSourceDto"][];
       message?: string;
@@ -905,6 +944,13 @@ export interface components {
     };
     ApiResponseLogDetailDto: {
       data?: components["schemas"]["LogDetailDto"];
+      message?: string;
+      success?: boolean;
+      /** Format: date-time */
+      timestamp?: string;
+    };
+    ApiResponseLogGroupDto: {
+      data?: components["schemas"]["LogGroupDto"];
       message?: string;
       success?: boolean;
       /** Format: date-time */
@@ -1070,6 +1116,12 @@ export interface components {
       error?: components["schemas"]["ErrorBody"];
       success?: boolean;
     };
+    GroupStatusUpdateRequest: {
+      /** Format: date-time */
+      ignore_until?: string;
+      /** @enum {string} */
+      status: "UNRESOLVED" | "RESOLVED" | "IGNORED";
+    };
     /** @description One log record. Only `message` is required. */
     IngestLogRequest: {
       attributes?: {
@@ -1131,9 +1183,37 @@ export interface components {
       /** Format: int64 */
       id?: number;
       /** Format: date-time */
+      ignore_until?: string;
+      /** Format: date-time */
       last_seen_at?: string;
+      /** Format: date-time */
+      regressed_at?: string;
+      /** Format: int32 */
+      regression_count?: number;
+      /** Format: date-time */
+      resolved_at?: string;
+      resolved_by?: string;
       /** @enum {string} */
       severity?: "TRACE" | "DEBUG" | "INFO" | "WARN" | "ERROR" | "CRITICAL";
+      /** Format: int64 */
+      source_id?: number;
+      /** @enum {string} */
+      status?: "UNRESOLVED" | "RESOLVED" | "IGNORED";
+    };
+    LogGroupEventDto: {
+      actor?: string;
+      /** Format: date-time */
+      created_at?: string;
+      /** @enum {string} */
+      from_status?: "UNRESOLVED" | "RESOLVED" | "IGNORED";
+      /** Format: int64 */
+      id?: number;
+      /** Format: date-time */
+      ignore_until?: string;
+      /** Format: int32 */
+      regression_count?: number;
+      /** @enum {string} */
+      type?: "CREATED" | "RESOLVED" | "IGNORED" | "REOPENED" | "REGRESSED" | "UNIGNORED";
     };
     LogSourceCreateRequest: {
       config?: string;
@@ -2270,6 +2350,8 @@ export interface operations {
     parameters: {
       query?: {
         severity?: "TRACE" | "DEBUG" | "INFO" | "WARN" | "ERROR" | "CRITICAL";
+        /** @description Statuses to list (repeat or comma-separate); default UNRESOLVED,RESOLVED */
+        status?: ("UNRESOLVED" | "RESOLVED" | "IGNORED")[];
         page?: number;
         size?: number;
       };
@@ -2286,6 +2368,72 @@ export interface operations {
         };
         content: {
           "*/*": components["schemas"]["ApiResponsePagedResponseLogGroupDto"];
+        };
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
+    };
+  };
+  logGroup: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "*/*": components["schemas"]["ApiResponseLogGroupDto"];
+        };
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
+    };
+  };
+  logUpdateGroupStatus: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["GroupStatusUpdateRequest"];
+      };
+    };
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "*/*": components["schemas"]["ApiResponseLogGroupDto"];
         };
       };
       /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
@@ -2320,6 +2468,37 @@ export interface operations {
         };
         content: {
           "*/*": components["schemas"]["ApiResponsePagedResponseLogEntryDto"];
+        };
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
+    };
+  };
+  logGroupEvents: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "*/*": components["schemas"]["ApiResponseListLogGroupEventDto"];
         };
       };
       /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */

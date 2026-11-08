@@ -6,6 +6,7 @@ import com.faultlens.api.repository.AlarmRuleRepository;
 import com.faultlens.api.service.AlarmDispatcherService;
 import com.faultlens.common.dto.LogEntryDto;
 import com.faultlens.processor.event.LogGroupCreatedEvent;
+import com.faultlens.processor.event.LogGroupRegressedEvent;
 import com.faultlens.processor.event.LogProcessedEvent;
 import java.time.Duration;
 import java.util.HashMap;
@@ -76,13 +77,19 @@ public class AlarmRuleEvaluator {
         if (current.isEmpty() || event.toPublish() == null || event.toPublish().isEmpty()) {
             return;
         }
+        // Entries of IGNORED groups are stored but never alarm (P10 / 2.1).
+        List<LogEntryDto> entries = event.mutedGroupIds().isEmpty() ? event.toPublish()
+                : event.toPublish().stream().filter(entry -> !event.isMuted(entry)).toList();
+        if (entries.isEmpty()) {
+            return;
+        }
         for (CompiledRule compiled : current) {
             try {
                 switch (compiled.rule().getType()) {
-                    case THRESHOLD -> evaluateThreshold(compiled.rule(), event.toPublish());
-                    case PATTERN -> evaluatePattern(compiled, event.toPublish());
-                    case NEW_GROUP -> {
-                        // see onGroupCreated
+                    case THRESHOLD -> evaluateThreshold(compiled.rule(), entries);
+                    case PATTERN -> evaluatePattern(compiled, entries);
+                    case NEW_GROUP, REGRESSION -> {
+                        // see onGroupCreated / onGroupRegressed
                     }
                 }
             } catch (RuntimeException ex) {
@@ -105,6 +112,27 @@ public class AlarmRuleEvaluator {
             if (deduplicator.tryAcquire("rule:" + rule.getId() + ":group:" + event.groupId(), cooldown(rule))) {
                 dispatcher.raiseForRule(rule, event.severity(), event.sourceId(),
                         "Yeni hata grubu (Grup ID: %d)\n%s".formatted(event.groupId(), abbreviate(event.firstMessage())));
+            }
+        }
+    }
+
+    /**
+     * REGRESSION rules: a RESOLVED group was seen again (P10 / 2.1). Deduplicated per regression,
+     * so every reopening alarms once even with a cooldown of 0.
+     */
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
+    public void onGroupRegressed(LogGroupRegressedEvent event) {
+        for (CompiledRule compiled : rules) {
+            AlarmRule rule = compiled.rule();
+            if (rule.getType() != AlarmRuleType.REGRESSION || !rule.appliesTo(event.sourceId())
+                    || !rule.accepts(event.severity())) {
+                continue;
+            }
+            String key = "rule:" + rule.getId() + ":group:" + event.groupId() + ":regression:" + event.regressionCount();
+            if (deduplicator.tryAcquire(key, cooldown(rule))) {
+                dispatcher.raiseForRule(rule, event.severity(), event.sourceId(),
+                        "Çözülmüş hata grubu tekrar görüldü (Grup ID: %d, %d. regresyon)\n%s".formatted(
+                                event.groupId(), event.regressionCount(), abbreviate(event.firstMessage())));
             }
         }
     }

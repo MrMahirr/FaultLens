@@ -55,6 +55,7 @@ class OpenApiContractIT extends AbstractIntegrationTest {
             Map.entry("AlarmStatsDto", ApiContractIT.ALARM_STATS),
             Map.entry("LogEntryDto", ApiContractIT.LOG_ENTRY),
             Map.entry("LogGroupDto", ApiContractIT.LOG_GROUP),
+            Map.entry("LogGroupEventDto", ApiContractIT.LOG_GROUP_EVENT),
             Map.entry("AnalysisResultDto", ApiContractIT.ANALYSIS),
             Map.entry("DeploymentDto", ApiContractIT.DEPLOYMENT),
             Map.entry("LogSourceDto", ApiContractIT.SOURCE),

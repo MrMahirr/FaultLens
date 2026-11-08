@@ -62,6 +62,13 @@ export interface LogFilters {
 
 /* ── Log Group ─────────────────────────────────────────────── */
 
+/** Backend GroupStatus (P10 / 2.1, ADR 0004). */
+export enum GroupStatus {
+  UNRESOLVED = "UNRESOLVED",
+  RESOLVED = "RESOLVED",
+  IGNORED = "IGNORED",
+}
+
 export interface LogGroupDto {
   id: number;
   fingerprint: string;
@@ -70,6 +77,51 @@ export interface LogGroupDto {
   severity: Severity;
   firstSeenAt: string;
   lastSeenAt: string;
+  sourceId: number | null;
+  status: GroupStatus;
+  /** When it was resolved or ignored; null while unresolved. */
+  resolvedAt: string | null;
+  /** Username of whoever resolved or ignored it. */
+  resolvedBy: string | null;
+  /** Ignored until this time; null = until reopened. */
+  ignoreUntil: string | null;
+  /** Last time it was seen again after being resolved. */
+  regressedAt: string | null;
+  regressionCount: number;
+}
+
+/** Backend LogGroupEventType: one line of a group's timeline. */
+export enum LogGroupEventType {
+  CREATED = "CREATED",
+  RESOLVED = "RESOLVED",
+  IGNORED = "IGNORED",
+  REOPENED = "REOPENED",
+  REGRESSED = "REGRESSED",
+  UNIGNORED = "UNIGNORED",
+}
+
+export interface LogGroupEventDto {
+  id: number;
+  type: LogGroupEventType;
+  /** Username; null for system transitions (regression, ignore expiry). */
+  actor: string | null;
+  fromStatus: GroupStatus | null;
+  ignoreUntil: string | null;
+  regressionCount: number | null;
+  createdAt: string;
+}
+
+export interface GroupStatusUpdate {
+  status: GroupStatus;
+  /** Only with IGNORED; omitted = until reopened. */
+  ignoreUntil?: string;
+}
+
+export interface LogGroupListParams {
+  statuses?: GroupStatus[];
+  severity?: Severity;
+  page?: number;
+  size?: number;
 }
 
 /* ── Log Stats ─────────────────────────────────────────────── */

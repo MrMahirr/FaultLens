@@ -64,7 +64,7 @@ class LogProcessorServiceTest {
         when(severityClassifier.classify(eq(event), eq(parsedLog))).thenReturn(Severity.ERROR);
 
         when(groupingService.fingerprint(any(), any(), any())).thenReturn("fp");
-        when(groupingService.groupAll(anyCollection())).thenReturn(Map.of("fp", 456L));
+        when(groupingService.groupAll(anyCollection())).thenReturn(new LogGroupingService.GroupingResult(Map.of("fp", 456L), java.util.Set.of()));
 
         LogEntry entry = LogEntry.builder()
                 .id(789L)
@@ -103,7 +103,7 @@ class LogProcessorServiceTest {
         when(severityClassifier.classify(eq(event), eq(parsedLog))).thenReturn(Severity.INFO);
 
         when(groupingService.fingerprint(any(), any(), any())).thenReturn("fp");
-        when(groupingService.groupAll(anyCollection())).thenReturn(Map.of("fp", 456L));
+        when(groupingService.groupAll(anyCollection())).thenReturn(new LogGroupingService.GroupingResult(Map.of("fp", 456L), java.util.Set.of()));
 
         LogEntry entry = LogEntry.builder()
                 .id(789L)
