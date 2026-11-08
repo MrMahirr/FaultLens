@@ -3,6 +3,7 @@ package com.faultlens.api.ingest;
 import com.faultlens.api.security.ApiKeyAuthFilter;
 import com.faultlens.common.dto.ApiResponse;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,6 +54,8 @@ public class IngestController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(ApiResponse.ok(Map.of("accepted", accepted)));
     }
 
+    // One OTLP operation with two encodings: both handlers share the id (OpenApiConfig).
+    @Operation(operationId = "ingestOtlpLogs")
     @PostMapping(path = "/v1/logs", consumes = "application/x-protobuf", produces = "application/x-protobuf")
     public ResponseEntity<byte[]> ingestOtlpProtobuf(HttpServletRequest request) throws IOException {
         service.ingest(sourceOf(request), otlpDecoder.decodeProtobuf(readBody(request)), "otlp");
@@ -60,6 +63,8 @@ public class IngestController {
                 .body(ExportLogsServiceResponse.getDefaultInstance().toByteArray());
     }
 
+    // One OTLP operation with two encodings: both handlers share the id (OpenApiConfig).
+    @Operation(operationId = "ingestOtlpLogs")
     @PostMapping(path = "/v1/logs", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> ingestOtlpJson(HttpServletRequest request) throws IOException {
         service.ingest(sourceOf(request), otlpDecoder.decodeJson(readBody(request)), "otlp");

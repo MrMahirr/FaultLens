@@ -15,7 +15,7 @@
   "paths" : {
     "/api/v1/alarms" : {
       "get" : {
-        "operationId" : "list_7",
+        "operationId" : "alarmList",
         "parameters" : [ {
           "in" : "query",
           "name" : "status",
@@ -70,7 +70,7 @@
     },
     "/api/v1/alarms/rules" : {
       "get" : {
-        "operationId" : "list_4",
+        "operationId" : "alarmRuleList",
         "responses" : {
           "200" : {
             "content" : {
@@ -86,7 +86,7 @@
         "tags" : [ "alarm-rule-controller" ]
       },
       "post" : {
-        "operationId" : "create_4",
+        "operationId" : "alarmRuleCreate",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -114,7 +114,7 @@
     },
     "/api/v1/alarms/rules/{id}" : {
       "delete" : {
-        "operationId" : "delete_1",
+        "operationId" : "alarmRuleDelete",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -132,7 +132,7 @@
         "tags" : [ "alarm-rule-controller" ]
       },
       "get" : {
-        "operationId" : "get",
+        "operationId" : "alarmRuleGet",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -157,7 +157,7 @@
         "tags" : [ "alarm-rule-controller" ]
       },
       "put" : {
-        "operationId" : "update_1",
+        "operationId" : "alarmRuleUpdate",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -194,7 +194,7 @@
     },
     "/api/v1/alarms/rules/{id}/disable" : {
       "post" : {
-        "operationId" : "disable_1",
+        "operationId" : "alarmRuleDisable",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -221,7 +221,7 @@
     },
     "/api/v1/alarms/rules/{id}/enable" : {
       "post" : {
-        "operationId" : "enable_1",
+        "operationId" : "alarmRuleEnable",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -248,7 +248,7 @@
     },
     "/api/v1/alarms/stats" : {
       "get" : {
-        "operationId" : "stats_1",
+        "operationId" : "alarmStats",
         "responses" : {
           "200" : {
             "content" : {
@@ -266,7 +266,7 @@
     },
     "/api/v1/alarms/{id}" : {
       "delete" : {
-        "operationId" : "delete_3",
+        "operationId" : "alarmDelete",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -286,7 +286,7 @@
     },
     "/api/v1/alarms/{id}/ack" : {
       "put" : {
-        "operationId" : "acknowledge",
+        "operationId" : "alarmAcknowledge",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -313,7 +313,7 @@
     },
     "/api/v1/alarms/{id}/resolve" : {
       "put" : {
-        "operationId" : "resolve",
+        "operationId" : "alarmResolve",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -340,7 +340,7 @@
     },
     "/api/v1/analyses" : {
       "delete" : {
-        "operationId" : "deleteHistory",
+        "operationId" : "analysisDeleteHistory",
         "parameters" : [ {
           "in" : "query",
           "name" : "sourceId",
@@ -365,7 +365,7 @@
         "tags" : [ "analysis-controller" ]
       },
       "get" : {
-        "operationId" : "list_6",
+        "operationId" : "analysisList",
         "parameters" : [ {
           "in" : "query",
           "name" : "sourceId",
@@ -410,7 +410,7 @@
     },
     "/api/v1/analyses/trigger/{groupId}" : {
       "post" : {
-        "operationId" : "trigger",
+        "operationId" : "analysisTrigger",
         "parameters" : [ {
           "in" : "path",
           "name" : "groupId",
@@ -437,7 +437,7 @@
     },
     "/api/v1/analyses/{id}" : {
       "get" : {
-        "operationId" : "get_1",
+        "operationId" : "analysisGet",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -464,7 +464,7 @@
     },
     "/api/v1/api-keys" : {
       "get" : {
-        "operationId" : "list_3",
+        "operationId" : "apiKeyList",
         "responses" : {
           "200" : {
             "content" : {
@@ -480,7 +480,7 @@
         "tags" : [ "api-key-controller" ]
       },
       "post" : {
-        "operationId" : "create_3",
+        "operationId" : "apiKeyCreate",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -508,7 +508,7 @@
     },
     "/api/v1/api-keys/{id}" : {
       "delete" : {
-        "operationId" : "revoke",
+        "operationId" : "apiKeyRevoke",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -528,7 +528,7 @@
     },
     "/api/v1/auth/login" : {
       "post" : {
-        "operationId" : "login",
+        "operationId" : "authLogin",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -556,7 +556,7 @@
     },
     "/api/v1/auth/logout" : {
       "post" : {
-        "operationId" : "logout",
+        "operationId" : "authLogout",
         "parameters" : [ {
           "in" : "cookie",
           "name" : "faultlens_refresh",
@@ -575,7 +575,7 @@
     },
     "/api/v1/auth/password" : {
       "put" : {
-        "operationId" : "changePassword",
+        "operationId" : "authChangePassword",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -603,7 +603,7 @@
     },
     "/api/v1/auth/profile" : {
       "get" : {
-        "operationId" : "getProfile",
+        "operationId" : "authGetProfile",
         "responses" : {
           "200" : {
             "content" : {
@@ -619,7 +619,7 @@
         "tags" : [ "auth-controller" ]
       },
       "put" : {
-        "operationId" : "updateProfile",
+        "operationId" : "authUpdateProfile",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -647,7 +647,7 @@
     },
     "/api/v1/auth/refresh" : {
       "post" : {
-        "operationId" : "refresh",
+        "operationId" : "authRefresh",
         "parameters" : [ {
           "in" : "cookie",
           "name" : "faultlens_refresh",
@@ -673,7 +673,7 @@
     },
     "/api/v1/deployments" : {
       "get" : {
-        "operationId" : "list_2",
+        "operationId" : "deploymentList",
         "parameters" : [ {
           "in" : "query",
           "name" : "page",
@@ -708,7 +708,7 @@
         "tags" : [ "deployment-controller" ]
       },
       "post" : {
-        "operationId" : "create_2",
+        "operationId" : "deploymentCreate",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -754,7 +754,7 @@
     },
     "/api/v1/logs" : {
       "get" : {
-        "operationId" : "list_5",
+        "operationId" : "logList",
         "parameters" : [ {
           "in" : "query",
           "name" : "severity",
@@ -833,7 +833,7 @@
     },
     "/api/v1/logs/clear" : {
       "delete" : {
-        "operationId" : "clearLogs",
+        "operationId" : "logClearLogs",
         "parameters" : [ {
           "in" : "query",
           "name" : "sourceId",
@@ -860,7 +860,7 @@
     },
     "/api/v1/logs/groups" : {
       "get" : {
-        "operationId" : "groups",
+        "operationId" : "logGroups",
         "parameters" : [ {
           "in" : "query",
           "name" : "severity",
@@ -908,7 +908,7 @@
     },
     "/api/v1/logs/groups/{id}/entries" : {
       "get" : {
-        "operationId" : "groupEntries",
+        "operationId" : "logGroupEntries",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -956,7 +956,7 @@
     },
     "/api/v1/logs/stats" : {
       "get" : {
-        "operationId" : "stats",
+        "operationId" : "logStats",
         "parameters" : [ {
           "in" : "query",
           "name" : "windowMinutes",
@@ -984,7 +984,7 @@
     },
     "/api/v1/logs/{id}" : {
       "get" : {
-        "operationId" : "detail",
+        "operationId" : "logDetail",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1011,7 +1011,7 @@
     },
     "/api/v1/settings/notifications" : {
       "get" : {
-        "operationId" : "getNotifications",
+        "operationId" : "settingsGetNotifications",
         "responses" : {
           "200" : {
             "content" : {
@@ -1027,7 +1027,7 @@
         "tags" : [ "settings-controller" ]
       },
       "put" : {
-        "operationId" : "updateNotifications",
+        "operationId" : "settingsUpdateNotifications",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -1055,7 +1055,7 @@
     },
     "/api/v1/settings/notifications/test/email" : {
       "post" : {
-        "operationId" : "testEmail",
+        "operationId" : "notificationTestTestEmail",
         "responses" : {
           "200" : {
             "content" : {
@@ -1073,7 +1073,7 @@
     },
     "/api/v1/settings/notifications/test/push" : {
       "post" : {
-        "operationId" : "testPush",
+        "operationId" : "notificationTestTestPush",
         "responses" : {
           "200" : {
             "content" : {
@@ -1091,7 +1091,7 @@
     },
     "/api/v1/settings/notifications/test/slack" : {
       "post" : {
-        "operationId" : "testSlack",
+        "operationId" : "notificationTestTestSlack",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -1119,7 +1119,7 @@
     },
     "/api/v1/settings/notifications/test/webhook" : {
       "post" : {
-        "operationId" : "testWebhook",
+        "operationId" : "notificationTestTestWebhook",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -1147,7 +1147,7 @@
     },
     "/api/v1/settings/system" : {
       "get" : {
-        "operationId" : "getSystemSettings",
+        "operationId" : "settingsGetSystemSettings",
         "responses" : {
           "200" : {
             "content" : {
@@ -1163,7 +1163,7 @@
         "tags" : [ "settings-controller" ]
       },
       "put" : {
-        "operationId" : "updateSystemSettings",
+        "operationId" : "settingsUpdateSystemSettings",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -1191,7 +1191,7 @@
     },
     "/api/v1/sources" : {
       "get" : {
-        "operationId" : "list_1",
+        "operationId" : "sourceList",
         "responses" : {
           "200" : {
             "content" : {
@@ -1207,7 +1207,7 @@
         "tags" : [ "source-controller" ]
       },
       "post" : {
-        "operationId" : "create_1",
+        "operationId" : "sourceCreate",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -1235,7 +1235,7 @@
     },
     "/api/v1/sources/test-config" : {
       "post" : {
-        "operationId" : "testConfig",
+        "operationId" : "sourceTestConfig",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -1263,7 +1263,7 @@
     },
     "/api/v1/sources/{id}" : {
       "delete" : {
-        "operationId" : "delete",
+        "operationId" : "sourceDelete",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1281,7 +1281,7 @@
         "tags" : [ "source-controller" ]
       },
       "put" : {
-        "operationId" : "update",
+        "operationId" : "sourceUpdate",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1318,7 +1318,7 @@
     },
     "/api/v1/sources/{id}/disable" : {
       "post" : {
-        "operationId" : "disable",
+        "operationId" : "sourceDisable",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1345,7 +1345,7 @@
     },
     "/api/v1/sources/{id}/enable" : {
       "post" : {
-        "operationId" : "enable",
+        "operationId" : "sourceEnable",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1372,7 +1372,7 @@
     },
     "/api/v1/sources/{id}/test" : {
       "post" : {
-        "operationId" : "test",
+        "operationId" : "sourceTest",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1399,7 +1399,7 @@
     },
     "/api/v1/users" : {
       "get" : {
-        "operationId" : "list",
+        "operationId" : "userList",
         "responses" : {
           "200" : {
             "content" : {
@@ -1415,7 +1415,7 @@
         "tags" : [ "user-controller" ]
       },
       "post" : {
-        "operationId" : "create",
+        "operationId" : "userCreate",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -1443,7 +1443,7 @@
     },
     "/api/v1/users/{id}" : {
       "delete" : {
-        "operationId" : "delete_2",
+        "operationId" : "userDelete",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1463,7 +1463,7 @@
     },
     "/api/v1/users/{id}/reset-password" : {
       "post" : {
-        "operationId" : "resetPassword",
+        "operationId" : "userResetPassword",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1500,7 +1500,7 @@
     },
     "/api/v1/users/{id}/role" : {
       "put" : {
-        "operationId" : "changeRole",
+        "operationId" : "userChangeRole",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1537,7 +1537,7 @@
     },
     "/v1/logs" : {
       "post" : {
-        "operationId" : "ingestOtlpProtobuf",
+        "operationId" : "ingestOtlpLogs",
         "responses" : {
           "200" : {
             "content" : {

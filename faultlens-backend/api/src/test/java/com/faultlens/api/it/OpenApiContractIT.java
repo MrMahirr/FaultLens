@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -70,6 +72,19 @@ class OpenApiContractIT extends AbstractIntegrationTest {
         assertThat(document().at("/components/schemas").propertyNames())
                 .as("schemas")
                 .doesNotContain("ApiResponseObject");
+    }
+
+    @Test
+    void operationIdsAreStableAndUnique() throws IOException {
+        List<String> ids = new ArrayList<>();
+        document().at("/paths").forEach(path -> path.forEach(operation -> {
+            if (operation.has("operationId")) {
+                ids.add(operation.at("/operationId").asText());
+            }
+        }));
+        assertThat(ids).as("operation ids").isNotEmpty().doesNotHaveDuplicates();
+        // A numeric suffix (list_7) means springdoc deduplicated a clash: positional, so unstable.
+        assertThat(ids).as("operation ids with a positional suffix").noneMatch(id -> id.matches(".*_[0-9]+"));
     }
 
     @Test

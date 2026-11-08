@@ -11,7 +11,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get: operations["list_7"];
+    get: operations["alarmList"];
     put?: never;
     post?: never;
     delete?: never;
@@ -27,9 +27,9 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get: operations["list_4"];
+    get: operations["alarmRuleList"];
     put?: never;
-    post: operations["create_4"];
+    post: operations["alarmRuleCreate"];
     delete?: never;
     options?: never;
     head?: never;
@@ -43,10 +43,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get: operations["get"];
-    put: operations["update_1"];
+    get: operations["alarmRuleGet"];
+    put: operations["alarmRuleUpdate"];
     post?: never;
-    delete: operations["delete_1"];
+    delete: operations["alarmRuleDelete"];
     options?: never;
     head?: never;
     patch?: never;
@@ -61,7 +61,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    post: operations["disable_1"];
+    post: operations["alarmRuleDisable"];
     delete?: never;
     options?: never;
     head?: never;
@@ -77,7 +77,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    post: operations["enable_1"];
+    post: operations["alarmRuleEnable"];
     delete?: never;
     options?: never;
     head?: never;
@@ -91,7 +91,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get: operations["stats_1"];
+    get: operations["alarmStats"];
     put?: never;
     post?: never;
     delete?: never;
@@ -110,7 +110,7 @@ export interface paths {
     get?: never;
     put?: never;
     post?: never;
-    delete: operations["delete_3"];
+    delete: operations["alarmDelete"];
     options?: never;
     head?: never;
     patch?: never;
@@ -124,7 +124,7 @@ export interface paths {
       cookie?: never;
     };
     get?: never;
-    put: operations["acknowledge"];
+    put: operations["alarmAcknowledge"];
     post?: never;
     delete?: never;
     options?: never;
@@ -140,7 +140,7 @@ export interface paths {
       cookie?: never;
     };
     get?: never;
-    put: operations["resolve"];
+    put: operations["alarmResolve"];
     post?: never;
     delete?: never;
     options?: never;
@@ -155,10 +155,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get: operations["list_6"];
+    get: operations["analysisList"];
     put?: never;
     post?: never;
-    delete: operations["deleteHistory"];
+    delete: operations["analysisDeleteHistory"];
     options?: never;
     head?: never;
     patch?: never;
@@ -173,7 +173,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    post: operations["trigger"];
+    post: operations["analysisTrigger"];
     delete?: never;
     options?: never;
     head?: never;
@@ -187,7 +187,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get: operations["get_1"];
+    get: operations["analysisGet"];
     put?: never;
     post?: never;
     delete?: never;
@@ -203,9 +203,9 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get: operations["list_3"];
+    get: operations["apiKeyList"];
     put?: never;
-    post: operations["create_3"];
+    post: operations["apiKeyCreate"];
     delete?: never;
     options?: never;
     head?: never;
@@ -222,7 +222,7 @@ export interface paths {
     get?: never;
     put?: never;
     post?: never;
-    delete: operations["revoke"];
+    delete: operations["apiKeyRevoke"];
     options?: never;
     head?: never;
     patch?: never;
@@ -237,7 +237,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    post: operations["login"];
+    post: operations["authLogin"];
     delete?: never;
     options?: never;
     head?: never;
@@ -253,7 +253,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    post: operations["logout"];
+    post: operations["authLogout"];
     delete?: never;
     options?: never;
     head?: never;
@@ -268,7 +268,7 @@ export interface paths {
       cookie?: never;
     };
     get?: never;
-    put: operations["changePassword"];
+    put: operations["authChangePassword"];
     post?: never;
     delete?: never;
     options?: never;
@@ -283,8 +283,8 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get: operations["getProfile"];
-    put: operations["updateProfile"];
+    get: operations["authGetProfile"];
+    put: operations["authUpdateProfile"];
     post?: never;
     delete?: never;
     options?: never;
@@ -301,7 +301,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    post: operations["refresh"];
+    post: operations["authRefresh"];
     delete?: never;
     options?: never;
     head?: never;
@@ -315,9 +315,9 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get: operations["list_2"];
+    get: operations["deploymentList"];
     put?: never;
-    post: operations["create_2"];
+    post: operations["deploymentCreate"];
     delete?: never;
     options?: never;
     head?: never;
@@ -347,7 +347,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get: operations["list_5"];
+    get: operations["logList"];
     put?: never;
     post?: never;
     delete?: never;
@@ -366,7 +366,7 @@ export interface paths {
     get?: never;
     put?: never;
     post?: never;
-    delete: operations["clearLogs"];
+    delete: operations["logClearLogs"];
     options?: never;
     head?: never;
     patch?: never;
@@ -379,7 +379,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get: operations["groups"];
+    get: operations["logGroups"];
     put?: never;
     post?: never;
     delete?: never;
@@ -395,7 +395,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get: operations["groupEntries"];
+    get: operations["logGroupEntries"];
     put?: never;
     post?: never;
     delete?: never;
@@ -411,7 +411,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get: operations["stats"];
+    get: operations["logStats"];
     put?: never;
     post?: never;
     delete?: never;
@@ -427,7 +427,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get: operations["detail"];
+    get: operations["logDetail"];
     put?: never;
     post?: never;
     delete?: never;
@@ -443,8 +443,8 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get: operations["getNotifications"];
-    put: operations["updateNotifications"];
+    get: operations["settingsGetNotifications"];
+    put: operations["settingsUpdateNotifications"];
     post?: never;
     delete?: never;
     options?: never;
@@ -461,7 +461,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    post: operations["testEmail"];
+    post: operations["notificationTestTestEmail"];
     delete?: never;
     options?: never;
     head?: never;
@@ -477,7 +477,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    post: operations["testPush"];
+    post: operations["notificationTestTestPush"];
     delete?: never;
     options?: never;
     head?: never;
@@ -493,7 +493,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    post: operations["testSlack"];
+    post: operations["notificationTestTestSlack"];
     delete?: never;
     options?: never;
     head?: never;
@@ -509,7 +509,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    post: operations["testWebhook"];
+    post: operations["notificationTestTestWebhook"];
     delete?: never;
     options?: never;
     head?: never;
@@ -523,8 +523,8 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get: operations["getSystemSettings"];
-    put: operations["updateSystemSettings"];
+    get: operations["settingsGetSystemSettings"];
+    put: operations["settingsUpdateSystemSettings"];
     post?: never;
     delete?: never;
     options?: never;
@@ -539,9 +539,9 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get: operations["list_1"];
+    get: operations["sourceList"];
     put?: never;
-    post: operations["create_1"];
+    post: operations["sourceCreate"];
     delete?: never;
     options?: never;
     head?: never;
@@ -557,7 +557,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    post: operations["testConfig"];
+    post: operations["sourceTestConfig"];
     delete?: never;
     options?: never;
     head?: never;
@@ -572,9 +572,9 @@ export interface paths {
       cookie?: never;
     };
     get?: never;
-    put: operations["update"];
+    put: operations["sourceUpdate"];
     post?: never;
-    delete: operations["delete"];
+    delete: operations["sourceDelete"];
     options?: never;
     head?: never;
     patch?: never;
@@ -589,7 +589,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    post: operations["disable"];
+    post: operations["sourceDisable"];
     delete?: never;
     options?: never;
     head?: never;
@@ -605,7 +605,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    post: operations["enable"];
+    post: operations["sourceEnable"];
     delete?: never;
     options?: never;
     head?: never;
@@ -621,7 +621,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    post: operations["test"];
+    post: operations["sourceTest"];
     delete?: never;
     options?: never;
     head?: never;
@@ -635,9 +635,9 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get: operations["list"];
+    get: operations["userList"];
     put?: never;
-    post: operations["create"];
+    post: operations["userCreate"];
     delete?: never;
     options?: never;
     head?: never;
@@ -654,7 +654,7 @@ export interface paths {
     get?: never;
     put?: never;
     post?: never;
-    delete: operations["delete_2"];
+    delete: operations["userDelete"];
     options?: never;
     head?: never;
     patch?: never;
@@ -669,7 +669,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    post: operations["resetPassword"];
+    post: operations["userResetPassword"];
     delete?: never;
     options?: never;
     head?: never;
@@ -684,7 +684,7 @@ export interface paths {
       cookie?: never;
     };
     get?: never;
-    put: operations["changeRole"];
+    put: operations["userChangeRole"];
     post?: never;
     delete?: never;
     options?: never;
@@ -701,7 +701,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    post: operations["ingestOtlpProtobuf"];
+    post: operations["ingestOtlpLogs"];
     delete?: never;
     options?: never;
     head?: never;
@@ -1278,7 +1278,7 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-  list_7: {
+  alarmList: {
     parameters: {
       query?: {
         status?: "ACTIVE" | "ACKNOWLEDGED" | "RESOLVED";
@@ -1303,7 +1303,7 @@ export interface operations {
       };
     };
   };
-  list_4: {
+  alarmRuleList: {
     parameters: {
       query?: never;
       header?: never;
@@ -1323,7 +1323,7 @@ export interface operations {
       };
     };
   };
-  create_4: {
+  alarmRuleCreate: {
     parameters: {
       query?: never;
       header?: never;
@@ -1347,7 +1347,7 @@ export interface operations {
       };
     };
   };
-  get: {
+  alarmRuleGet: {
     parameters: {
       query?: never;
       header?: never;
@@ -1369,7 +1369,7 @@ export interface operations {
       };
     };
   };
-  update_1: {
+  alarmRuleUpdate: {
     parameters: {
       query?: never;
       header?: never;
@@ -1395,7 +1395,7 @@ export interface operations {
       };
     };
   };
-  delete_1: {
+  alarmRuleDelete: {
     parameters: {
       query?: never;
       header?: never;
@@ -1415,7 +1415,7 @@ export interface operations {
       };
     };
   };
-  disable_1: {
+  alarmRuleDisable: {
     parameters: {
       query?: never;
       header?: never;
@@ -1437,7 +1437,7 @@ export interface operations {
       };
     };
   };
-  enable_1: {
+  alarmRuleEnable: {
     parameters: {
       query?: never;
       header?: never;
@@ -1459,7 +1459,7 @@ export interface operations {
       };
     };
   };
-  stats_1: {
+  alarmStats: {
     parameters: {
       query?: never;
       header?: never;
@@ -1479,7 +1479,7 @@ export interface operations {
       };
     };
   };
-  delete_3: {
+  alarmDelete: {
     parameters: {
       query?: never;
       header?: never;
@@ -1499,7 +1499,7 @@ export interface operations {
       };
     };
   };
-  acknowledge: {
+  alarmAcknowledge: {
     parameters: {
       query?: never;
       header?: never;
@@ -1521,7 +1521,7 @@ export interface operations {
       };
     };
   };
-  resolve: {
+  alarmResolve: {
     parameters: {
       query?: never;
       header?: never;
@@ -1543,7 +1543,7 @@ export interface operations {
       };
     };
   };
-  list_6: {
+  analysisList: {
     parameters: {
       query?: {
         sourceId?: number;
@@ -1567,7 +1567,7 @@ export interface operations {
       };
     };
   };
-  deleteHistory: {
+  analysisDeleteHistory: {
     parameters: {
       query?: {
         sourceId?: number;
@@ -1589,7 +1589,7 @@ export interface operations {
       };
     };
   };
-  trigger: {
+  analysisTrigger: {
     parameters: {
       query?: never;
       header?: never;
@@ -1611,7 +1611,7 @@ export interface operations {
       };
     };
   };
-  get_1: {
+  analysisGet: {
     parameters: {
       query?: never;
       header?: never;
@@ -1633,7 +1633,7 @@ export interface operations {
       };
     };
   };
-  list_3: {
+  apiKeyList: {
     parameters: {
       query?: never;
       header?: never;
@@ -1653,7 +1653,7 @@ export interface operations {
       };
     };
   };
-  create_3: {
+  apiKeyCreate: {
     parameters: {
       query?: never;
       header?: never;
@@ -1677,7 +1677,7 @@ export interface operations {
       };
     };
   };
-  revoke: {
+  apiKeyRevoke: {
     parameters: {
       query?: never;
       header?: never;
@@ -1697,7 +1697,7 @@ export interface operations {
       };
     };
   };
-  login: {
+  authLogin: {
     parameters: {
       query?: never;
       header?: never;
@@ -1721,7 +1721,7 @@ export interface operations {
       };
     };
   };
-  logout: {
+  authLogout: {
     parameters: {
       query?: never;
       header?: never;
@@ -1741,7 +1741,7 @@ export interface operations {
       };
     };
   };
-  changePassword: {
+  authChangePassword: {
     parameters: {
       query?: never;
       header?: never;
@@ -1765,7 +1765,7 @@ export interface operations {
       };
     };
   };
-  getProfile: {
+  authGetProfile: {
     parameters: {
       query?: never;
       header?: never;
@@ -1785,7 +1785,7 @@ export interface operations {
       };
     };
   };
-  updateProfile: {
+  authUpdateProfile: {
     parameters: {
       query?: never;
       header?: never;
@@ -1809,7 +1809,7 @@ export interface operations {
       };
     };
   };
-  refresh: {
+  authRefresh: {
     parameters: {
       query?: never;
       header?: never;
@@ -1831,7 +1831,7 @@ export interface operations {
       };
     };
   };
-  list_2: {
+  deploymentList: {
     parameters: {
       query?: {
         page?: number;
@@ -1854,7 +1854,7 @@ export interface operations {
       };
     };
   };
-  create_2: {
+  deploymentCreate: {
     parameters: {
       query?: never;
       header?: never;
@@ -1898,7 +1898,7 @@ export interface operations {
       };
     };
   };
-  list_5: {
+  logList: {
     parameters: {
       query?: {
         severity?: "TRACE" | "DEBUG" | "INFO" | "WARN" | "ERROR" | "CRITICAL";
@@ -1926,7 +1926,7 @@ export interface operations {
       };
     };
   };
-  clearLogs: {
+  logClearLogs: {
     parameters: {
       query: {
         sourceId: number;
@@ -1948,7 +1948,7 @@ export interface operations {
       };
     };
   };
-  groups: {
+  logGroups: {
     parameters: {
       query?: {
         severity?: "TRACE" | "DEBUG" | "INFO" | "WARN" | "ERROR" | "CRITICAL";
@@ -1972,7 +1972,7 @@ export interface operations {
       };
     };
   };
-  groupEntries: {
+  logGroupEntries: {
     parameters: {
       query?: {
         page?: number;
@@ -1997,7 +1997,7 @@ export interface operations {
       };
     };
   };
-  stats: {
+  logStats: {
     parameters: {
       query?: {
         windowMinutes?: number;
@@ -2019,7 +2019,7 @@ export interface operations {
       };
     };
   };
-  detail: {
+  logDetail: {
     parameters: {
       query?: never;
       header?: never;
@@ -2041,7 +2041,7 @@ export interface operations {
       };
     };
   };
-  getNotifications: {
+  settingsGetNotifications: {
     parameters: {
       query?: never;
       header?: never;
@@ -2061,7 +2061,7 @@ export interface operations {
       };
     };
   };
-  updateNotifications: {
+  settingsUpdateNotifications: {
     parameters: {
       query?: never;
       header?: never;
@@ -2085,7 +2085,7 @@ export interface operations {
       };
     };
   };
-  testEmail: {
+  notificationTestTestEmail: {
     parameters: {
       query?: never;
       header?: never;
@@ -2105,7 +2105,7 @@ export interface operations {
       };
     };
   };
-  testPush: {
+  notificationTestTestPush: {
     parameters: {
       query?: never;
       header?: never;
@@ -2125,7 +2125,7 @@ export interface operations {
       };
     };
   };
-  testSlack: {
+  notificationTestTestSlack: {
     parameters: {
       query?: never;
       header?: never;
@@ -2149,7 +2149,7 @@ export interface operations {
       };
     };
   };
-  testWebhook: {
+  notificationTestTestWebhook: {
     parameters: {
       query?: never;
       header?: never;
@@ -2173,7 +2173,7 @@ export interface operations {
       };
     };
   };
-  getSystemSettings: {
+  settingsGetSystemSettings: {
     parameters: {
       query?: never;
       header?: never;
@@ -2193,7 +2193,7 @@ export interface operations {
       };
     };
   };
-  updateSystemSettings: {
+  settingsUpdateSystemSettings: {
     parameters: {
       query?: never;
       header?: never;
@@ -2217,7 +2217,7 @@ export interface operations {
       };
     };
   };
-  list_1: {
+  sourceList: {
     parameters: {
       query?: never;
       header?: never;
@@ -2237,7 +2237,7 @@ export interface operations {
       };
     };
   };
-  create_1: {
+  sourceCreate: {
     parameters: {
       query?: never;
       header?: never;
@@ -2261,7 +2261,7 @@ export interface operations {
       };
     };
   };
-  testConfig: {
+  sourceTestConfig: {
     parameters: {
       query?: never;
       header?: never;
@@ -2285,7 +2285,7 @@ export interface operations {
       };
     };
   };
-  update: {
+  sourceUpdate: {
     parameters: {
       query?: never;
       header?: never;
@@ -2311,7 +2311,7 @@ export interface operations {
       };
     };
   };
-  delete: {
+  sourceDelete: {
     parameters: {
       query?: never;
       header?: never;
@@ -2331,7 +2331,7 @@ export interface operations {
       };
     };
   };
-  disable: {
+  sourceDisable: {
     parameters: {
       query?: never;
       header?: never;
@@ -2353,7 +2353,7 @@ export interface operations {
       };
     };
   };
-  enable: {
+  sourceEnable: {
     parameters: {
       query?: never;
       header?: never;
@@ -2375,7 +2375,7 @@ export interface operations {
       };
     };
   };
-  test: {
+  sourceTest: {
     parameters: {
       query?: never;
       header?: never;
@@ -2397,7 +2397,7 @@ export interface operations {
       };
     };
   };
-  list: {
+  userList: {
     parameters: {
       query?: never;
       header?: never;
@@ -2417,7 +2417,7 @@ export interface operations {
       };
     };
   };
-  create: {
+  userCreate: {
     parameters: {
       query?: never;
       header?: never;
@@ -2441,7 +2441,7 @@ export interface operations {
       };
     };
   };
-  delete_2: {
+  userDelete: {
     parameters: {
       query?: never;
       header?: never;
@@ -2461,7 +2461,7 @@ export interface operations {
       };
     };
   };
-  resetPassword: {
+  userResetPassword: {
     parameters: {
       query?: never;
       header?: never;
@@ -2487,7 +2487,7 @@ export interface operations {
       };
     };
   };
-  changeRole: {
+  userChangeRole: {
     parameters: {
       query?: never;
       header?: never;
@@ -2513,7 +2513,7 @@ export interface operations {
       };
     };
   };
-  ingestOtlpProtobuf: {
+  ingestOtlpLogs: {
     parameters: {
       query?: never;
       header?: never;
