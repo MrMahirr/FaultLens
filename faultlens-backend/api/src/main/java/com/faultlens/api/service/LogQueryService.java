@@ -80,10 +80,12 @@ public class LogQueryService {
      * Lists log groups, most recently seen first. Without {@code statuses}, IGNORED groups are
      * left out (P10 / 2.1).
      */
-    public PagedResponse<LogGroupDto> groups(Severity severity, Collection<GroupStatus> statuses, int page, int size) {
+    public PagedResponse<LogGroupDto> groups(Severity severity, Collection<GroupStatus> statuses, String assignee,
+                                             int page, int size) {
         PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "lastSeenAt").and(Sort.by("id")));
         Collection<GroupStatus> wanted = statuses == null || statuses.isEmpty() ? DEFAULT_GROUP_STATUSES : statuses;
-        return page(groupRepository.search(wanted, severity, pageable).map(mapper::toLogGroupDto));
+        return page(groupRepository.search(wanted, severity,
+                assignee == null || assignee.isBlank() ? null : assignee, pageable).map(mapper::toLogGroupDto));
     }
 
     /**

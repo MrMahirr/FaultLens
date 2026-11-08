@@ -63,6 +63,25 @@ exposed as typed fields (`from_status`, `ignore_until`, `regression_count`), not
 Users are referenced by **username** (`resolved_by`, `actor`), like `alarm_rules.created_by`:
 history survives a user being deleted.
 
+## Collaboration (P10 / 2.2, V24)
+
+- **Assignment**: `log_groups.assignee` (username) via `PUT /logs/groups/{id}/assignee` (EDITOR+);
+  the user must exist. The assignee gets an in-app notification (`GROUP_ASSIGNED`) on their own
+  WebSocket sessions after commit; e-mail is not sent. Editors cannot list users, so
+  `GET /logs/groups/assignees` returns names only. The plan's "alarm claim → assign" link is not
+  built: alarms have no claim/assignee yet.
+- **Comments**: `log_group_comments`, plain text up to 10 000 characters, rendered as text (no
+  Markdown, no HTML — nothing to sanitise). Editors write; only the author edits; the author or an
+  admin deletes.
+- **Merge**: `merged_into_id`. The processor reads the batch's merged fingerprints in one indexed
+  query *before* locking and aggregates them under the target's fingerprint, so rows are still
+  locked in one global (fingerprint) order — the merge transaction locks its two rows in the same
+  order. A Redis cache (as the plan suggested) is not needed for one indexed query per batch.
+  Past entries stay where they are; merged groups leave the list; merges never chain (groups
+  merged into the source are re-pointed to the target, and nothing can be merged into a merged
+  group). Undo (`/unmerge`) is ADMIN only; entries routed meanwhile stay in the target. A merge
+  racing a batch that already read the merge map lets that batch's entries land in the source.
+
 ## Not done (yet)
 
 - `resolved_in_version` ("resolved in the next release"): needs the entry's version, which logs do

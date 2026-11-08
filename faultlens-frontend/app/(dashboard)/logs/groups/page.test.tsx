@@ -32,6 +32,10 @@ const group = {
   ignore_until: null,
   regressed_at: "2026-11-08T10:00:00Z",
   regression_count: 2,
+  assignee: "editor",
+  assigned_at: "2026-11-08T11:00:00Z",
+  merged_into_id: null,
+  merged_at: null,
 };
 
 describe("LogGroupsPage", () => {
@@ -89,6 +93,27 @@ describe("LogGroupsPage", () => {
     await userEvent.click(within(row).getByRole("button", { name: "Çöz" }));
 
     await vi.waitFor(() => expect(patched).toEqual({ id: "7", body: { status: "RESOLVED" } }));
+  });
+});
+
+describe("LogGroupsPage — assigned to me", () => {
+  it("asks for the signed-in user's groups with ?mine=1", async () => {
+    let requested: URLSearchParams | undefined;
+    server.use(
+      http.get(`${API}/logs/groups`, ({ request }) => {
+        requested = new URL(request.url).searchParams;
+        return HttpResponse.json(
+          ok({ content: [group], page: 0, size: 25, total_elements: 1, total_pages: 1 }),
+        );
+      }),
+    );
+    signInAs("EDITOR", "editor");
+    search = "mine=1";
+    renderWithQuery(<LogGroupsPage />);
+
+    await screen.findByText(group.first_message);
+    expect(requested?.get("assignee")).toBe("editor");
+    expect(screen.getByRole("checkbox", { name: "Bana atananlar" })).toBeChecked();
   });
 });
 

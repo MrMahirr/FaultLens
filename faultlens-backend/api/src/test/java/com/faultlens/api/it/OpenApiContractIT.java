@@ -56,6 +56,7 @@ class OpenApiContractIT extends AbstractIntegrationTest {
             Map.entry("LogEntryDto", ApiContractIT.LOG_ENTRY),
             Map.entry("LogGroupDto", ApiContractIT.LOG_GROUP),
             Map.entry("LogGroupEventDto", ApiContractIT.LOG_GROUP_EVENT),
+            Map.entry("LogGroupCommentDto", ApiContractIT.LOG_GROUP_COMMENT),
             Map.entry("AnalysisResultDto", ApiContractIT.ANALYSIS),
             Map.entry("DeploymentDto", ApiContractIT.DEPLOYMENT),
             Map.entry("LogSourceDto", ApiContractIT.SOURCE),
@@ -147,11 +148,13 @@ class OpenApiContractIT extends AbstractIntegrationTest {
             Map.entry("apiKeyCreate", "201"),
             Map.entry("sourceCreate", "201"),
             Map.entry("userCreate", "201"),
+            Map.entry("logAddGroupComment", "201"),
             Map.entry("ingestJson", "202"),
             Map.entry("alarmDelete", "204"),
             Map.entry("alarmRuleDelete", "204"),
             Map.entry("apiKeyRevoke", "204"),
             Map.entry("authLogout", "204"),
+            Map.entry("logDeleteGroupComment", "204"),
             Map.entry("sourceDelete", "204"),
             Map.entry("userDelete", "204"));
 

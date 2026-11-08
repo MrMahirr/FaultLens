@@ -55,6 +55,10 @@ public class ApiDtoMapper {
                 .ignoreUntil(group.getIgnoreUntil())
                 .regressedAt(group.getRegressedAt())
                 .regressionCount(group.getRegressionCount())
+                .assignee(group.getAssignee())
+                .assignedAt(group.getAssignedAt())
+                .mergedIntoId(group.getMergedIntoId())
+                .mergedAt(group.getMergedAt())
                 .build();
     }
 

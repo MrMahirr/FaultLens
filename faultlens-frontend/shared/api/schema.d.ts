@@ -388,6 +388,22 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/logs/groups/assignees": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["logGroupAssignees"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/logs/groups/{id}": {
     parameters: {
       query?: never;
@@ -402,6 +418,54 @@ export interface paths {
     options?: never;
     head?: never;
     patch: operations["logUpdateGroupStatus"];
+    trace?: never;
+  };
+  "/api/v1/logs/groups/{id}/assignee": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put: operations["logAssignGroup"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/logs/groups/{id}/comments": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["logGroupComments"];
+    put?: never;
+    post: operations["logAddGroupComment"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/logs/groups/{id}/comments/{commentId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put: operations["logEditGroupComment"];
+    post?: never;
+    delete: operations["logDeleteGroupComment"];
+    options?: never;
+    head?: never;
+    patch?: never;
     trace?: never;
   };
   "/api/v1/logs/groups/{id}/entries": {
@@ -430,6 +494,38 @@ export interface paths {
     get: operations["logGroupEvents"];
     put?: never;
     post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/logs/groups/{id}/merge": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["logMergeGroup"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/logs/groups/{id}/unmerge": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["logUnmergeGroup"];
     delete?: never;
     options?: never;
     head?: never;
@@ -921,6 +1017,20 @@ export interface components {
       /** Format: date-time */
       timestamp?: string;
     };
+    ApiResponseListAssignableUser: {
+      data?: components["schemas"]["AssignableUser"][];
+      message?: string;
+      success?: boolean;
+      /** Format: date-time */
+      timestamp?: string;
+    };
+    ApiResponseListLogGroupCommentDto: {
+      data?: components["schemas"]["LogGroupCommentDto"][];
+      message?: string;
+      success?: boolean;
+      /** Format: date-time */
+      timestamp?: string;
+    };
     ApiResponseListLogGroupEventDto: {
       data?: components["schemas"]["LogGroupEventDto"][];
       message?: string;
@@ -944,6 +1054,13 @@ export interface components {
     };
     ApiResponseLogDetailDto: {
       data?: components["schemas"]["LogDetailDto"];
+      message?: string;
+      success?: boolean;
+      /** Format: date-time */
+      timestamp?: string;
+    };
+    ApiResponseLogGroupCommentDto: {
+      data?: components["schemas"]["LogGroupCommentDto"];
       message?: string;
       success?: boolean;
       /** Format: date-time */
@@ -1065,12 +1182,21 @@ export interface components {
       /** Format: date-time */
       timestamp?: string;
     };
+    AssignRequest: {
+      assignee?: string;
+    };
+    AssignableUser: {
+      username?: string;
+    };
     ChangePasswordRequest: {
       current_password: string;
       new_password: string;
     };
     ClearedResponse: {
       cleared?: boolean;
+    };
+    CommentRequest: {
+      body: string;
     };
     ConnectionTestResponse: {
       connected?: boolean;
@@ -1173,7 +1299,22 @@ export interface components {
       /** Format: date-time */
       timestamp?: string;
     };
+    LogGroupCommentDto: {
+      author?: string;
+      body?: string;
+      /** Format: date-time */
+      created_at?: string;
+      /** Format: date-time */
+      edited_at?: string;
+      /** Format: int64 */
+      group_id?: number;
+      /** Format: int64 */
+      id?: number;
+    };
     LogGroupDto: {
+      /** Format: date-time */
+      assigned_at?: string;
+      assignee?: string;
       /** Format: int64 */
       count?: number;
       fingerprint?: string;
@@ -1186,6 +1327,10 @@ export interface components {
       ignore_until?: string;
       /** Format: date-time */
       last_seen_at?: string;
+      /** Format: date-time */
+      merged_at?: string;
+      /** Format: int64 */
+      merged_into_id?: number;
       /** Format: date-time */
       regressed_at?: string;
       /** Format: int32 */
@@ -1202,6 +1347,7 @@ export interface components {
     };
     LogGroupEventDto: {
       actor?: string;
+      assignee?: string;
       /** Format: date-time */
       created_at?: string;
       /** @enum {string} */
@@ -1212,8 +1358,22 @@ export interface components {
       ignore_until?: string;
       /** Format: int32 */
       regression_count?: number;
+      /** Format: int64 */
+      related_group_id?: number;
       /** @enum {string} */
-      type?: "CREATED" | "RESOLVED" | "IGNORED" | "REOPENED" | "REGRESSED" | "UNIGNORED";
+      type?:
+        | "CREATED"
+        | "RESOLVED"
+        | "IGNORED"
+        | "REOPENED"
+        | "REGRESSED"
+        | "UNIGNORED"
+        | "ASSIGNED"
+        | "UNASSIGNED"
+        | "COMMENTED"
+        | "MERGED"
+        | "MERGED_FROM"
+        | "UNMERGED";
     };
     LogSourceCreateRequest: {
       config?: string;
@@ -1252,6 +1412,10 @@ export interface components {
     LoginRequest: {
       password: string;
       username: string;
+    };
+    MergeRequest: {
+      /** Format: int64 */
+      target_id: number;
     };
     NotificationSettingsResponse: {
       email?: string;
@@ -2352,6 +2516,8 @@ export interface operations {
         severity?: "TRACE" | "DEBUG" | "INFO" | "WARN" | "ERROR" | "CRITICAL";
         /** @description Statuses to list (repeat or comma-separate); default UNRESOLVED,RESOLVED */
         status?: ("UNRESOLVED" | "RESOLVED" | "IGNORED")[];
+        /** @description Only groups assigned to this username */
+        assignee?: string;
         page?: number;
         size?: number;
       };
@@ -2368,6 +2534,35 @@ export interface operations {
         };
         content: {
           "*/*": components["schemas"]["ApiResponsePagedResponseLogGroupDto"];
+        };
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
+    };
+  };
+  logGroupAssignees: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "*/*": components["schemas"]["ApiResponseListAssignableUser"];
         };
       };
       /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
@@ -2447,6 +2642,173 @@ export interface operations {
       };
     };
   };
+  logAssignGroup: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["AssignRequest"];
+      };
+    };
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "*/*": components["schemas"]["ApiResponseLogGroupDto"];
+        };
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
+    };
+  };
+  logGroupComments: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "*/*": components["schemas"]["ApiResponseListLogGroupCommentDto"];
+        };
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
+    };
+  };
+  logAddGroupComment: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CommentRequest"];
+      };
+    };
+    responses: {
+      /** @description Created */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "*/*": components["schemas"]["ApiResponseLogGroupCommentDto"];
+        };
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
+    };
+  };
+  logEditGroupComment: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+        commentId: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CommentRequest"];
+      };
+    };
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "*/*": components["schemas"]["ApiResponseLogGroupCommentDto"];
+        };
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
+    };
+  };
+  logDeleteGroupComment: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+        commentId: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No Content */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
+    };
+  };
   logGroupEntries: {
     parameters: {
       query?: {
@@ -2499,6 +2861,72 @@ export interface operations {
         };
         content: {
           "*/*": components["schemas"]["ApiResponseListLogGroupEventDto"];
+        };
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
+    };
+  };
+  logMergeGroup: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["MergeRequest"];
+      };
+    };
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "*/*": components["schemas"]["ApiResponseLogGroupDto"];
+        };
+      };
+      /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */
+      default: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorEnvelope"];
+        };
+      };
+    };
+  };
+  logUnmergeGroup: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "*/*": components["schemas"]["ApiResponseLogGroupDto"];
         };
       };
       /** @description Error: the status says what failed, `error.code` why (e.g. NOT_FOUND, API_KEY_SCOPE, INVALID_API_KEY) */

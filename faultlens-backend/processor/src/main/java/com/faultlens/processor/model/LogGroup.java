@@ -55,6 +55,14 @@ public class LogGroup {
     @Column(nullable = false)
     private Integer regressionCount;
 
+    /** Collaboration (P10 / 2.2). Username of the person working on it. */
+    @Column(length = 100)
+    private String assignee;
+    private Instant assignedAt;
+    /** New entries go to this group (processor); null = not merged. */
+    private Long mergedIntoId;
+    private Instant mergedAt;
+
     /**
      * Initializes defaults before persisting.
      */

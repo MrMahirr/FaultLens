@@ -18,6 +18,9 @@ import {
 import { GroupStatusBadge } from "@/features/logs/components/GroupStatusBadge";
 import { GroupActions } from "@/features/logs/components/GroupActions";
 import { LogTable } from "@/features/logs/components/LogTable";
+import { GroupAssignee } from "@/features/logs/components/GroupAssignee";
+import { GroupComments } from "@/features/logs/components/GroupComments";
+import { MergeGroupButton, MergedBanner } from "@/features/logs/components/GroupMerge";
 import { LogGroupEventType, type LogGroupEventDto } from "@/features/logs/types/log.types";
 
 const EVENT_DOT: Record<LogGroupEventType, string> = {
@@ -27,6 +30,12 @@ const EVENT_DOT: Record<LogGroupEventType, string> = {
   [LogGroupEventType.REOPENED]: "var(--crit)",
   [LogGroupEventType.REGRESSED]: "var(--warn)",
   [LogGroupEventType.UNIGNORED]: "var(--crit)",
+  [LogGroupEventType.ASSIGNED]: "var(--signal)",
+  [LogGroupEventType.UNASSIGNED]: "var(--fg-3)",
+  [LogGroupEventType.COMMENTED]: "var(--fg-2)",
+  [LogGroupEventType.MERGED]: "var(--info)",
+  [LogGroupEventType.MERGED_FROM]: "var(--info)",
+  [LogGroupEventType.UNMERGED]: "var(--fg-3)",
 };
 
 export default function LogGroupPage({ params }: { params: Promise<{ id: string }> }) {
@@ -61,10 +70,20 @@ export default function LogGroupPage({ params }: { params: Promise<{ id: string 
     if (event.type === LogGroupEventType.IGNORED && event.ignoreUntil) {
       return t("events.IGNORED_UNTIL", { time: dates.dateTime(event.ignoreUntil) });
     }
-    if (event.type === LogGroupEventType.REGRESSED) {
-      return t("events.REGRESSED", { count: event.regressionCount ?? 1 });
+    switch (event.type) {
+      case LogGroupEventType.REGRESSED:
+        return t("events.REGRESSED", { count: event.regressionCount ?? 1 });
+      case LogGroupEventType.ASSIGNED:
+        return t("events.ASSIGNED", { user: event.assignee ?? "?" });
+      case LogGroupEventType.MERGED:
+      case LogGroupEventType.MERGED_FROM:
+      case LogGroupEventType.UNMERGED:
+        return t(`events.${event.type}`, { id: event.relatedGroupId ?? "?" });
+      case LogGroupEventType.IGNORED:
+        return t("events.IGNORED");
+      default:
+        return t(`events.${event.type}`);
     }
-    return t(`events.${event.type}`);
   };
 
   const facts: [string, string][] = [
@@ -97,8 +116,17 @@ export default function LogGroupPage({ params }: { params: Promise<{ id: string 
             )}
           </div>
         </div>
-        {canEdit && <GroupActions group={group} size="md" />}
+        {canEdit && (
+          <div className="row gap-1 flex-wrap">
+            <GroupActions group={group} size="md" />
+            {!group.mergedIntoId && <MergeGroupButton group={group} />}
+          </div>
+        )}
       </header>
+
+      <MergedBanner group={group} />
+
+      <GroupAssignee group={group} />
 
       <dl className="grid grid-cols-2 lg:grid-cols-4 gap-3 m-0" aria-label={t("summary")}>
         {facts.map(([label, value]) => (
@@ -127,37 +155,40 @@ export default function LogGroupPage({ params }: { params: Promise<{ id: string 
           />
         </section>
 
-        <section className="card p-4 stack gap-3" aria-labelledby="group-timeline">
-          <h2 id="group-timeline" className="h3">
-            {t("timeline")}
-          </h2>
-          {events && events.length > 0 ? (
-            <ol className="relative m-0 p-0 list-none stack gap-3">
-              <span
-                className="absolute left-[4px] top-1 bottom-1 w-px bg-border-strong"
-                aria-hidden="true"
-              />
-              {events.map((event) => (
-                <li key={event.id} className="relative pl-5">
-                  <span
-                    className="absolute left-0 top-[5px] w-[9px] h-[9px] rounded-full"
-                    style={{ background: EVENT_DOT[event.type] }}
-                    aria-hidden="true"
-                  />
-                  <p className="small m-0">{describe(event)}</p>
-                  <p className="xs t3 m-0">
-                    {event.actor ?? t("system")} ·{" "}
-                    <time dateTime={event.createdAt} title={dates.dateTime(event.createdAt)}>
-                      {dates.relative(event.createdAt)}
-                    </time>
-                  </p>
-                </li>
-              ))}
-            </ol>
-          ) : (
-            <p className="small t3">{t("timelineEmpty")}</p>
-          )}
-        </section>
+        <div className="stack gap-5">
+          <GroupComments groupId={group.id} />
+          <section className="card p-4 stack gap-3" aria-labelledby="group-timeline">
+            <h2 id="group-timeline" className="h3">
+              {t("timeline")}
+            </h2>
+            {events && events.length > 0 ? (
+              <ol className="relative m-0 p-0 list-none stack gap-3">
+                <span
+                  className="absolute left-[4px] top-1 bottom-1 w-px bg-border-strong"
+                  aria-hidden="true"
+                />
+                {events.map((event) => (
+                  <li key={event.id} className="relative pl-5">
+                    <span
+                      className="absolute left-0 top-[5px] w-[9px] h-[9px] rounded-full"
+                      style={{ background: EVENT_DOT[event.type] }}
+                      aria-hidden="true"
+                    />
+                    <p className="small m-0">{describe(event)}</p>
+                    <p className="xs t3 m-0">
+                      {event.actor ?? t("system")} ·{" "}
+                      <time dateTime={event.createdAt} title={dates.dateTime(event.createdAt)}>
+                        {dates.relative(event.createdAt)}
+                      </time>
+                    </p>
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p className="small t3">{t("timelineEmpty")}</p>
+            )}
+          </section>
+        </div>
       </div>
     </div>
   );

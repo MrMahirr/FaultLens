@@ -11,6 +11,8 @@ export const logKeys = {
   groupList: (params: LogGroupListParams) => [...logKeys.groups(), "list", params] as const,
   group: (id: number) => [...logKeys.groups(), "detail", id] as const,
   groupEvents: (id: number) => [...logKeys.groups(), "events", id] as const,
+  groupComments: (id: number) => [...logKeys.groups(), "comments", id] as const,
+  assignees: () => [...logKeys.groups(), "assignees"] as const,
   stats: () => [...logKeys.all, "stats"] as const,
 };
 
@@ -52,4 +54,20 @@ export const useLogGroupEventsQuery = (id: number) =>
     queryKey: logKeys.groupEvents(id),
     queryFn: () => LogApi.getLogGroupEvents(id),
     enabled: id > 0,
+  });
+
+export const useLogGroupCommentsQuery = (id: number) =>
+  useQuery({
+    queryKey: logKeys.groupComments(id),
+    queryFn: () => LogApi.getLogGroupComments(id),
+    enabled: id > 0,
+  });
+
+/** Only for editors (the API refuses viewers). */
+export const useAssignableUsersQuery = (enabled: boolean) =>
+  useQuery({
+    queryKey: logKeys.assignees(),
+    queryFn: () => LogApi.getAssignableUsers(),
+    enabled,
+    staleTime: 5 * 60_000,
   });

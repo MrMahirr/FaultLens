@@ -42,4 +42,25 @@ public class InAppNotificationService {
             log.error("Failed to broadcast in-app notification", e);
         }
     }
+
+    /**
+     * Tells one user that a log group was assigned to them (P10 / 2.2). Best effort: the
+     * assignment itself is already stored and on the group's timeline.
+     */
+    public void notifyAssigned(String username, long groupId, String groupMessage, String assignedBy) {
+        try {
+            Map<String, Object> payload = Map.of(
+                "id", UUID.randomUUID().toString(),
+                "type", "GROUP_ASSIGNED",
+                "group_id", groupId,
+                "title", "Hata grubu size atandı",
+                "message", groupMessage == null ? "" : groupMessage,
+                "assigned_by", assignedBy == null ? "" : assignedBy,
+                "timestamp", Instant.now().toString()
+            );
+            logWebSocketHandler.sendRawToUser(username, objectMapper.writeValueAsString(payload));
+        } catch (Exception e) {
+            log.error("Failed to send the assignment notification", e);
+        }
+    }
 }

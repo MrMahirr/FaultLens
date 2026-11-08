@@ -44,7 +44,8 @@ public class LogGroupLifecycleService {
     private static final String TIMELINE = """
             SELECT id, type, actor, payload->>'from_status' AS from_status,
                    (payload->>'ignore_until')::timestamptz AS ignore_until,
-                   (payload->>'regression_count')::int AS regression_count, created_at
+                   (payload->>'regression_count')::int AS regression_count, payload->>'assignee' AS assignee,
+                   (payload->>'related_group_id')::bigint AS related_group_id, created_at
               FROM log_group_events
              WHERE group_id = ?
              ORDER BY created_at DESC, id DESC
@@ -125,6 +126,8 @@ public class LogGroupLifecycleService {
                     fromStatus == null ? null : GroupStatus.valueOf(fromStatus),
                     ignoreUntil == null ? null : ignoreUntil.toInstant(),
                     (Integer) rs.getObject("regression_count"),
+                    rs.getString("assignee"),
+                    (Long) rs.getObject("related_group_id"),
                     rs.getTimestamp("created_at").toInstant());
         }, id, TIMELINE_LIMIT);
     }

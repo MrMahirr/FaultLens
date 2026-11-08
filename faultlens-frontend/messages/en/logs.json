@@ -101,7 +101,8 @@
         "firstSeen": "First seen",
         "lastSeen": "Last seen",
         "status": "Status",
-        "actions": "Actions"
+        "actions": "Actions",
+        "assignee": "Assignee"
       },
       "regressionBadge": "{count, plural, one {# regression} other {# regressions}}",
       "regressionHint": "Seen again after it was resolved",
@@ -150,8 +151,62 @@
           "IGNORED_UNTIL": "Ignored until {time}",
           "REOPENED": "Reopened",
           "REGRESSED": "Regression: seen again after it was resolved ({count}×)",
-          "UNIGNORED": "Ignore period ran out; reopened by a new entry"
+          "UNIGNORED": "Ignore period ran out; reopened by a new entry",
+          "ASSIGNED": "Assigned to {user}",
+          "UNASSIGNED": "Assignment removed",
+          "COMMENTED": "Added a note",
+          "MERGED": "Merged into #{id}",
+          "MERGED_FROM": "#{id} was merged into this group",
+          "UNMERGED": "Merge with #{id} undone"
         }
+      },
+      "assignedToMe": "Assigned to me",
+      "unassigned": "Unassigned",
+      "assign": {
+        "label": "Assignee",
+        "none": "Unassigned",
+        "me": "{user} (me)",
+        "assigned": "Group assigned to {user}",
+        "unassigned": "Assignment removed",
+        "failed": "Could not assign the group."
+      },
+      "comments": {
+        "title": "Notes",
+        "empty": "No notes yet.",
+        "placeholder": "Add a note: why, who, what was done…",
+        "label": "New note",
+        "add": "Add note",
+        "edit": "Edit",
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "deleteTitle": "Delete the note?",
+        "deleteDescription": "The note is deleted permanently.",
+        "edited": "edited",
+        "failed": "Could not save the note."
+      },
+      "merge": {
+        "action": "Merge",
+        "title": "Merge into another group",
+        "description": "New entries of this group go to the group you choose. Past entries stay where they are; only admins can undo a merge.",
+        "target": "Target group",
+        "targetPlaceholder": "Choose a group",
+        "targetOption": "#{id} · {message}",
+        "confirm": "Merge",
+        "merged": "Merged into group #{id}",
+        "failed": "Could not merge.",
+        "banner": "This group was merged into #{id}; its new entries go there.",
+        "openTarget": "Open the target group",
+        "unmerge": "Unmerge",
+        "unmergeTitle": "Undo the merge?",
+        "unmergeDescription": "This group gets its own new entries again. Entries that went to the target while merged stay there.",
+        "unmerged": "Merge undone",
+        "undo": "Undo"
+      },
+      "assignedToast": {
+        "title": "An error group was assigned to you",
+        "by": "by {user}",
+        "open": "Open group"
       }
     }
   }

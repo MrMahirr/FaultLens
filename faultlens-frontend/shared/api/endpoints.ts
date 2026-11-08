@@ -27,6 +27,13 @@ export const Endpoints = {
     GROUP: (groupId: number) => `${BASE}/logs/groups/${groupId}`,
     GROUP_ENTRIES: (groupId: number) => `${BASE}/logs/groups/${groupId}/entries`,
     GROUP_EVENTS: (groupId: number) => `${BASE}/logs/groups/${groupId}/events`,
+    GROUP_ASSIGNEE: (groupId: number) => `${BASE}/logs/groups/${groupId}/assignee`,
+    GROUP_ASSIGNEES: `${BASE}/logs/groups/assignees`,
+    GROUP_COMMENTS: (groupId: number) => `${BASE}/logs/groups/${groupId}/comments`,
+    GROUP_COMMENT: (groupId: number, commentId: number) =>
+      `${BASE}/logs/groups/${groupId}/comments/${commentId}`,
+    GROUP_MERGE: (groupId: number) => `${BASE}/logs/groups/${groupId}/merge`,
+    GROUP_UNMERGE: (groupId: number) => `${BASE}/logs/groups/${groupId}/unmerge`,
     STATS: `${BASE}/logs/stats`,
   },
 

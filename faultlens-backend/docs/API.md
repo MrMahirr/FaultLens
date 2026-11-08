@@ -311,6 +311,19 @@ Requires authentication.
   `{ id, type, actor, from_status, ignore_until, regression_count, created_at }` with `type` one of
   `CREATED`, `RESOLVED`, `IGNORED`, `REOPENED`, `REGRESSED`, `UNIGNORED`; `actor` is null for
   system transitions.
+- `GET /api/v1/logs/groups` also takes `assignee` (username); merged groups are never listed.
+- Collaboration (P10 / 2.2; EDITOR or ADMIN unless noted):
+  - `PUT /api/v1/logs/groups/{id}/assignee` `{ "assignee": "alice" }` (null unassigns; 400
+    `UNKNOWN_USER`, 409 `GROUP_ASSIGNEE_UNCHANGED`). The assignee is notified in-app.
+  - `GET /api/v1/logs/groups/assignees` → `[{ "username": … }]`.
+  - `GET|POST /api/v1/logs/groups/{id}/comments` (`{ "body": … }`, plain text ≤ 10 000; POST → 201),
+    `PUT|DELETE /api/v1/logs/groups/{id}/comments/{commentId}` (edit: author only; delete: author or
+    admin → 204; else 403).
+  - `POST /api/v1/logs/groups/{id}/merge` `{ "target_id": 12 }`: new entries go to the target (400
+    `INVALID_MERGE` for itself or a merged target, 409 `GROUP_ALREADY_MERGED`).
+    `POST /api/v1/logs/groups/{id}/unmerge` (ADMIN; 409 `GROUP_NOT_MERGED`).
+  - Timeline types add `ASSIGNED`, `UNASSIGNED`, `COMMENTED`, `MERGED`, `MERGED_FROM`, `UNMERGED`
+    (fields `assignee`, `related_group_id`).
 - A `RESOLVED` group that receives an entry newer than its resolution is reopened as a
   **regression** and raises `REGRESSION` alarm rules; entries of `IGNORED` groups raise no alarms.
 

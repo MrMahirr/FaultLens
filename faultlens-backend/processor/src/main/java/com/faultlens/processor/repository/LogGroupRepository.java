@@ -37,9 +37,12 @@ public interface LogGroupRepository extends JpaRepository<LogGroup, Long> {
     Page<LogGroup> findAllByOrderByLastSeenAtDesc(Pageable pageable);
 
     /**
-     * Groups in the given statuses, optionally of one severity (P10 / 2.1). Sorted by the pageable.
+     * Groups in the given statuses, optionally of one severity and assignee (P10 / 2.1, 2.2).
+     * Merged groups are left out: their entries go to the target. Sorted by the pageable.
      */
-    @Query("select g from LogGroup g where g.status in :statuses and (:severity is null or g.severity = :severity)")
+    @Query("select g from LogGroup g where g.status in :statuses and g.mergedIntoId is null"
+            + " and (:severity is null or g.severity = :severity)"
+            + " and (:assignee is null or g.assignee = :assignee)")
     Page<LogGroup> search(@Param("statuses") Collection<GroupStatus> statuses, @Param("severity") Severity severity,
-                          Pageable pageable);
+                          @Param("assignee") String assignee, Pageable pageable);
 }

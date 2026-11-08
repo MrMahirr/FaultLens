@@ -88,6 +88,12 @@ export interface LogGroupDto {
   /** Last time it was seen again after being resolved. */
   regressedAt: string | null;
   regressionCount: number;
+  /** Username of the person working on it (2.2). */
+  assignee: string | null;
+  assignedAt: string | null;
+  /** Merged into this group: its new entries go there. */
+  mergedIntoId: number | null;
+  mergedAt: string | null;
 }
 
 /** Backend LogGroupEventType: one line of a group's timeline. */
@@ -98,6 +104,12 @@ export enum LogGroupEventType {
   REOPENED = "REOPENED",
   REGRESSED = "REGRESSED",
   UNIGNORED = "UNIGNORED",
+  ASSIGNED = "ASSIGNED",
+  UNASSIGNED = "UNASSIGNED",
+  COMMENTED = "COMMENTED",
+  MERGED = "MERGED",
+  MERGED_FROM = "MERGED_FROM",
+  UNMERGED = "UNMERGED",
 }
 
 export interface LogGroupEventDto {
@@ -108,7 +120,25 @@ export interface LogGroupEventDto {
   fromStatus: GroupStatus | null;
   ignoreUntil: string | null;
   regressionCount: number | null;
+  /** ASSIGNED: who it was assigned to. */
+  assignee: string | null;
+  /** MERGED, MERGED_FROM, UNMERGED: the other group. */
+  relatedGroupId: number | null;
   createdAt: string;
+}
+
+export interface LogGroupCommentDto {
+  id: number;
+  groupId: number;
+  author: string;
+  /** Plain text, shown as text (never as HTML). */
+  body: string;
+  createdAt: string;
+  editedAt: string | null;
+}
+
+export interface AssignableUser {
+  username: string;
 }
 
 export interface GroupStatusUpdate {
@@ -119,6 +149,8 @@ export interface GroupStatusUpdate {
 
 export interface LogGroupListParams {
   statuses?: GroupStatus[];
+  /** Only groups assigned to this username. */
+  assignee?: string;
   severity?: Severity;
   page?: number;
   size?: number;

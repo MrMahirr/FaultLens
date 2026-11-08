@@ -34,4 +34,10 @@ public class LogGroupDto {
     /** Last time a RESOLVED group was seen again. */
     private Instant regressedAt;
     private Integer regressionCount;
+    /** Username of the person working on it (P10 / 2.2). */
+    private String assignee;
+    private Instant assignedAt;
+    /** Merged into this group: its new entries go there. */
+    private Long mergedIntoId;
+    private Instant mergedAt;
 }

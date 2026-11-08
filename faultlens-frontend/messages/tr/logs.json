@@ -101,7 +101,8 @@
         "firstSeen": "İlk görülme",
         "lastSeen": "Son görülme",
         "status": "Durum",
-        "actions": "İşlemler"
+        "actions": "İşlemler",
+        "assignee": "Atanan"
       },
       "regressionBadge": "{count, plural, one {# regresyon} other {# regresyon}}",
       "regressionHint": "Çözüldükten sonra tekrar görüldü",
@@ -150,8 +151,62 @@
           "IGNORED_UNTIL": "{time} tarihine kadar yok sayıldı",
           "REOPENED": "Yeniden açıldı",
           "REGRESSED": "Regresyon: çözüldükten sonra tekrar görüldü ({count}. kez)",
-          "UNIGNORED": "Yok sayma süresi doldu, yeni kayıtla yeniden açıldı"
+          "UNIGNORED": "Yok sayma süresi doldu, yeni kayıtla yeniden açıldı",
+          "ASSIGNED": "{user} kişisine atandı",
+          "UNASSIGNED": "Atama kaldırıldı",
+          "COMMENTED": "Not ekledi",
+          "MERGED": "#{id} ile birleştirildi",
+          "MERGED_FROM": "#{id} bu gruba birleştirildi",
+          "UNMERGED": "#{id} ile birleştirme geri alındı"
         }
+      },
+      "assignedToMe": "Bana atananlar",
+      "unassigned": "Atanmamış",
+      "assign": {
+        "label": "Atanan kişi",
+        "none": "Atanmamış",
+        "me": "{user} (ben)",
+        "assigned": "Grup {user} kişisine atandı",
+        "unassigned": "Atama kaldırıldı",
+        "failed": "Atama yapılamadı."
+      },
+      "comments": {
+        "title": "Notlar",
+        "empty": "Henüz not yok.",
+        "placeholder": "Not ekleyin: neden, kim, ne yapıldı…",
+        "label": "Yeni not",
+        "add": "Not ekle",
+        "edit": "Düzenle",
+        "save": "Kaydet",
+        "cancel": "Vazgeç",
+        "delete": "Sil",
+        "deleteTitle": "Not silinsin mi?",
+        "deleteDescription": "Bu not kalıcı olarak silinir.",
+        "edited": "düzenlendi",
+        "failed": "Not kaydedilemedi."
+      },
+      "merge": {
+        "action": "Birleştir",
+        "title": "Başka bir grupla birleştir",
+        "description": "Bu grubun yeni kayıtları seçtiğiniz gruba gider. Geçmiş kayıtlar yerinde kalır; birleştirme yalnızca yöneticilerce geri alınabilir.",
+        "target": "Hedef grup",
+        "targetPlaceholder": "Grup seçin",
+        "targetOption": "#{id} · {message}",
+        "confirm": "Birleştir",
+        "merged": "Grup #{id} ile birleştirildi",
+        "failed": "Birleştirilemedi.",
+        "banner": "Bu grup #{id} ile birleştirildi; yeni kayıtları oraya gidiyor.",
+        "openTarget": "Hedef grubu aç",
+        "unmerge": "Ayır",
+        "unmergeTitle": "Birleştirme geri alınsın mı?",
+        "unmergeDescription": "Bu grup yeni kayıtlarını yeniden kendisi alır. Birleşikken hedefe giden kayıtlar orada kalır.",
+        "unmerged": "Birleştirme geri alındı",
+        "undo": "Geri al"
+      },
+      "assignedToast": {
+        "title": "Hata grubu size atandı",
+        "by": "{user} tarafından",
+        "open": "Grubu aç"
       }
     }
   }

@@ -28,6 +28,8 @@ import type {
   LogGroupDto,
   LogGroupEventDto,
   LogGroupEventType,
+  LogGroupCommentDto,
+  AssignableUser,
 } from "@/features/logs/types/log.types";
 import type {
   Alarm,
@@ -94,6 +96,8 @@ export type FieldChecks = [
   Expect<SameKeys<LogGroupDto, "LogGroupDto">>,
   Expect<SameKeys<LogGroupEventDto, "LogGroupEventDto">>,
   Expect<SameKeys<GroupStatusUpdate, "GroupStatusUpdateRequest">>,
+  Expect<SameKeys<LogGroupCommentDto, "LogGroupCommentDto">>,
+  Expect<SameKeys<AssignableUser, "AssignableUser">>,
   Expect<SameKeys<LogDetailDto, "LogDetailDto">>,
   // Alarms
   Expect<SameKeys<Alarm, "AlarmDto">>,

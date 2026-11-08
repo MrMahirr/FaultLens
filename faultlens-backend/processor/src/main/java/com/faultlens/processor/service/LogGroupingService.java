@@ -65,6 +65,12 @@ public class LogGroupingService {
                       new.regression_count
             """.formatted(REOPENS, REGRESSES);
 
+    static final String MERGE_TARGETS = """
+            SELECT s.fingerprint, t.fingerprint AS target
+              FROM log_groups s JOIN log_groups t ON t.id = s.merged_into_id
+             WHERE s.fingerprint = ANY (?)
+            """;
+
     static final String INSERT_EVENT = """
             INSERT INTO log_group_events (group_id, type, payload) VALUES (?, ?, ?::jsonb)
             """;
@@ -119,10 +125,18 @@ public class LogGroupingService {
      * expiries, are written to the group's timeline ({@code log_group_events}).
      */
     public GroupingResult groupAll(Collection<GroupCandidate> candidates) {
+        Map<GroupCandidate, String> fingerprints = new java.util.IdentityHashMap<>(candidates.size() * 2);
+        for (GroupCandidate candidate : candidates) {
+            fingerprints.put(candidate, fingerprint(candidate.message(), candidate.stackTrace(), candidate.severity()));
+        }
+        // Merged groups (2.2): their entries go to the target group. Resolved before locking, so
+        // rows are locked in target-fingerprint order like any other batch.
+        Map<String, String> mergedInto = mergeTargets(new java.util.HashSet<>(fingerprints.values()));
         // Sorted: every transaction locks group rows in the same order -> no deadlocks.
         TreeMap<String, Aggregate> byFingerprint = new TreeMap<>();
         for (GroupCandidate candidate : candidates) {
-            byFingerprint.computeIfAbsent(fingerprint(candidate.message(), candidate.stackTrace(), candidate.severity()),
+            String fingerprint = fingerprints.get(candidate);
+            byFingerprint.computeIfAbsent(mergedInto.getOrDefault(fingerprint, fingerprint),
                     key -> new Aggregate(candidate)).add(candidate);
         }
         Map<String, Long> ids = new HashMap<>(byFingerprint.size() * 2);
@@ -160,7 +174,23 @@ public class LogGroupingService {
         if (!timeline.isEmpty()) {
             jdbc.batchUpdate(INSERT_EVENT, timeline);
         }
+        // Callers look entries up by their own fingerprint, merged or not.
+        mergedInto.forEach((source, target) -> ids.put(source, ids.get(target)));
         return new GroupingResult(ids, muted);
+    }
+
+    /**
+     * Source fingerprint -> target fingerprint for the given fingerprints whose group is merged.
+     * Merges are never chained (LogGroupCollaborationService re-points them), so one hop is enough.
+     */
+    private Map<String, String> mergeTargets(Set<String> fingerprints) {
+        Map<String, String> targets = new HashMap<>();
+        jdbc.query(MERGE_TARGETS, ps -> ps.setArray(1, ps.getConnection().createArrayOf("varchar",
+                        fingerprints.toArray())),
+                rs -> {
+                    targets.put(rs.getString("fingerprint"), rs.getString("target"));
+                });
+        return targets;
     }
 
     /**

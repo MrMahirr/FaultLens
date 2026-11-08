@@ -6,6 +6,8 @@ import type {
   LogFilters,
   LogGroupDto,
   LogGroupEventDto,
+  LogGroupCommentDto,
+  AssignableUser,
   LogGroupListParams,
   GroupStatusUpdate,
   LogDetailDto,
@@ -68,6 +70,7 @@ export const LogApi = {
         // Comma-separated: axios would send an array as status[]=…, which Spring does not bind.
         ...(params.statuses?.length ? { status: params.statuses.join(",") } : {}),
         ...(params.severity ? { severity: params.severity } : {}),
+        ...(params.assignee ? { assignee: params.assignee } : {}),
         ...(params.page !== undefined ? { page: params.page } : {}),
         ...(params.size !== undefined ? { size: params.size } : {}),
       },
@@ -93,6 +96,78 @@ export const LogApi = {
       method: HttpMethod.PATCH,
       url: Endpoints.LOGS.GROUP(id),
       data: update,
+    });
+    return response.data.data;
+  },
+
+  getAssignableUsers: async (): Promise<AssignableUser[]> => {
+    const response = await apiClient({
+      method: HttpMethod.GET,
+      url: Endpoints.LOGS.GROUP_ASSIGNEES,
+    });
+    return response.data.data;
+  },
+
+  /** null unassigns. */
+  assignLogGroup: async (id: number, assignee: string | null): Promise<LogGroupDto> => {
+    const response = await apiClient({
+      method: HttpMethod.PUT,
+      url: Endpoints.LOGS.GROUP_ASSIGNEE(id),
+      data: { assignee },
+    });
+    return response.data.data;
+  },
+
+  getLogGroupComments: async (id: number): Promise<LogGroupCommentDto[]> => {
+    const response = await apiClient({
+      method: HttpMethod.GET,
+      url: Endpoints.LOGS.GROUP_COMMENTS(id),
+    });
+    return response.data.data;
+  },
+
+  addLogGroupComment: async (id: number, body: string): Promise<LogGroupCommentDto> => {
+    const response = await apiClient({
+      method: HttpMethod.POST,
+      url: Endpoints.LOGS.GROUP_COMMENTS(id),
+      data: { body },
+    });
+    return response.data.data;
+  },
+
+  editLogGroupComment: async (
+    id: number,
+    commentId: number,
+    body: string,
+  ): Promise<LogGroupCommentDto> => {
+    const response = await apiClient({
+      method: HttpMethod.PUT,
+      url: Endpoints.LOGS.GROUP_COMMENT(id, commentId),
+      data: { body },
+    });
+    return response.data.data;
+  },
+
+  deleteLogGroupComment: async (id: number, commentId: number): Promise<void> => {
+    await apiClient({
+      method: HttpMethod.DELETE,
+      url: Endpoints.LOGS.GROUP_COMMENT(id, commentId),
+    });
+  },
+
+  mergeLogGroup: async (id: number, targetId: number): Promise<LogGroupDto> => {
+    const response = await apiClient({
+      method: HttpMethod.POST,
+      url: Endpoints.LOGS.GROUP_MERGE(id),
+      data: { targetId },
+    });
+    return response.data.data;
+  },
+
+  unmergeLogGroup: async (id: number): Promise<LogGroupDto> => {
+    const response = await apiClient({
+      method: HttpMethod.POST,
+      url: Endpoints.LOGS.GROUP_UNMERGE(id),
     });
     return response.data.data;
   },

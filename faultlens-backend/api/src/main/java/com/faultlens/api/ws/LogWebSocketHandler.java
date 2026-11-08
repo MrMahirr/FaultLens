@@ -131,6 +131,29 @@ public class LogWebSocketHandler extends TextWebSocketHandler implements SubProt
     }
 
     /**
+     * Sends a pre-serialized payload to the sessions of one user (P10 / 2.2: "assigned to you").
+     * Only this instance's sessions, like {@link #broadcastRaw}.
+     */
+    public void sendRawToUser(String username, String payload) {
+        if (sessions.isEmpty() || username == null) {
+            return;
+        }
+        broadcastExecutor.submit(() -> {
+            for (WebSocketSession session : sessions.values()) {
+                if (!session.isOpen()
+                        || !username.equals(session.getAttributes().get(JwtHandshakeInterceptor.ATTR_USERNAME))) {
+                    continue;
+                }
+                try {
+                    session.sendMessage(new TextMessage(payload));
+                } catch (Exception ex) {
+                    log.warn("WebSocket send to user failed for session {}: {}", session.getId(), ex.getMessage());
+                }
+            }
+        });
+    }
+
+    /**
      * Periodically pings all sessions to clean up dead connections and closes sessions whose
      * token has expired, so a revoked/expired login cannot keep streaming logs.
      */

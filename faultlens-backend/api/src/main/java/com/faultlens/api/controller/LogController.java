@@ -1,6 +1,18 @@
 package com.faultlens.api.controller;
 
+import com.faultlens.api.dto.LogGroupDtos.AssignRequest;
+import com.faultlens.api.dto.LogGroupDtos.AssignableUser;
+import com.faultlens.api.dto.LogGroupDtos.CommentRequest;
 import com.faultlens.api.dto.LogGroupDtos.GroupStatusUpdateRequest;
+import com.faultlens.api.dto.LogGroupDtos.LogGroupCommentDto;
+import com.faultlens.api.dto.LogGroupDtos.MergeRequest;
+import com.faultlens.api.service.LogGroupCollaborationService;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import com.faultlens.api.dto.LogGroupDtos.LogGroupEventDto;
 import com.faultlens.api.service.LogGroupLifecycleService;
 import com.faultlens.api.service.LogQueryService;
@@ -41,6 +53,7 @@ import jakarta.validation.constraints.Min;
 public class LogController {
     private final LogQueryService service;
     private final LogGroupLifecycleService lifecycle;
+    private final LogGroupCollaborationService collaboration;
 
     /**
      * Lists logs with pagination and filters.
@@ -73,9 +86,11 @@ public class LogController {
             @RequestParam(required = false) Severity severity,
             @Parameter(description = "Statuses to list (repeat or comma-separate); default UNRESOLVED,RESOLVED")
             @RequestParam(required = false) List<GroupStatus> status,
+            @Parameter(description = "Only groups assigned to this username")
+            @RequestParam(required = false) String assignee,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "50") @Min(1) @Max(1000) int size) {
-        return ResponseEntity.ok(ApiResponse.ok(service.groups(severity, status, page, size)));
+        return ResponseEntity.ok(ApiResponse.ok(service.groups(severity, status, assignee, page, size)));
     }
 
     /**
@@ -97,6 +112,91 @@ public class LogController {
                                                                       Principal principal) {
         return ResponseEntity.ok(ApiResponse.ok(lifecycle.updateStatus(id, request,
                 principal == null ? null : principal.getName())));
+    }
+
+    /**
+     * Assigns the group to a user, or unassigns it with a null/blank assignee (P10 / 2.2).
+     */
+    @PreAuthorize(Roles.CAN_EDIT)
+    @PutMapping("/groups/{id}/assignee")
+    public ResponseEntity<ApiResponse<LogGroupDto>> assignGroup(@PathVariable Long id,
+                                                                @Valid @RequestBody AssignRequest request,
+                                                                Principal principal) {
+        return ResponseEntity.ok(ApiResponse.ok(collaboration.assign(id, request.assignee(), name(principal))));
+    }
+
+    /**
+     * Users a group can be assigned to (names only; editors may not list users).
+     */
+    @PreAuthorize(Roles.CAN_EDIT)
+    @GetMapping("/groups/assignees")
+    public ResponseEntity<ApiResponse<List<AssignableUser>>> groupAssignees() {
+        return ResponseEntity.ok(ApiResponse.ok(collaboration.assignableUsers()));
+    }
+
+    /**
+     * The group's comments, oldest first.
+     */
+    @GetMapping("/groups/{id}/comments")
+    public ResponseEntity<ApiResponse<List<LogGroupCommentDto>>> groupComments(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.ok(collaboration.comments(id)));
+    }
+
+    @PreAuthorize(Roles.CAN_EDIT)
+    @PostMapping("/groups/{id}/comments")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<ApiResponse<LogGroupCommentDto>> addGroupComment(@PathVariable Long id,
+                                                                          @Valid @RequestBody CommentRequest request,
+                                                                          Principal principal) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.ok(collaboration.addComment(id, request.body(), name(principal))));
+    }
+
+    /** Only the author edits (403 otherwise). */
+    @PreAuthorize(Roles.CAN_EDIT)
+    @PutMapping("/groups/{id}/comments/{commentId}")
+    public ResponseEntity<ApiResponse<LogGroupCommentDto>> editGroupComment(@PathVariable Long id,
+                                                                           @PathVariable Long commentId,
+                                                                           @Valid @RequestBody CommentRequest request,
+                                                                           Principal principal) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                collaboration.editComment(id, commentId, request.body(), name(principal))));
+    }
+
+    /** The author or an admin deletes (403 otherwise). */
+    @PreAuthorize(Roles.CAN_EDIT)
+    @DeleteMapping("/groups/{id}/comments/{commentId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ResponseEntity<Void> deleteGroupComment(@PathVariable Long id, @PathVariable Long commentId,
+                                                   Authentication authentication) {
+        boolean admin = authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(authority -> ("ROLE_" + Roles.ADMIN).equals(authority.getAuthority()));
+        collaboration.deleteComment(id, commentId, authentication == null ? null : authentication.getName(), admin);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Merges this group into {@code target_id}: its new entries go there. 409 if already merged.
+     */
+    @PreAuthorize(Roles.CAN_EDIT)
+    @PostMapping("/groups/{id}/merge")
+    public ResponseEntity<ApiResponse<LogGroupDto>> mergeGroup(@PathVariable Long id,
+                                                               @Valid @RequestBody MergeRequest request,
+                                                               Principal principal) {
+        return ResponseEntity.ok(ApiResponse.ok(collaboration.merge(id, request.targetId(), name(principal))));
+    }
+
+    /**
+     * Undoes a merge (admins only). 409 if the group is not merged.
+     */
+    @PreAuthorize(Roles.ADMIN_ONLY)
+    @PostMapping("/groups/{id}/unmerge")
+    public ResponseEntity<ApiResponse<LogGroupDto>> unmergeGroup(@PathVariable Long id, Principal principal) {
+        return ResponseEntity.ok(ApiResponse.ok(collaboration.unmerge(id, name(principal))));
+    }
+
+    private static String name(Principal principal) {
+        return principal == null ? null : principal.getName();
     }
 
     /**

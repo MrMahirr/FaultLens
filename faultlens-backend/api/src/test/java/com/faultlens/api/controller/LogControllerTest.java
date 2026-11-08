@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.faultlens.api.dto.LogDetailDto;
 import com.faultlens.api.exception.GlobalExceptionHandler;
 import com.faultlens.api.dto.LogGroupDtos.GroupStatusUpdateRequest;
+import com.faultlens.api.service.LogGroupCollaborationService;
 import com.faultlens.api.service.LogGroupLifecycleService;
 import com.faultlens.api.service.LogQueryService;
 import com.faultlens.common.dto.LogGroupDto;
@@ -38,7 +39,7 @@ class LogControllerTest {
     void setUp() {
         service = mock(LogQueryService.class);
         lifecycle = mock(LogGroupLifecycleService.class);
-        mockMvc = MockMvcBuilders.standaloneSetup(new LogController(service, lifecycle))
+        mockMvc = MockMvcBuilders.standaloneSetup(new LogController(service, lifecycle, mock(LogGroupCollaborationService.class)))
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
     }
@@ -103,12 +104,12 @@ class LogControllerTest {
 
     @Test
     void groupsPassTheStatusFilter() throws Exception {
-        when(service.groups(any(), any(), anyInt(), anyInt())).thenReturn(new PagedResponse<>(List.of(), 0, 50, 0L, 0));
+        when(service.groups(any(), any(), any(), anyInt(), anyInt())).thenReturn(new PagedResponse<>(List.of(), 0, 50, 0L, 0));
 
         mockMvc.perform(get("/api/v1/logs/groups").param("status", "UNRESOLVED,IGNORED"))
                 .andExpect(status().isOk());
 
-        verify(service).groups(null, List.of(GroupStatus.UNRESOLVED, GroupStatus.IGNORED), 0, 50);
+        verify(service).groups(null, List.of(GroupStatus.UNRESOLVED, GroupStatus.IGNORED), null, 0, 50);
     }
 
     @Test

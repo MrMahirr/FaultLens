@@ -4,7 +4,8 @@ import { Suspense, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Layers } from "lucide-react";
+import { Layers, UserRound } from "lucide-react";
+import { useAuthStore } from "@/features/auth/store/auth.store";
 import { PageHeader } from "@/shared/components/layout/PageHeader";
 import { DataTable, type DataTableColumnDef } from "@/shared/components/ui/Table";
 import { Tabs } from "@/shared/components/ui/Tabs";
@@ -47,9 +48,13 @@ function LogGroupsView() {
   const { params, update } = useUrlState();
   const tab = parseTab(params.get("status"));
   const page = Math.max(0, (Number(params.get("page")) || 1) - 1);
+  const me = useAuthStore((state) => state.user?.username);
+  // ?mine=1 — "assigned to me" (2.2); shareable like the status tab.
+  const mine = params.get("mine") === "1" && !!me;
 
   const { data, isLoading } = useLogGroupsQuery({
     statuses: tab === "all" ? ALL_STATUSES : [tab],
+    assignee: mine ? me : undefined,
     page,
     size: PAGE_SIZE,
   });
@@ -81,6 +86,19 @@ function LogGroupsView() {
         accessorKey: "status",
         header: t("columns.status"),
         cell: ({ row }) => <GroupStatusBadge group={row.original} />,
+      },
+      {
+        accessorKey: "assignee",
+        header: t("columns.assignee"),
+        cell: ({ row }) =>
+          row.original.assignee ? (
+            <span className="row gap-1 small whitespace-nowrap">
+              <UserRound size={12} className="t3" aria-hidden="true" />
+              {row.original.assignee}
+            </span>
+          ) : (
+            <span className="xs t3">{t("unassigned")}</span>
+          ),
       },
       {
         accessorKey: "count",
@@ -151,6 +169,15 @@ function LogGroupsView() {
         }
         items={TABS.map((value) => ({ value, label: t(`statusTabs.${value}`) }))}
       />
+
+      <label className="row gap-2 small w-fit cursor-pointer">
+        <input
+          type="checkbox"
+          checked={mine}
+          onChange={(e) => update({ mine: e.target.checked ? "1" : undefined, page: undefined })}
+        />
+        {t("assignedToMe")}
+      </label>
 
       <div
         role="tabpanel"
