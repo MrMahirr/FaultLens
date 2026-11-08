@@ -13,8 +13,10 @@ This document details the REST API endpoints and real-time WebSocket channels pr
 its TypeScript types from it (`pnpm gen:api` → `faultlens-frontend/shared/api/schema.d.ts`) and
 checks its DTOs against them at compile time (`shared/api/contract.check.ts`).
 
-- Property names are documented in **snake_case**, as on the wire (swagger-core uses Jackson 2 and
-  does not see the Jackson 3 `@JsonNaming`, so `OpenApiConfig` applies the strategy globally).
+- Property names are documented as on the wire: swagger-core uses Jackson 2 and does not see the
+  Jackson 3 `@JsonNaming`, so `JacksonNamingIntrospector` reads it **per class**, like the real
+  mapper. A DTO without it is documented with its Java (camelCase) names, and `DtoNamingTest`
+  fails on any `*Dto/*Request/*Response` with a multi-word field and no `@JsonNaming`/`@JsonProperty`.
 - `OpenApiContractIT` fails when the API and the committed file differ, and also checks the main
   schemas against the real JSON field names pinned by `ApiContractIT`.
 - Controllers return concrete types (`ApiResponse<PagedResponse<LogEntryDto>>`, never

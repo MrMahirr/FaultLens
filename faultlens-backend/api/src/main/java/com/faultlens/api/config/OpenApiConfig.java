@@ -1,15 +1,19 @@
 package com.faultlens.api.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import io.swagger.v3.core.jackson.ModelResolver;
 import io.swagger.v3.core.util.Json;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
+import org.springdoc.core.customizers.OperationCustomizer;
+import org.springframework.util.ClassUtils;
+import org.springframework.util.StringUtils;
 import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,17 +44,50 @@ public class OpenApiConfig {
     }
 
     /**
-     * Documents property names in snake_case, as they are on the wire.
+     * Documents property names as they are on the wire.
      *
      * <p>swagger-core introspects models with Jackson 2, so it does not see the Jackson 3
-     * {@code @JsonNaming(SnakeCaseStrategy)} on our DTOs and would publish camelCase names. Every
-     * DTO is snake_case (those without the annotation only have one-word fields), so the naming
-     * strategy is applied to the whole document; explicit {@code @JsonProperty} names still win.
-     * OpenApiContractIT checks the result against the real JSON of the main endpoints.
+     * {@code @JsonNaming(SnakeCaseStrategy)} on our DTOs and would publish the Java (camelCase)
+     * names. {@link JacksonNamingIntrospector} reads the Jackson 3 annotation per class, as the
+     * real mapper does: a DTO without it is documented with its Java names, so a forgotten
+     * annotation shows in the contract instead of being papered over (DtoNamingTest also fails
+     * on it). Explicit {@code @JsonProperty} names still win.
      */
     @Bean
-    public ModelResolver snakeCaseModelResolver() {
-        ObjectMapper mapper = Json.mapper().copy().setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+    public ModelResolver wireNamingModelResolver() {
+        ObjectMapper mapper = Json.mapper().copy();
+        mapper.setAnnotationIntrospector(AnnotationIntrospector.pair(
+                new JacksonNamingIntrospector(), mapper.getSerializationConfig().getAnnotationIntrospector()));
         return new ModelResolver(mapper);
+    }
+
+    /**
+     * Stable operation ids: {@code <controller><Method>}, e.g. {@code sourceList},
+     * {@code logGroupEntries}, {@code apiKeyRevoke}.
+     *
+     * <p>springdoc otherwise uses the bare method name and numbers duplicates in discovery order
+     * ({@code list_7}, {@code create_4}): adding a controller renumbered unrelated operations, so
+     * the contract and the generated TypeScript churned and {@code operations["list_7"]} could
+     * silently point at another endpoint. The controller prefix is skipped when the method name
+     * already starts with it ({@code IngestController.ingestJson} → {@code ingestJson}), and an
+     * explicit {@code @Operation(operationId = ...)} is kept. OpenApiContractIT fails on a
+     * duplicate id instead of letting a suffix appear.
+     */
+    @Bean
+    public OperationCustomizer stableOperationIds() {
+        return (operation, handlerMethod) -> {
+            Operation explicit = handlerMethod.getMethodAnnotation(Operation.class);
+            if (explicit == null || explicit.operationId().isEmpty()) {
+                // getUserClass: controllers with @PreAuthorize are CGLIB proxies (Foo$$SpringCGLIB$$0).
+                Class<?> controller = ClassUtils.getUserClass(handlerMethod.getBeanType());
+                operation.setOperationId(operationId(controller, handlerMethod.getMethod().getName()));
+            }
+            return operation;
+        };
+    }
+
+    static String operationId(Class<?> controller, String method) {
+        String prefix = StringUtils.uncapitalize(controller.getSimpleName().replaceFirst("Controller$", ""));
+        return method.startsWith(prefix) ? method : prefix + StringUtils.capitalize(method);
     }
 }
