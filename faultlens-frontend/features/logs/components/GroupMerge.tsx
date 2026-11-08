@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { GitMerge } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Modal } from "@/shared/components/ui/Modal";
+import { Input } from "@/shared/components/ui/Input";
 import { DropdownSelect } from "@/shared/components/ui/Dropdown";
 import { useConfirm } from "@/shared/components/ui/ConfirmDialog";
 import { getApiErrorMessage } from "@/shared/api/errors";
@@ -31,7 +32,11 @@ export function MergeGroupButton({ group }: { group: Pick<LogGroupDto, "id"> }) 
   const [open, setOpen] = useState(false);
   const [target, setTarget] = useState("");
   // Merged groups are not listed by the API, so every option is a valid target.
-  const { data } = useLogGroupsQuery({ statuses: ALL_STATUSES, size: 100 });
+  // Fetched only while the dialog is open, without polling. Older groups: type their number.
+  const { data } = useLogGroupsQuery(
+    { statuses: ALL_STATUSES, size: 100 },
+    { enabled: open, poll: false },
+  );
   const merge = useMergeGroupMutation();
   const unmerge = useUnmergeGroupMutation();
 
@@ -97,20 +102,30 @@ export function MergeGroupButton({ group }: { group: Pick<LogGroupDto, "id"> }) 
           <Button
             variant="primary"
             loading={merge.isPending}
-            disabled={!target}
+            disabled={!target || Number(target) === group.id}
             onClick={() => void submit()}
           >
             {t("confirm")}
           </Button>
         }
       >
-        <DropdownSelect
-          label={t("target")}
-          value={target}
-          options={options}
-          onChange={setTarget}
-          placeholder={t("targetPlaceholder")}
-        />
+        <div className="stack gap-3">
+          <DropdownSelect
+            label={t("target")}
+            value={options.some((option) => option.value === target) ? target : ""}
+            options={options}
+            onChange={setTarget}
+            placeholder={t("targetPlaceholder")}
+          />
+          {/* The list holds the 100 most recently seen groups; older ones by number. */}
+          <Input
+            label={t("targetId")}
+            inputMode="numeric"
+            className="mono"
+            value={target}
+            onChange={(e) => setTarget(e.target.value.replace(/\D/g, ""))}
+          />
+        </div>
       </Modal>
     </>
   );

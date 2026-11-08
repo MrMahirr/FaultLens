@@ -20,20 +20,21 @@ const HOUR = 60 * 60 * 1000;
 export const IGNORE_PERIODS = { "1h": HOUR, "24h": 24 * HOUR, "7d": 7 * 24 * HOUR, forever: 0 };
 type IgnorePeriod = keyof typeof IGNORE_PERIODS;
 
-/** The change that puts a group back where it was (for the toast's undo). */
+/**
+ * The change that puts a group back where it was (for the toast's undo), or null when that state
+ * cannot be restored: an ignore period that has already run out (the API only accepts future
+ * ones, and "ignored forever" would be stronger than what is being undone).
+ */
 export function undoUpdate(
   previous: Pick<LogGroupDto, "status" | "ignoreUntil">,
   now = Date.now(),
-) {
-  const update: GroupStatusUpdate = { status: previous.status };
-  if (
-    previous.status === GroupStatus.IGNORED &&
-    previous.ignoreUntil &&
-    new Date(previous.ignoreUntil).getTime() > now
-  ) {
-    update.ignoreUntil = previous.ignoreUntil;
+): GroupStatusUpdate | null {
+  if (previous.status !== GroupStatus.IGNORED || !previous.ignoreUntil) {
+    return { status: previous.status };
   }
-  return update;
+  return new Date(previous.ignoreUntil).getTime() > now
+    ? { status: GroupStatus.IGNORED, ignoreUntil: previous.ignoreUntil }
+    : null;
 }
 
 /**
@@ -53,49 +54,50 @@ export function GroupActions({
 
   const apply = (update: GroupStatusUpdate, undoable: boolean) => {
     const previous = { status: group.status, ignoreUntil: group.ignoreUntil };
-    mutation.mutate(
-      { id: group.id, update },
-      {
-        onSuccess: () => {
-          const message =
-            update.status === GroupStatus.RESOLVED
-              ? t("resolved")
-              : update.status === GroupStatus.IGNORED
-                ? t("ignored")
-                : t("reopened");
-          if (!undoable) {
-            toast.success(message);
-            return;
-          }
-          toast.success(
-            (toastItem) => (
-              <span className="row gap-3">
-                {message}
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-sm"
-                  onClick={() => {
-                    toast.dismiss(toastItem.id);
-                    apply(undoUpdate(previous), false);
-                  }}
-                >
-                  {t("undo")}
-                </button>
-              </span>
-            ),
-            { duration: 6000 },
-          );
-        },
-        onError: (error) => {
-          if (getApiErrorCode(error) === "GROUP_STATUS_CONFLICT") {
-            toast.error(t("conflict"));
-            void queryClient.invalidateQueries({ queryKey: logKeys.groups() });
-          } else {
-            toast.error(getApiErrorMessage(error, t("failed")));
-          }
-        },
-      },
-    );
+    const undo = undoable ? undoUpdate(previous) : null;
+    // mutateAsync, not mutate(…, callbacks): the row is often gone before the response (resolving
+    // removes it from the Unresolved tab) and per-call callbacks of an unmounted observer never
+    // run — the promise still settles, so the toasts (and undo) keep working.
+    mutation
+      .mutateAsync({ id: group.id, update })
+      .then(() => {
+        const message =
+          update.status === GroupStatus.RESOLVED
+            ? t("resolved")
+            : update.status === GroupStatus.IGNORED
+              ? t("ignored")
+              : t("reopened");
+        if (!undo) {
+          toast.success(message);
+          return;
+        }
+        toast.success(
+          (toastItem) => (
+            <span className="row gap-3">
+              {message}
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm"
+                onClick={() => {
+                  toast.dismiss(toastItem.id);
+                  apply(undo, false);
+                }}
+              >
+                {t("undo")}
+              </button>
+            </span>
+          ),
+          { duration: 6000 },
+        );
+      })
+      .catch((error: unknown) => {
+        if (getApiErrorCode(error) === "GROUP_STATUS_CONFLICT") {
+          toast.error(t("conflict"));
+          void queryClient.invalidateQueries({ queryKey: logKeys.groups() });
+        } else {
+          toast.error(getApiErrorMessage(error, t("failed")));
+        }
+      });
   };
 
   const ignore = (period: IgnorePeriod) => {

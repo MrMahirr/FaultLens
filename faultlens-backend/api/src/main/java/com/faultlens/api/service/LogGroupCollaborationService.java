@@ -11,16 +11,12 @@ import com.faultlens.common.exception.ConflictException;
 import com.faultlens.common.exception.FaultLensException;
 import com.faultlens.common.exception.ResourceNotFoundException;
 import com.faultlens.processor.model.LogGroup;
-import com.faultlens.processor.repository.LogGroupRepository;
 import io.micrometer.core.instrument.Metrics;
 import java.sql.Timestamp;
-import java.time.Clock;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.security.access.AccessDeniedException;
@@ -38,37 +34,25 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  */
 @Service
 public class LogGroupCollaborationService {
-    private static final String INSERT_EVENT = """
-            INSERT INTO log_group_events (group_id, type, actor, payload, created_at)
-            VALUES (?, ?, ?, jsonb_strip_nulls(jsonb_build_object('assignee', ?::text, 'related_group_id', ?::bigint)), ?)
-            """;
     private static final String COMMENT_COLUMNS = "id, group_id, author, body, created_at, edited_at";
     private static final RowMapper<LogGroupCommentDto> COMMENT = (rs, row) -> new LogGroupCommentDto(
             rs.getLong("id"), rs.getLong("group_id"), rs.getString("author"), rs.getString("body"),
             rs.getTimestamp("created_at").toInstant(),
             rs.getTimestamp("edited_at") == null ? null : rs.getTimestamp("edited_at").toInstant());
 
-    private final LogGroupRepository groups;
+    private final LogGroupTimeline timeline;
     private final UserAccountRepository users;
     private final JdbcTemplate jdbc;
     private final ApiDtoMapper mapper;
     private final InAppNotificationService notifications;
-    private final Clock clock;
 
-    @Autowired
-    public LogGroupCollaborationService(LogGroupRepository groups, UserAccountRepository users, JdbcTemplate jdbc,
+    public LogGroupCollaborationService(LogGroupTimeline timeline, UserAccountRepository users, JdbcTemplate jdbc,
                                         ApiDtoMapper mapper, InAppNotificationService notifications) {
-        this(groups, users, jdbc, mapper, notifications, Clock.systemUTC());
-    }
-
-    LogGroupCollaborationService(LogGroupRepository groups, UserAccountRepository users, JdbcTemplate jdbc,
-                                 ApiDtoMapper mapper, InAppNotificationService notifications, Clock clock) {
-        this.groups = groups;
+        this.timeline = timeline;
         this.users = users;
         this.jdbc = jdbc;
         this.mapper = mapper;
         this.notifications = notifications;
-        this.clock = clock;
     }
 
     /* ── Assignment ─────────────────────────────────────────── */
@@ -235,7 +219,7 @@ public class LogGroupCollaborationService {
     }
 
     private void event(Long groupId, LogGroupEventType type, String actor, String assignee, Long related, Instant at) {
-        jdbc.update(INSERT_EVENT, groupId, type.name(), actor, assignee, related, Timestamp.from(at));
+        timeline.write(groupId, type, actor, new LogGroupTimeline.Details(null, null, assignee, related), at);
     }
 
     private LogGroupCommentDto findComment(Long groupId, Long commentId) {
@@ -248,16 +232,15 @@ public class LogGroupCollaborationService {
     }
 
     private LogGroup find(Long id) {
-        return groups.findById(id).orElseThrow(() -> notFound(id));
+        return timeline.find(id);
     }
 
     private static ResourceNotFoundException notFound(Long id) {
-        return new ResourceNotFoundException("Log group not found: " + id, "GROUP_NOT_FOUND");
+        return LogGroupTimeline.notFound(id);
     }
 
     private Instant now() {
-        // timestamptz keeps microseconds; truncating keeps responses equal to later reads.
-        return clock.instant().truncatedTo(ChronoUnit.MICROS);
+        return timeline.now();
     }
 
     private static void afterCommit(Runnable action) {

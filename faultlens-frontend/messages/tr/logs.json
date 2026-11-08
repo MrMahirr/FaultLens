@@ -191,6 +191,7 @@
         "description": "Bu grubun yeni kayıtları seçtiğiniz gruba gider. Geçmiş kayıtlar yerinde kalır; birleştirme yalnızca yöneticilerce geri alınabilir.",
         "target": "Hedef grup",
         "targetPlaceholder": "Grup seçin",
+        "targetId": "…ya da grup numarası",
         "targetOption": "#{id} · {message}",
         "confirm": "Birleştir",
         "merged": "Grup #{id} ile birleştirildi",

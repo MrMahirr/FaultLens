@@ -21,10 +21,6 @@ public interface DeploymentRepository extends JpaRepository<Deployment, Long> {
      */
     Optional<Deployment> findFirstByDeployedAtBeforeOrderByDeployedAtDesc(Instant before);
 
-    /**
-     * Finds deployments newest first.
-     */
-    Page<Deployment> findAllByOrderByDeployedAtDesc(Pageable pageable);
 
     /**
      * Deployment history page, newest first, filtered in the database (not on one page in the

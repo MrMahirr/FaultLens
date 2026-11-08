@@ -33,12 +33,16 @@ export const useLogDetailQuery = (id: number) =>
  * Polls so a regression (a resolved group reopened by new logs) shows up without a reload; the
  * previous page stays on screen while the next one loads.
  */
-export const useLogGroupsQuery = (params: LogGroupListParams = {}) =>
+export const useLogGroupsQuery = (
+  params: LogGroupListParams = {},
+  { enabled = true, poll = true }: { enabled?: boolean; poll?: boolean } = {},
+) =>
   useQuery({
     queryKey: logKeys.groupList(params),
     queryFn: () => LogApi.getLogGroups(params),
     placeholderData: keepPreviousData,
-    refetchInterval: 15_000,
+    enabled,
+    refetchInterval: poll ? 15_000 : false,
   });
 
 export const useLogGroupQuery = (id: number) =>

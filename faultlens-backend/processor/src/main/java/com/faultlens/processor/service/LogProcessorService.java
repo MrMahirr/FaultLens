@@ -94,7 +94,10 @@ public class LogProcessorService {
             PendingLogEntry pending = pendingEntries.get(i);
             LogEntryDto dto = toDto(savedEntries.get(i), pending.event(), pending.parsed());
             dtos.add(dto);
-            if (dto.getSeverity() == Severity.ERROR || dto.getSeverity() == Severity.CRITICAL) {
+            // Entries of IGNORED groups are stored and streamed, but not analysed: the analysis
+            // path (log-errors -> analyzer -> AnalysisEventListener) raises alarms too (P10 / 2.1).
+            boolean muted = dto.getGroupId() != null && grouping.mutedGroupIds().contains(dto.getGroupId());
+            if (!muted && (dto.getSeverity() == Severity.ERROR || dto.getSeverity() == Severity.CRITICAL)) {
                 toErrorQueue.add(dto);
             }
             toPublish.add(dto);

@@ -62,7 +62,7 @@ public class LogGroupingService {
                    regressed_at = CASE WHEN %2$s THEN NOW() ELSE log_groups.regressed_at END,
                    regression_count = log_groups.regression_count + CASE WHEN %2$s THEN 1 ELSE 0 END
             RETURNING new.id, (xmax = 0) AS inserted, old.status AS old_status, new.status AS new_status,
-                      new.regression_count
+                      new.regression_count, new.merged_into_id
             """.formatted(REOPENS, REGRESSES);
 
     static final String MERGE_TARGETS = """
@@ -146,7 +146,10 @@ public class LogGroupingService {
             GroupCandidate first = aggregate.first;
             jdbc.query(UPSERT, rs -> {
                 long id = rs.getLong("id");
-                ids.put(fingerprint, id);
+                // Merged after mergeTargets() read it (the merge committed in between): the count
+                // landed on the source, but the entries still go to the target, where they are seen.
+                Object lateMerge = rs.getObject("merged_into_id");
+                ids.put(fingerprint, lateMerge == null ? id : ((Number) lateMerge).longValue());
                 GroupStatus newStatus = GroupStatus.valueOf(rs.getString("new_status"));
                 if (newStatus == GroupStatus.IGNORED) {
                     muted.add(id);

@@ -118,4 +118,30 @@ class LogProcessorServiceTest {
         assertThat(result.getSeverity()).isEqualTo(Severity.INFO);
         verify(eventPublisher).publishEvent(any(LogProcessedEvent.class));
     }
+
+    @Test
+    void errorsOfIgnoredGroupsAreNotSentForAnalysis() {
+        LogEventDto event = new LogEventDto();
+        event.setMessage("boom");
+
+        LogParser mockParser = mock(LogParser.class);
+        ParsedLog parsedLog = new ParsedLog("boom", null, Severity.ERROR, Map.of());
+        when(patternRegistry.selectParser(event)).thenReturn(mockParser);
+        when(mockParser.parse(event)).thenReturn(parsedLog);
+        when(severityClassifier.classify(eq(event), eq(parsedLog))).thenReturn(Severity.ERROR);
+        when(groupingService.fingerprint(any(), any(), any())).thenReturn("fp");
+        // Group 456 is IGNORED: the analyzer would raise an alarm for it (AnalysisEventListener).
+        when(groupingService.groupAll(anyCollection()))
+                .thenReturn(new LogGroupingService.GroupingResult(Map.of("fp", 456L), java.util.Set.of(456L)));
+        when(entryRepository.saveAll(anyList())).thenReturn(List.of(LogEntry.builder()
+                .id(789L).severity(Severity.ERROR).message("boom").groupId(456L).build()));
+
+        service.process(event);
+
+        org.mockito.ArgumentCaptor<LogProcessedEvent> published = org.mockito.ArgumentCaptor.forClass(LogProcessedEvent.class);
+        verify(eventPublisher).publishEvent(published.capture());
+        assertThat(published.getValue().toErrorQueue()).isEmpty();
+        assertThat(published.getValue().toPublish()).hasSize(1);
+        assertThat(published.getValue().mutedGroupIds()).containsExactly(456L);
+    }
 }

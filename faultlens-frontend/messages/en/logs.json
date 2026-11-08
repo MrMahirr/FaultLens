@@ -191,6 +191,7 @@
         "description": "New entries of this group go to the group you choose. Past entries stay where they are; only admins can undo a merge.",
         "target": "Target group",
         "targetPlaceholder": "Choose a group",
+        "targetId": "…or the group number",
         "targetOption": "#{id} · {message}",
         "confirm": "Merge",
         "merged": "Merged into group #{id}",

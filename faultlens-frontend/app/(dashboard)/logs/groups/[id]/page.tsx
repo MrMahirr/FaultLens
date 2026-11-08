@@ -48,7 +48,13 @@ export default function LogGroupPage({ params }: { params: Promise<{ id: string 
   const groupId = parseInt(id, 10);
   const { data: group, isLoading, error } = useLogGroupQuery(groupId);
   const { data: events } = useLogGroupEventsQuery(groupId);
-  const { data: entries, isLoading: entriesLoading } = useLogsQuery({ groupId, page: 0, size: 20 });
+  const { data: entries, isLoading: entriesLoading } = useLogsQuery({
+    groupId,
+    // Not the Logs page's 24 h default: a group last seen days ago still shows its entries.
+    range: "all",
+    page: 0,
+    size: 20,
+  });
 
   if (isLoading) return <RouteLoading variant="detail" />;
 

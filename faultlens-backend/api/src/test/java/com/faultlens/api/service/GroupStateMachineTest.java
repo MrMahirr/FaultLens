@@ -24,7 +24,6 @@ class GroupStateMachineTest {
             "RESOLVED,   IGNORED,    IGNORED",
             "IGNORED,    UNRESOLVED, REOPENED",
             "IGNORED,    RESOLVED,   RESOLVED",
-            "IGNORED,    IGNORED,    IGNORED",
     })
     void allowedTransitionsRecordTheirEvent(GroupStatus from, GroupStatus to, LogGroupEventType event) {
         assertThat(GroupStateMachine.transition(from, to, null, NOW)).isEqualTo(event);
@@ -55,5 +54,19 @@ class GroupStateMachineTest {
                 NOW.plus(Duration.ofHours(1)), NOW))
                 .isInstanceOf(FaultLensException.class)
                 .extracting("errorCode").isEqualTo("INVALID_GROUP_STATUS");
+    }
+
+    @Test
+    void ignoringAgainNeedsADifferentPeriod() {
+        Instant until = NOW.plus(Duration.ofHours(1));
+        assertThatThrownBy(() -> GroupStateMachine.transition(GroupStatus.IGNORED, GroupStatus.IGNORED, null, null, NOW))
+                .isInstanceOf(ConflictException.class);
+        assertThatThrownBy(() -> GroupStateMachine.transition(GroupStatus.IGNORED, GroupStatus.IGNORED, until,
+                until.plusNanos(300), NOW)) // same period at microsecond precision
+                .isInstanceOf(ConflictException.class);
+        assertThat(GroupStateMachine.transition(GroupStatus.IGNORED, GroupStatus.IGNORED, until, null, NOW))
+                .isEqualTo(LogGroupEventType.IGNORED);
+        assertThat(GroupStateMachine.transition(GroupStatus.IGNORED, GroupStatus.IGNORED, null, until, NOW))
+                .isEqualTo(LogGroupEventType.IGNORED);
     }
 }

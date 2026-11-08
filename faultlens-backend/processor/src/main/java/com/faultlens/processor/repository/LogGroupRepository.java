@@ -26,15 +26,6 @@ public interface LogGroupRepository extends JpaRepository<LogGroup, Long> {
     @Query("select groupEntity from LogGroup groupEntity where groupEntity.fingerprint = :fingerprint")
     Optional<LogGroup> findWithLockByFingerprint(@Param("fingerprint") String fingerprint);
 
-    /**
-     * Finds recent groups by severity.
-     */
-    Page<LogGroup> findBySeverityOrderByLastSeenAtDesc(Severity severity, Pageable pageable);
-
-    /**
-     * Finds recent groups.
-     */
-    Page<LogGroup> findAllByOrderByLastSeenAtDesc(Pageable pageable);
 
     /**
      * Groups in the given statuses, optionally of one severity and assignee (P10 / 2.1, 2.2).

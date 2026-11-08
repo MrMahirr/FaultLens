@@ -126,12 +126,12 @@ describe("undoUpdate", () => {
     });
   });
 
-  it("keeps a future ignore period and drops an expired one", () => {
+  it("keeps a future ignore period; an expired one cannot be restored", () => {
     expect(
       undoUpdate({ status: GroupStatus.IGNORED, ignoreUntil: "2026-11-09T00:00:00Z" }, now),
     ).toEqual({ status: GroupStatus.IGNORED, ignoreUntil: "2026-11-09T00:00:00Z" });
     expect(
       undoUpdate({ status: GroupStatus.IGNORED, ignoreUntil: "2026-11-08T00:00:00Z" }, now),
-    ).toEqual({ status: GroupStatus.IGNORED });
+    ).toBeNull();
   });
 });
