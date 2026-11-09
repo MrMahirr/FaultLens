@@ -55,7 +55,7 @@ services:
   # Read-only Docker API for the collector (P08): only container listing, inspect and logs;
   # no POST/DELETE, so a compromised backend cannot start containers or reach the host.
   docker-proxy:
-    image: tecnativa/docker-socket-proxy:v0.4.1
+    image: tecnativa/docker-socket-proxy:v0.5.0
     restart: always
     environment:
       CONTAINERS: 1
