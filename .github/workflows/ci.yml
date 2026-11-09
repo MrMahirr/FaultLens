@@ -83,7 +83,7 @@ jobs:
 
       # Version comes from "packageManager" in faultlens-frontend/package.json.
       - name: Set up pnpm
-        uses: pnpm/action-setup@v5
+        uses: pnpm/action-setup@v6
         with:
           package_json_file: faultlens-frontend/package.json
 
