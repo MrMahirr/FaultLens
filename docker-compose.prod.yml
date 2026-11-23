@@ -67,7 +67,7 @@ services:
   # Back up that volume (or BACKUP_DIR) off the host as well. One-off run:
   #   docker compose -f docker-compose.prod.yml run --rm db-backup /pg-backup.sh --now
   db-backup:
-    image: postgres:18-alpine
+    image: postgres:19-alpine
     restart: always
     entrypoint: ["/bin/sh", "/pg-backup.sh"]
     environment:
